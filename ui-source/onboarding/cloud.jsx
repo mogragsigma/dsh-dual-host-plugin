@@ -1,0 +1,28 @@
+import React,{useEffect,useState,useRef} from 'react';
+import {Panel,Field,Button,CheckRow,Callout,InfoRow,Badge} from './components';
+const explain=code=>({ONBOARDING_SSH_AUTH_FAILED:'SSH 身份验证失败，请核对登录用户、私钥或代理。没有回退到密码或其他密钥。',ONBOARDING_SSH_HOSTKEY_CHANGED:'主机公钥与已确认记录不一致，已停止；请通过可信渠道核对，不要直接重新信任。',ONBOARDING_SSH_IDENTITY_CHANGED:'私钥文件已变化，请重新核对绑定。',ONBOARDING_SSH_IDENTITY_UNAVAILABLE:'未找到该私钥文件；只填写当前 Host 可访问的路径，不上传私钥。',ONBOARDING_SSH_IDENTITY_UNSAFE:'私钥路径、文件类型或权限不安全，请核对。',ONBOARDING_SSH_AGENT_UNAVAILABLE:'当前 Host 未发现可用的 SSH 代理。',ONBOARDING_SSH_BINDING_CONFLICT:'连接记录已被其他页面修改，请手动核对最新状态。',ONBOARDING_SSH_OBSERVATION_EXPIRED:'主机公钥观察已过期，请重新获取并核对。',ONBOARDING_SSH_UNREACHABLE:'无法连接目标 SSH 服务，请检查地址、端口和网络。'}[code]??'本次结果未能确认，请手动核对连接记录。没有自动重试或初始化云端。');
+export function CloudConnection({request,target,onReference}){
+ const generation=useRef(0),live=useRef(true);useEffect(()=>{live.current=true;return()=>{live.current=false;generation.current++;};},[]);
+ const [auth,setAuth]=useState('file'),[identityPath,setIdentityPath]=useState(''),[binding,setBinding]=useState(null),[scan,setScan]=useState(null),[checked,setChecked]=useState(false),[snapshot,setSnapshot]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ useEffect(()=>{let live=true;request('ssh_status',{}).then(r=>{if(!live)return;setBinding(r);if(r.connection){setAuth(r.connection.auth);setIdentityPath(r.connection.identityPath);}}).catch(e=>{if(live)setError(explain(e.message));});return()=>{live=false;};},[]);
+ useEffect(()=>{generation.current++;setScan(null);setChecked(false);setSnapshot(null);},[target.host,target.user,target.port,auth,identityPath]);
+ const same=binding?.configured&&binding.connection.host===target.host.toLowerCase()&&binding.connection.user===target.user&&binding.connection.port===Number(target.port)&&binding.connection.auth===auth&&binding.connection.identityPath===(auth==='file'?identityPath:'');
+ async function action(kind){
+  if(busy)return;const gen=generation.current;const valid=()=>live.current&&gen===generation.current;setBusy(true);setError('');
+  try{
+   if(kind==='status'){const r=await request('ssh_status',{});if(valid()){setBinding(r);setScan(null);setSnapshot(null);}}
+   if(kind==='scan'){setSnapshot(null);setScan(null);setChecked(false);const r=await request('ssh_scan',{connection:{host:target.host,user:target.user,port:Number(target.port),auth,identityPath:auth==='file'?identityPath:''}});if(valid())setScan(r);}
+   if(kind==='trust'){const r=await request('ssh_trust',{id:scan.id,fingerprint:scan.fingerprint,expectedRevision:binding.revision,confirm:true});if(valid()){setBinding(r);setScan(null);setChecked(false);onReference(r.reference);}}
+   if(kind==='probe'){setSnapshot(null);const r=await request('cloud_probe',{expectedRevision:binding.revision});if(valid())setSnapshot(r);}
+  }catch(e){if(valid())setError(explain(e.message));}finally{if(live.current)setBusy(false);}
+ }
+ return <Panel title="SSH 连接与主机信任" icon="shield" sub="只引用本机密钥或 SSH 代理，不复制私钥，也不修改日常 SSH 配置。">
+  <fieldset disabled={busy} style={{border:0,padding:0,margin:0}}><div className="form-grid"><Field label="SSH 认证方式"><select value={auth} onChange={e=>setAuth(e.target.value)}><option value="file">已有私钥文件</option><option value="agent">已有 SSH 代理</option></select></Field>{auth==='file'&&<Field label="SSH 私钥文件路径" value={identityPath} autoComplete="off" spellCheck={false} onChange={e=>setIdentityPath(e.target.value)} placeholder="绝对路径或 ~/.ssh/你的密钥"/>}</div>
+  <InfoRow label="当前信任记录" value={binding?.configured?`${binding.connection.user}@${binding.connection.host}:${binding.connection.port}${same?'':' · 与表单不同'}`:'尚未绑定'}/>
+  <div className="form-actions" role="group" aria-label="主机信任记录操作"><Button kind="soft" icon="shield" disabled={!binding} onClick={()=>action('scan')}>获取主机公钥</Button><Button kind="secondary" icon="reset" onClick={()=>action('status')}>核对连接记录</Button></div>
+  {scan&&<div className="ssh-trust-review"><Callout>主机 {scan.host}:{scan.port} 的以下信息仅为网络观察，还不可信。请通过 ECS 控制台或管理员核对主机公钥指纹；一致后再确认。首次观察不会自动信任。</Callout>{scan.keys.map(k=><div className="path-line" key={k.type}><span>{k.type}</span><code>{k.fingerprint}</code></div>)}<div className="ssh-trust-consent"><CheckRow checked={checked} onChange={setChecked} title="我已通过可信渠道核对这些主机公钥"/><div className="form-actions" role="group" aria-label="主机信任确认"><Button kind="primary" icon="check" disabled={!checked} onClick={()=>action('trust')}>确认信任并保存连接</Button></div></div></div>}
+  <div className="form-actions ssh-probe-actions" role="group" aria-label="云端只读预检"><Button kind="primary" icon="cloud" disabled={!same} onClick={()=>action('probe')}>只读预检云端</Button></div></fieldset>
+  {busy&&<p role="status">正在处理；不会自动重试。</p>}{error&&<p role="alert">{error}</p>}
+  {snapshot&&<div className="cloud-observation"><Badge>只读观察 · 非安装授权</Badge>{snapshot.state==='observed'?<><InfoRow label="登录账号 / 系统" value={`${snapshot.user}（uid ${snapshot.uid}） / ${snapshot.platform} ${snapshot.arch}`}/><InfoRow label="Node / npm" value={`${snapshot.node.version} / ${snapshot.tools.npm?'已发现，未安装':'未发现'}`}/><InfoRow label="可用空间" value={snapshot.freeBytes===null?'未知':(snapshot.freeBytes/1073741824).toFixed(1)+' GiB'}/><div className="path-line"><span>拟建独立 Host 根</span><code>{snapshot.root}</code></div><InfoRow label="目标目录" value={snapshot.rootExists?'已存在，需要核对':'尚不存在，未创建'}/><InfoRow label="现有 DSH 样式进程" value={`${snapshot.possibleHosts.length} 个 · 不操作、不推测配置路径`}/><p className="fine-print">检测于 {new Date(snapshot.observedAt).toLocaleString()}，60 秒后视为历史观察。路径来自远端真实账号，不是从本机猜测。</p></>:<Callout>云端需要进一步准备：{snapshot.state==='runtime_bootstrap_required'?'尚未发现符合要求的 Node（至少 v22），需先完成运行时安装计划。':'当前系统不在已支持的云端范围。'}没有初始化。</Callout>}</div>}
+ </Panel>;
+}

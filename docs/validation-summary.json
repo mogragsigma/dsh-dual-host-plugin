@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "version": "0.24.0-alpha.14",
+  "bundleSHA256": "6c026f1624a40ea533cc9ea415a2573727ea778d4b3b5462e6056a1b0aaac10d",
+  "foundation": {
+    "mac": {
+      "passed": 551,
+      "skipped": 9,
+      "failed": 0
+    },
+    "ecs": {
+      "passed": 560,
+      "skipped": 0,
+      "failed": 0
+    }
+  },
+  "operatorTools": {
+    "mac": 112,
+    "ecs": 112
+  },
+  "cleanExportTests": {
+    "foundationPassed": 551,
+    "foundationSkipped": 9,
+    "operatorPassed": 112
+  },
+  "realHostCandidateLoads": {
+    "mac": true,
+    "ecs": true
+  },
+  "globalRulesAndSkillsLoadedBoth": true,
+  "modelCalls": 0,
+  "imSends": 0,
+  "repositoryUI": {
+    "syntheticLedgerOnly": true,
+    "permissionLabel": true,
+    "rateLimitLabel": true,
+    "explicitHistoricalNotLive": true
+  },
+  "rollback": {
+    "mac": "passed",
+    "ecs": "safely_refused_FILE_CHANGED",
+    "ecsChangedField": "DSH welcomeNoticeVersion saved by GUI; not reconciled",
+    "databaseRestored": false
+  },
+  "fixturesStopped": {
+    "mac": true,
+    "ecs": true
+  },
+  "formalBaselinesUnchanged": {
+    "macFiles": 518,
+    "ecsFiles": 518,
+    "ecsService": true
+  },
+  "formalDeployment": false,
+  "release": false,
+  "pluginGitDeliveryEndToEndVerified": false
+}

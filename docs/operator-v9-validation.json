@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "runtimeVersion": "0.24.0-alpha.14",
+  "runtimeUnchanged": true,
+  "operatorRevision": 9,
+  "operatorTests": {
+    "mac": 125,
+    "ecs": 125
+  },
+  "packageSHA256": "f2bacd90288a1ca3d7f7a8b24aeeedf71ecd39a14d201260ae7daa6de906068e",
+  "packageFiles": 155,
+  "cloudExistingTransaction": "rolled_back_after_explicit_review",
+  "nativeAppendedEntriesPreserved": 1,
+  "ownReferencesReverted": 4,
+  "oldHostProbeMatchesPreUpgrade": true,
+  "databaseRestored": false,
+  "modelCalls": 0,
+  "imSends": 0,
+  "runs": 0,
+  "fixtureStopped": true,
+  "formalDeployment": false,
+  "release": false
+}

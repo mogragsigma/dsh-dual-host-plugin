@@ -1,0 +1,99 @@
+{
+  "name": "@mogragsigma/dsh-dual-host-plugin",
+  "version": "0.33.1",
+  "type": "module",
+  "exports": {
+    ".": "./native-entry.js",
+    "./package.json": "./package.json",
+    "./native-tools": "./native-tools.js",
+    "./client": "./workbench-client.js"
+  },
+  "description": "Local and cloud DSH coordination with protected onboarding, task approval and controlled artifacts",
+  "files": [
+    "*.js",
+    "cordis.patch.yml",
+    "skills",
+    "rules",
+    "worker-rules",
+    "native-rules",
+    "global-rules",
+    "compatibility.json",
+    "approval-ui",
+    "package-lock.json",
+    "workbench-assets",
+    "development-rules",
+    "delivery-process.py",
+    "runtime-package.json",
+    "runtime-lock.json",
+    "onboarding-node-bootstrap.py",
+    "runtime-im-package.json",
+    "runtime-im-lock.json",
+    "distribution-lock.json",
+    "README.md",
+    "LICENSE",
+    "LICENSE.en.md",
+    "THIRD_PARTY_NOTICES.md",
+    "ASSET_NOTICE.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-workspace",
+        "@deepseek-ai/dsh-api-session-controller"
+      ]
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-credentials": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-http-proxy": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-web-fetch-http": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-web-search-deepseek": "0.2.1-rc.2",
+    "@js-temporal/polyfill": "0.5.1",
+    "acorn": "8.15.0",
+    "koffi": "3.1.1"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.2 || 0.2.1-rc.3",
+    "@deepseek-ai/dsh-llm-deepseek": "0.2.1-rc.2 || 0.2.1-rc.3",
+    "@deepseek-ai/dsh-llm-pi-ai": "0.2.1-rc.2 || 0.2.1-rc.3",
+    "@earendil-works/pi-ai": "1.3.0"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-llm-pi-ai": {
+      "optional": true
+    },
+    "@earendil-works/pi-ai": {
+      "optional": true
+    }
+  },
+  "author": "mogragsigma",
+  "license": "SEE LICENSE IN LICENSE",
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://gitee.com/wenheng-Zhang/dsh-dual-host-plugin",
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitee.com/wenheng-Zhang/dsh-dual-host-plugin.git",
+    "directory": "bundle"
+  },
+  "bugs": {
+    "url": "https://gitee.com/wenheng-Zhang/dsh-dual-host-plugin/issues"
+  },
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "dual-host",
+    "task-approval"
+  ],
+  "engines": {
+    "dsh": "0.2.1-rc.3"
+  }
+}

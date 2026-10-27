@@ -1,0 +1,10 @@
+{
+  "source": "frozen stage40 0.21.0-alpha.5",
+  "files": {
+    "task-envelope.js": "1ab3ce4864b78150a360dc8ec42fb1dddf7fd3c9613b96db037f6885c182098a",
+    "search-contract.js": "c0275564a3b279beb976e8f3f782b5251bbbb2ee633f50e7110beca43033e283",
+    "task-jobs.js": "6461815a615efd5cfe0e1ab6342bdb7d6df27a895aba6a0be6d51216c1c781ee",
+    "task-context.js": "0f379e0078fddbd7ee7f15b8e637f18806665fca36ccda7689a9d9950ffa4cc9",
+    "job-version.js": "eb6fb0e0f370a842fe81120c8d0dc46e16d964209cc43f8604749409ccbc019a"
+  }
+}

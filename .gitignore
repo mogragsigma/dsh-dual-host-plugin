@@ -1,0 +1,17 @@
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.*
+private/
+runtime/
+runtime-home/
+*.sqlite*
+*.db
+*.log
+*.pem
+*.key
+config.json
+tokens.json
+credentials.json

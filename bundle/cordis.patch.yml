@@ -1,0 +1,5 @@
+# Official bundle selection loads the native setup owner and its declared Web client.
+# Empty configuration discovers capabilities; it never consents to mutations.
+- insert:
+    - id: dual-host-onboarding
+      name: '@mogragsigma/dsh-dual-host-plugin'

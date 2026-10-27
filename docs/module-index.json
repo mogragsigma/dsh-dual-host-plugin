@@ -1,0 +1,4813 @@
+{
+  "version": "0.33.1",
+  "scope": "Static imports/exports and literal test references; dynamic injection and transitive coverage require manual review.",
+  "modules": {
+    "bundle/a2a-dispatches.js": {
+      "lines": 38,
+      "imports": [],
+      "exports": [
+        "A2ADispatches",
+        "validateModelObservation"
+      ],
+      "referencedByTests": [
+        "tests/a2a-dispatches.test.mjs"
+      ]
+    },
+    "bundle/a2a-endpoint.js": {
+      "lines": 112,
+      "imports": [
+        "./a2a-dispatches.js",
+        "./a2a-worker.js",
+        "./bounded-text.js",
+        "node:crypto",
+        "node:net",
+        "node:path",
+        "node:sqlite"
+      ],
+      "exports": [
+        "A2AEndpoint",
+        "a2aBinding",
+        "validateA2AConfig"
+      ],
+      "referencedByTests": [
+        "tests/a2a-endpoint.test.mjs"
+      ]
+    },
+    "bundle/a2a-tools.js": {
+      "lines": 11,
+      "imports": [
+        "./a2a-worker.js"
+      ],
+      "exports": [
+        "apply",
+        "inject"
+      ],
+      "referencedByTests": [
+        "tests/a2a-endpoint.test.mjs"
+      ]
+    },
+    "bundle/a2a-worker.js": {
+      "lines": 63,
+      "imports": [
+        "./a2a-endpoint.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "A2A_TOOLS",
+        "NativeA2AWorker",
+        "mountA2APreset"
+      ],
+      "referencedByTests": [
+        "tests/a2a-endpoint.test.mjs"
+      ]
+    },
+    "bundle/approval-auth.js": {
+      "lines": 5,
+      "imports": [],
+      "exports": [
+        "ApprovalAuth"
+      ],
+      "referencedByTests": [
+        "tests/approval-workbench.test.mjs"
+      ]
+    },
+    "bundle/approval-chat.js": {
+      "lines": 150,
+      "imports": [
+        "./approval-feishu.js",
+        "./approval-guidance.js",
+        "./approval-ledger.js",
+        "./approval-receipts.js",
+        "./approval-semantics.js",
+        "./delivery-contract.js",
+        "./repository-gitee.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "ChatApproval",
+        "chatAction",
+        "renderChatProposal"
+      ],
+      "referencedByTests": [
+        "tests/approval-chat.test.mjs",
+        "tests/approval-fixture.mjs",
+        "tests/approval-guidance.test.mjs",
+        "tests/approval-local-relay.test.mjs",
+        "tests/approval-receipts.test.mjs",
+        "tests/approval-reference.test.mjs",
+        "tests/approval-semantics.test.mjs",
+        "tests/delivery-approval.test.mjs",
+        "tests/delivery-preview.test.mjs",
+        "tests/development-workspace.test.mjs",
+        "tests/development.test.mjs",
+        "tests/repository.test.mjs",
+        "tests/workspace-fixture.mjs"
+      ]
+    },
+    "bundle/approval-feishu.js": {
+      "lines": 52,
+      "imports": [],
+      "exports": [
+        "FeishuApprovalSource",
+        "chatBinding"
+      ],
+      "referencedByTests": [
+        "tests/approval-chat.test.mjs",
+        "tests/approval-credential-reference.test.mjs",
+        "tests/approval-fixture.mjs",
+        "tests/approval-navigation-wire.test.mjs"
+      ]
+    },
+    "bundle/approval-guidance.js": {
+      "lines": 68,
+      "imports": [
+        "./approval-ledger.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "ApprovalGuidance"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/approval-http.js": {
+      "lines": 8,
+      "imports": [],
+      "exports": [
+        "ApprovalWindow"
+      ],
+      "referencedByTests": [
+        "tests/approval-workbench.test.mjs",
+        "tests/approval.test.mjs"
+      ]
+    },
+    "bundle/approval-ledger.js": {
+      "lines": 142,
+      "imports": [
+        "./delivery-contract.js",
+        "./development-contract.js",
+        "./task-context.js",
+        "./task-envelope.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "ApprovalLedger",
+        "canonical",
+        "digest",
+        "scopes"
+      ],
+      "referencedByTests": [
+        "tests/approval-chat.test.mjs",
+        "tests/approval-fixture.mjs",
+        "tests/approval-process-child.mjs",
+        "tests/approval-reference.test.mjs",
+        "tests/approval.test.mjs",
+        "tests/delivery-approval-fixture.mjs",
+        "tests/delivery-approval-reopen.mjs",
+        "tests/delivery-approval.test.mjs",
+        "tests/delivery-commit-fixture.mjs",
+        "tests/delivery-fixture.mjs",
+        "tests/delivery-gateway.test.mjs",
+        "tests/delivery-git-read.test.mjs",
+        "tests/delivery-index.test.mjs",
+        "tests/delivery-journal.test.mjs",
+        "tests/delivery-lock-recovery.test.mjs",
+        "tests/delivery-object-plan.test.mjs",
+        "tests/delivery-preview.test.mjs",
+        "tests/delivery-push-approval-fixture.mjs",
+        "tests/delivery-push.test.mjs",
+        "tests/delivery-recovery-fixture.mjs",
+        "tests/delivery-recovery.test.mjs",
+        "tests/delivery-runtime.test.mjs",
+        "tests/delivery-ssh.test.mjs",
+        "tests/development-command-review.test.mjs",
+        "tests/development-container.test.mjs",
+        "tests/development-workspace.test.mjs",
+        "tests/development.test.mjs",
+        "tests/repository.test.mjs",
+        "tests/search-contract.test.mjs",
+        "tests/task-branch.test.mjs",
+        "tests/workbench-decisions.test.mjs",
+        "tests/workspace-assets.test.mjs",
+        "tests/workspace-fixture.mjs"
+      ]
+    },
+    "bundle/approval-local-relay.js": {
+      "lines": 86,
+      "imports": [
+        "./approval-feishu.js",
+        "./approval-ledger.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "ApprovalRelayBroker",
+        "LocalApprovalEndpoint",
+        "configureLocalApproval",
+        "localApprovalBinding"
+      ],
+      "referencedByTests": [
+        "tests/approval-local-relay.test.mjs"
+      ]
+    },
+    "bundle/approval-receipts.js": {
+      "lines": 62,
+      "imports": [
+        "./delivery-contract.js",
+        "./repository-gitee.js"
+      ],
+      "exports": [
+        "ApprovalReceipts",
+        "renderReceipt"
+      ],
+      "referencedByTests": [
+        "tests/delivery-approval.test.mjs",
+        "tests/delivery-preview.test.mjs",
+        "tests/development.test.mjs",
+        "tests/repository.test.mjs"
+      ]
+    },
+    "bundle/approval-reference.js": {
+      "lines": 33,
+      "imports": [],
+      "exports": [
+        "approvalReference"
+      ],
+      "referencedByTests": [
+        "tests/approval-reference.test.mjs"
+      ]
+    },
+    "bundle/approval-semantic-model.js": {
+      "lines": 26,
+      "imports": [
+        "./approval-semantics.js",
+        "./task-context.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "semanticClassifier"
+      ],
+      "referencedByTests": [
+        "tests/approval-semantic-model.test.mjs"
+      ]
+    },
+    "bundle/approval-semantics.js": {
+      "lines": 51,
+      "imports": [],
+      "exports": [
+        "SEMANTICS_VERSION",
+        "SEMANTIC_SYSTEM",
+        "approvalVeto",
+        "interpretApproval",
+        "ruleInterpretation",
+        "validateInterpretation"
+      ],
+      "referencedByTests": [
+        "tests/approval-semantics.test.mjs"
+      ]
+    },
+    "bundle/approval-ui/app.js": {
+      "lines": 1,
+      "imports": [],
+      "exports": [],
+      "referencedByTests": []
+    },
+    "bundle/approval-workbench.js": {
+      "lines": 45,
+      "imports": [
+        "./approval-ledger.js"
+      ],
+      "exports": [
+        "WorkbenchApprovals"
+      ],
+      "referencedByTests": [
+        "tests/approval-workbench.test.mjs"
+      ]
+    },
+    "bundle/artifact-media.js": {
+      "lines": 34,
+      "imports": [
+        "node:crypto"
+      ],
+      "exports": [
+        "artifactSnapshot",
+        "decodeImage",
+        "imageType",
+        "mediaHash"
+      ],
+      "referencedByTests": [
+        "tests/delivery-artifacts.test.mjs",
+        "tests/notification-media.test.mjs"
+      ]
+    },
+    "bundle/bounded-text.js": {
+      "lines": 44,
+      "imports": [
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "BoundedTextReader",
+        "textFormats"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/delivery-approval.js": {
+      "lines": 133,
+      "imports": [
+        "./approval-ledger.js",
+        "./delivery-object-plan.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "DeliveryApproval"
+      ],
+      "referencedByTests": [
+        "tests/delivery-approval-fixture.mjs",
+        "tests/delivery-approval-reopen.mjs",
+        "tests/delivery-approval.test.mjs"
+      ]
+    },
+    "bundle/delivery-artifacts.js": {
+      "lines": 52,
+      "imports": [
+        "./approval-ledger.js",
+        "./delivery-state.js",
+        "./repository-gitee.js"
+      ],
+      "exports": [
+        "deliveryArtifact",
+        "deliveryArtifactList"
+      ],
+      "referencedByTests": [
+        "tests/delivery-artifacts.test.mjs"
+      ]
+    },
+    "bundle/delivery-commit.js": {
+      "lines": 125,
+      "imports": [
+        "./approval-ledger.js",
+        "./delivery-git-read.js",
+        "./delivery-index.js",
+        "./delivery-object-plan.js",
+        "./drained-process.js",
+        "./task-branch.js",
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "DeliveryCommit",
+        "DeliveryGitLease",
+        "commitCommand"
+      ],
+      "referencedByTests": [
+        "tests/delivery-commit-fixture.mjs",
+        "tests/delivery-commit.test.mjs",
+        "tests/delivery-lock-crash-child.mjs",
+        "tests/delivery-lock-recovery.test.mjs",
+        "tests/delivery-runtime.test.mjs",
+        "tests/task-branch.test.mjs"
+      ]
+    },
+    "bundle/delivery-contract.js": {
+      "lines": 42,
+      "imports": [],
+      "exports": [
+        "approvalTitle",
+        "commitExecution",
+        "deliveryExecution",
+        "deliveryLabel",
+        "deliveryReference",
+        "deliveryReferenceSchema",
+        "pushExecution"
+      ],
+      "referencedByTests": [
+        "tests/delivery-approval.test.mjs",
+        "tests/delivery-preview.test.mjs",
+        "tests/delivery-push-approval.test.mjs"
+      ]
+    },
+    "bundle/delivery-git-read.js": {
+      "lines": 217,
+      "imports": [
+        "./approval-ledger.js",
+        "./delivery-object-plan.js",
+        "./development-plan.js",
+        "./repository-gitee.js",
+        "./task-branch.js",
+        "node:child_process",
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "DeliveryGitRead",
+        "parseBatch",
+        "readOnlyCommand",
+        "validateGitBaseline"
+      ],
+      "referencedByTests": [
+        "tests/delivery-git-read.test.mjs",
+        "tests/delivery-lock-recovery.test.mjs",
+        "tests/task-branch.test.mjs"
+      ]
+    },
+    "bundle/delivery-index.js": {
+      "lines": 23,
+      "imports": [
+        "./delivery-object-plan.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "compileIndex"
+      ],
+      "referencedByTests": [
+        "tests/delivery-index.test.mjs",
+        "tests/delivery-lock-recovery.test.mjs",
+        "tests/delivery-recovery-fixture.mjs"
+      ]
+    },
+    "bundle/delivery-journal.js": {
+      "lines": 207,
+      "imports": [
+        "./approval-ledger.js",
+        "./delivery-git-read.js",
+        "./delivery-object-plan.js",
+        "./delivery-push-plan.js",
+        "./delivery-state.js",
+        "./repository-gitee.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "DeliveryJournal"
+      ],
+      "referencedByTests": [
+        "tests/delivery-approval-fixture.mjs",
+        "tests/delivery-approval-reopen.mjs",
+        "tests/delivery-commit-fixture.mjs",
+        "tests/delivery-gateway.test.mjs",
+        "tests/delivery-journal-crash-child.mjs",
+        "tests/delivery-journal.test.mjs",
+        "tests/delivery-push.test.mjs",
+        "tests/delivery-receipt-crash-child.mjs"
+      ]
+    },
+    "bundle/delivery-object-plan.js": {
+      "lines": 138,
+      "imports": [
+        "./approval-ledger.js",
+        "./development-plan.js",
+        "./task-branch.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "compileCommit",
+        "gitObject",
+        "indexTree",
+        "verifyObjects"
+      ],
+      "referencedByTests": [
+        "tests/delivery-approval-fixture.mjs",
+        "tests/delivery-commit-fixture.mjs",
+        "tests/delivery-git-read.test.mjs",
+        "tests/delivery-index.test.mjs",
+        "tests/delivery-journal.test.mjs",
+        "tests/delivery-object-plan.test.mjs",
+        "tests/delivery-push.test.mjs",
+        "tests/delivery-runtime.test.mjs",
+        "tests/task-branch.test.mjs",
+        "tests/workspace-assets.test.mjs"
+      ]
+    },
+    "bundle/delivery-preview.js": {
+      "lines": 153,
+      "imports": [
+        "./approval-ledger.js",
+        "./delivery-state.js",
+        "./development-contract.js",
+        "./development-files.js",
+        "./development-workspace.js",
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "DeliveryPreview",
+        "compareText",
+        "deliverySnapshot"
+      ],
+      "referencedByTests": [
+        "tests/delivery-approval-fixture.mjs",
+        "tests/delivery-approval-reopen.mjs",
+        "tests/delivery-preview.test.mjs",
+        "tests/development.test.mjs"
+      ]
+    },
+    "bundle/delivery-process-receipts.js": {
+      "lines": 90,
+      "imports": [
+        "./approval-ledger.js",
+        "./delivery-process.js",
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "DeliveryProcessReceipts",
+        "bootId",
+        "supervisorLive",
+        "validateReceiptBinding"
+      ],
+      "referencedByTests": [
+        "tests/delivery-process-receipts.test.mjs",
+        "tests/delivery-receipt-crash-child.mjs",
+        "tests/delivery-receipt-fixture.mjs"
+      ]
+    },
+    "bundle/delivery-process.js": {
+      "lines": 46,
+      "imports": [
+        "node:child_process",
+        "node:crypto",
+        "node:url"
+      ],
+      "exports": [
+        "runSupervised",
+        "validateProcessReport"
+      ],
+      "referencedByTests": [
+        "tests/delivery-process.test.mjs",
+        "tests/delivery-receipt-crash-child.mjs",
+        "tests/delivery-receipt-linux.test.mjs"
+      ]
+    },
+    "bundle/delivery-process.py": {
+      "lines": 228,
+      "imports": [],
+      "exports": [],
+      "referencedByTests": []
+    },
+    "bundle/delivery-push-approval.js": {
+      "lines": 89,
+      "imports": [
+        "./approval-ledger.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "DeliveryPushApproval"
+      ],
+      "referencedByTests": [
+        "tests/delivery-approval-reopen.mjs",
+        "tests/delivery-push-approval-fixture.mjs"
+      ]
+    },
+    "bundle/delivery-push-plan.js": {
+      "lines": 98,
+      "imports": [
+        "./approval-ledger.js",
+        "./repository-gitee.js",
+        "./task-branch.js"
+      ],
+      "exports": [
+        "compilePush",
+        "parseRemoteRef",
+        "pushCommand",
+        "pushIntent",
+        "pushReadback",
+        "remoteReadCommand",
+        "validatePushIntent",
+        "validatePushPlan",
+        "validatePushReadiness"
+      ],
+      "referencedByTests": [
+        "tests/delivery-push-adapter.test.mjs",
+        "tests/delivery-push-approval-fixture.mjs",
+        "tests/delivery-push.test.mjs",
+        "tests/delivery-runtime.test.mjs",
+        "tests/task-branch.test.mjs"
+      ]
+    },
+    "bundle/delivery-push-recovery.js": {
+      "lines": 32,
+      "imports": [],
+      "exports": [
+        "DeliveryPushRecovery"
+      ],
+      "referencedByTests": [
+        "tests/delivery-push-recovery.test.mjs"
+      ]
+    },
+    "bundle/delivery-push.js": {
+      "lines": 83,
+      "imports": [
+        "./approval-ledger.js",
+        "./delivery-git-read.js",
+        "./delivery-push-plan.js",
+        "./delivery-ssh.js"
+      ],
+      "exports": [
+        "DeliveryPush"
+      ],
+      "referencedByTests": [
+        "tests/delivery-push-adapter.test.mjs",
+        "tests/delivery-push-runtime.test.mjs"
+      ]
+    },
+    "bundle/delivery-recovery.js": {
+      "lines": 143,
+      "imports": [
+        "./approval-ledger.js",
+        "./delivery-git-read.js",
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "DeliveryRecovery",
+        "DeliveryRecoveryLocks",
+        "classifyDelivery"
+      ],
+      "referencedByTests": [
+        "tests/delivery-lock-recovery.test.mjs",
+        "tests/delivery-recovery-fixture.mjs",
+        "tests/delivery-recovery.test.mjs"
+      ]
+    },
+    "bundle/delivery-runtime.js": {
+      "lines": 182,
+      "imports": [
+        "./approval-ledger.js",
+        "./delivery-approval.js",
+        "./delivery-commit.js",
+        "./delivery-git-read.js",
+        "./delivery-journal.js",
+        "./delivery-process-receipts.js",
+        "./delivery-push-approval.js",
+        "./delivery-push-plan.js",
+        "./delivery-push-recovery.js",
+        "./delivery-push.js",
+        "./delivery-recovery.js",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "DeliveryRuntime"
+      ],
+      "referencedByTests": [
+        "tests/delivery-push-runtime.test.mjs",
+        "tests/delivery-runtime.test.mjs"
+      ]
+    },
+    "bundle/delivery-ssh.js": {
+      "lines": 64,
+      "imports": [
+        "./approval-ledger.js",
+        "./delivery-process.js",
+        "./delivery-push-plan.js",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "DeliverySSH",
+        "sshEnvironment",
+        "sshGitCommand"
+      ],
+      "referencedByTests": [
+        "tests/delivery-ssh.test.mjs"
+      ]
+    },
+    "bundle/delivery-state.js": {
+      "lines": 106,
+      "imports": [
+        "./approval-ledger.js",
+        "./delivery-push-plan.js"
+      ],
+      "exports": [
+        "deliveryAction",
+        "deliveryActions",
+        "deliveryDisplayState",
+        "deliveryWaiting"
+      ],
+      "referencedByTests": [
+        "tests/delivery-gateway.test.mjs",
+        "tests/delivery-push-runtime.test.mjs",
+        "tests/delivery-push.test.mjs",
+        "tests/delivery-runtime.test.mjs"
+      ]
+    },
+    "bundle/development-attention.js": {
+      "lines": 35,
+      "imports": [
+        "./approval-ledger.js"
+      ],
+      "exports": [
+        "DevelopmentAttention"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/development-bridge.js": {
+      "lines": 136,
+      "imports": [
+        "./approval-ledger.js",
+        "./development-reconciliation.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "DevelopmentBridge"
+      ],
+      "referencedByTests": [
+        "tests/development-workspace-peer.test.mjs",
+        "tests/development-workspace.test.mjs",
+        "tests/development.test.mjs"
+      ]
+    },
+    "bundle/development-command-review.js": {
+      "lines": 110,
+      "imports": [
+        "./approval-ledger.js",
+        "./development-files.js",
+        "./development-plan.js"
+      ],
+      "exports": [
+        "DevelopmentCommandReview"
+      ],
+      "referencedByTests": [
+        "tests/development-command-review.test.mjs"
+      ]
+    },
+    "bundle/development-container.js": {
+      "lines": 110,
+      "imports": [
+        "./approval-ledger.js",
+        "./development-plan.js",
+        "./drained-process.js",
+        "node:child_process",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "DevelopmentContainer"
+      ],
+      "referencedByTests": [
+        "tests/development-command-review.test.mjs",
+        "tests/development-container.test.mjs",
+        "tests/development-workspace.test.mjs"
+      ]
+    },
+    "bundle/development-contract.js": {
+      "lines": 17,
+      "imports": [
+        "./approval-ledger.js",
+        "./development-plan.js"
+      ],
+      "exports": [
+        "approvedDevelopment",
+        "developmentSpec"
+      ],
+      "referencedByTests": [
+        "tests/development-workspace.test.mjs",
+        "tests/development.test.mjs",
+        "tests/workspace-fixture.mjs"
+      ]
+    },
+    "bundle/development-files.js": {
+      "lines": 101,
+      "imports": [
+        "./approval-ledger.js",
+        "./development-plan.js",
+        "./development-workspace.js",
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "DevelopmentFiles"
+      ],
+      "referencedByTests": [
+        "tests/development-workspace.test.mjs",
+        "tests/workspace-assets.test.mjs",
+        "tests/workspace-fixture.mjs"
+      ]
+    },
+    "bundle/development-gate.js": {
+      "lines": 236,
+      "imports": [
+        "./approval-ledger.js",
+        "./development-contract.js",
+        "./development-files.js",
+        "./development-workspace.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "DevelopmentGate"
+      ],
+      "referencedByTests": [
+        "tests/delivery-approval-fixture.mjs",
+        "tests/delivery-journal.test.mjs",
+        "tests/development-workspace.test.mjs",
+        "tests/development.test.mjs",
+        "tests/workspace-fixture.mjs"
+      ]
+    },
+    "bundle/development-model-budget.js": {
+      "lines": 48,
+      "imports": [
+        "./approval-ledger.js",
+        "./development-contract.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "DevelopmentModelBudget"
+      ],
+      "referencedByTests": [
+        "tests/development-native-workspace.test.mjs"
+      ]
+    },
+    "bundle/development-peer.js": {
+      "lines": 155,
+      "imports": [
+        "./approval-ledger.js",
+        "./link-contract.js",
+        "node:crypto",
+        "node:net"
+      ],
+      "exports": [
+        "DevelopmentPeer"
+      ],
+      "referencedByTests": [
+        "tests/development-workspace-peer.test.mjs",
+        "tests/development.test.mjs"
+      ]
+    },
+    "bundle/development-plan.js": {
+      "lines": 43,
+      "imports": [
+        "./task-branch.js"
+      ],
+      "exports": [
+        "developmentPath",
+        "workspacePlan",
+        "workspacePlanSchema"
+      ],
+      "referencedByTests": [
+        "tests/development-workspace.test.mjs",
+        "tests/task-branch.test.mjs",
+        "tests/workspace-fixture.mjs"
+      ]
+    },
+    "bundle/development-reconciliation.js": {
+      "lines": 62,
+      "imports": [
+        "./approval-ledger.js",
+        "./development-contract.js",
+        "./development-files.js",
+        "./development-workspace.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "DevelopmentReconciliation"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/development-review.js": {
+      "lines": 81,
+      "imports": [
+        "./approval-ledger.js"
+      ],
+      "exports": [
+        "recoverZeroWriteDevelopment"
+      ],
+      "referencedByTests": [
+        "tests/development.test.mjs"
+      ]
+    },
+    "bundle/development-runtime.js": {
+      "lines": 68,
+      "imports": [
+        "./development-attention.js",
+        "./development-bridge.js",
+        "./development-command-review.js",
+        "./development-container.js",
+        "./development-gate.js",
+        "./development-model-budget.js",
+        "./development-worker-review.js",
+        "./development-worker.js",
+        "node:path"
+      ],
+      "exports": [
+        "DevelopmentRuntime"
+      ],
+      "referencedByTests": [
+        "tests/development-native-workspace.test.mjs",
+        "tests/development-version.test.mjs",
+        "tests/development-worker-review.test.mjs",
+        "tests/development-workspace.test.mjs",
+        "tests/development.test.mjs"
+      ]
+    },
+    "bundle/development-source.js": {
+      "lines": 48,
+      "imports": [
+        "acorn"
+      ],
+      "exports": [
+        "validateDevelopmentSource"
+      ],
+      "referencedByTests": [
+        "tests/development.test.mjs"
+      ]
+    },
+    "bundle/development-test-runner.js": {
+      "lines": 13,
+      "imports": [
+        "node:assert/strict",
+        "node:fs"
+      ],
+      "exports": [],
+      "referencedByTests": []
+    },
+    "bundle/development-tools.js": {
+      "lines": 45,
+      "imports": [
+        "./development-worker.js",
+        "node:fs"
+      ],
+      "exports": [
+        "apply",
+        "inject"
+      ],
+      "referencedByTests": [
+        "tests/development-native-workspace.test.mjs",
+        "tests/development.test.mjs"
+      ]
+    },
+    "bundle/development-worker-review.js": {
+      "lines": 110,
+      "imports": [
+        "./approval-ledger.js",
+        "./development-contract.js",
+        "./development-files.js"
+      ],
+      "exports": [
+        "DevelopmentWorkerReview"
+      ],
+      "referencedByTests": [
+        "tests/development-worker-review.test.mjs"
+      ]
+    },
+    "bundle/development-worker.js": {
+      "lines": 68,
+      "imports": [
+        "./approval-ledger.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "NativeDevelopmentWorker",
+        "developmentToolNames",
+        "mountDevelopmentPreset"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/development-workspace.js": {
+      "lines": 54,
+      "imports": [
+        "./development-source.js",
+        "./drained-process.js",
+        "node:child_process",
+        "node:crypto",
+        "node:fs",
+        "node:path",
+        "node:url"
+      ],
+      "exports": [
+        "DevelopmentWorkspace",
+        "contentHash"
+      ],
+      "referencedByTests": [
+        "tests/development-workspace.test.mjs",
+        "tests/workspace-fixture.mjs"
+      ]
+    },
+    "bundle/diagnostics.js": {
+      "lines": 78,
+      "imports": [
+        "./link-contract.js"
+      ],
+      "exports": [
+        "RECEIPTS",
+        "queueDiagnostics",
+        "receiptClassification",
+        "recoveryGuidance"
+      ],
+      "referencedByTests": [
+        "tests/delivery-preview.test.mjs",
+        "tests/link-diagnostics.test.mjs",
+        "tests/notification-version.test.mjs"
+      ]
+    },
+    "bundle/drained-process.js": {
+      "lines": 26,
+      "imports": [
+        "node:child_process"
+      ],
+      "exports": [
+        "execFileDrained"
+      ],
+      "referencedByTests": [
+        "tests/delivery-commit.test.mjs",
+        "tests/drained-process.test.mjs"
+      ]
+    },
+    "bundle/durable-inbox.js": {
+      "lines": 294,
+      "imports": [
+        "node:crypto",
+        "node:fs",
+        "node:path",
+        "node:sqlite"
+      ],
+      "exports": [
+        "DEFAULTS",
+        "DurableInbox",
+        "PERMANENT",
+        "classifyFailure",
+        "fingerprintOf",
+        "normalizeMessage",
+        "openDurableInbox"
+      ],
+      "referencedByTests": [
+        "tests/bridge.test.mjs",
+        "tests/inbox.test.mjs"
+      ]
+    },
+    "bundle/feishu-policy.js": {
+      "lines": 24,
+      "imports": [],
+      "exports": [
+        "botIdentity",
+        "mayDispatch",
+        "routeDecision"
+      ],
+      "referencedByTests": [
+        "tests/bridge.test.mjs"
+      ]
+    },
+    "bundle/gateway-maintenance.js": {
+      "lines": 55,
+      "imports": [
+        "node:crypto"
+      ],
+      "exports": [
+        "createGatewayMaintenance"
+      ],
+      "referencedByTests": [
+        "tests/gateway-maintenance.test.mjs",
+        "tests/onboarding-activity.test.mjs",
+        "tests/onboarding-coordinated-hold.test.mjs",
+        "tests/onboarding-maintenance-record.test.mjs",
+        "tests/onboarding-runtime-admission.test.mjs",
+        "tests/workbench-maintenance.test.mjs"
+      ]
+    },
+    "bundle/im-delivery.js": {
+      "lines": 60,
+      "imports": [
+        "./recovery.js"
+      ],
+      "exports": [
+        "ImDelivery"
+      ],
+      "referencedByTests": [
+        "tests/im-delivery.test.mjs"
+      ]
+    },
+    "bundle/index.js": {
+      "lines": 445,
+      "imports": [
+        "./a2a-endpoint.js",
+        "./approval-chat.js",
+        "./approval-http.js",
+        "./approval-ledger.js",
+        "./approval-local-relay.js",
+        "./approval-reference.js",
+        "./approval-semantic-model.js",
+        "./approval-workbench.js",
+        "./delivery-preview.js",
+        "./delivery-runtime.js",
+        "./development-peer.js",
+        "./development-runtime.js",
+        "./diagnostics.js",
+        "./gateway-maintenance.js",
+        "./im-delivery.js",
+        "./intervention-actions.js",
+        "./legacy-feishu-adapter.js",
+        "./link-contract.js",
+        "./model-selection.js",
+        "./notification-feishu.js",
+        "./onboarding-existing-setup.js",
+        "./peer-files.js",
+        "./peer-mailbox.js",
+        "./recovery.js",
+        "./repository-catalog.js",
+        "./repository-gitee.js",
+        "./repository-managed.js",
+        "./repository-writer.js",
+        "./ssh-connector.js",
+        "./store.js",
+        "./task-a2a.js",
+        "./task-artifacts.js",
+        "./task-catalog.js",
+        "./task-context.js",
+        "./task-envelope.js",
+        "./task-notifications.js",
+        "./task-results.js",
+        "./task-scheduler.js",
+        "./task-sources.js",
+        "./workbench-decisions.js",
+        "node:crypto",
+        "node:fs",
+        "node:http",
+        "node:path",
+        "node:sqlite"
+      ],
+      "exports": [
+        "Gateway",
+        "apply",
+        "inject"
+      ],
+      "referencedByTests": [
+        "tests/a2a-endpoint.test.mjs",
+        "tests/approval-local-gateway.test.mjs",
+        "tests/approval-reference.test.mjs",
+        "tests/approval-workbench.test.mjs",
+        "tests/approval.test.mjs",
+        "tests/delivery-gateway.test.mjs",
+        "tests/delivery-preview.test.mjs",
+        "tests/development-workspace-peer.test.mjs",
+        "tests/development.test.mjs",
+        "tests/direct-peer.test.mjs",
+        "tests/entry-controls.test.mjs",
+        "tests/files.test.mjs",
+        "tests/gateway-maintenance.test.mjs",
+        "tests/gateway.test.mjs",
+        "tests/handoff-remote.test.mjs",
+        "tests/link-diagnostics.test.mjs",
+        "tests/model-selection.test.mjs",
+        "tests/native-entry-lifetime.test.mjs",
+        "tests/native-file-message.test.mjs",
+        "tests/native-file-reference.test.mjs",
+        "tests/native-file-scope.test.mjs",
+        "tests/native-schedule-budget.test.mjs",
+        "tests/notification-defaults.test.mjs",
+        "tests/notification-discovery.test.mjs",
+        "tests/notification-media-fixture.mjs",
+        "tests/notification-media.test.mjs",
+        "tests/onboarding-cloud-file-review.test.mjs",
+        "tests/onboarding-cloud-files.test.mjs",
+        "tests/onboarding-existing-host.test.mjs",
+        "tests/onboarding-file-migration.test.mjs",
+        "tests/onboarding-file-transfer.test.mjs",
+        "tests/onboarding-repositories.test.mjs",
+        "tests/onboarding-task-runtime.test.mjs",
+        "tests/peer-process-child.mjs",
+        "tests/peer-process.test.mjs",
+        "tests/recovery.test.mjs",
+        "tests/scheduler-gateway.test.mjs",
+        "tests/task-a2a.test.mjs",
+        "tests/task-catalog.test.mjs",
+        "tests/task-envelope.test.mjs",
+        "tests/task-notifications.test.mjs",
+        "tests/trigger-entry.test.mjs",
+        "tests/workbench-interaction-runtime.test.mjs"
+      ]
+    },
+    "bundle/intervention-actions.js": {
+      "lines": 135,
+      "imports": [
+        "./approval-ledger.js",
+        "./approval-semantics.js",
+        "./intervention-job-control.js",
+        "./link-contract.js",
+        "./task-envelope.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "InterventionActions"
+      ],
+      "referencedByTests": [
+        "tests/intervention-actions.test.mjs"
+      ]
+    },
+    "bundle/intervention-job-control.js": {
+      "lines": 28,
+      "imports": [
+        "./approval-ledger.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "applyInterventionJob"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/intervention-state.js": {
+      "lines": 43,
+      "imports": [],
+      "exports": [
+        "interventionFacts"
+      ],
+      "referencedByTests": [
+        "tests/task-interventions.test.mjs"
+      ]
+    },
+    "bundle/job-version.js": {
+      "lines": 15,
+      "imports": [
+        "./task-envelope.js"
+      ],
+      "exports": [
+        "isSearchJobVersion",
+        "isSourceJobVersion",
+        "isWorkflowJobVersion",
+        "requiredJobVersion",
+        "supportedJobVersions"
+      ],
+      "referencedByTests": [
+        "tests/intervention-actions.test.mjs"
+      ]
+    },
+    "bundle/legacy-feishu-adapter.js": {
+      "lines": 89,
+      "imports": [
+        "./protocol.js",
+        "./recovery.js",
+        "./store.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "LegacyFeishuAdapter"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/link-contract.js": {
+      "lines": 80,
+      "imports": [],
+      "exports": [
+        "CAPABILITIES",
+        "DirectLink",
+        "METHODS",
+        "VERSION",
+        "compatibilityErrors",
+        "errorInfo",
+        "negotiate",
+        "requireCapability",
+        "retryBarrierErrors",
+        "validateHello"
+      ],
+      "referencedByTests": [
+        "tests/approval-reference.test.mjs",
+        "tests/approval-workbench.test.mjs",
+        "tests/artifact-download.test.mjs",
+        "tests/artifacts.test.mjs",
+        "tests/delivery-artifact-ui.test.mjs",
+        "tests/delivery-gateway.test.mjs",
+        "tests/delivery-preview.test.mjs",
+        "tests/development-native-workspace.test.mjs",
+        "tests/development-version.test.mjs",
+        "tests/development-workspace-peer.test.mjs",
+        "tests/development-workspace.test.mjs",
+        "tests/gateway-maintenance.test.mjs",
+        "tests/intervention-client.test.mjs",
+        "tests/link-diagnostics.test.mjs",
+        "tests/model-selection.test.mjs",
+        "tests/native-schedule-budget.test.mjs",
+        "tests/notification-media.test.mjs",
+        "tests/notification-version.test.mjs",
+        "tests/onboarding-defaults.test.mjs",
+        "tests/onboarding-existing-host.test.mjs",
+        "tests/onboarding-peer-binding.test.mjs",
+        "tests/onboarding.test.mjs",
+        "tests/search-contract.test.mjs",
+        "tests/task-board.test.mjs",
+        "tests/task-interventions.test.mjs",
+        "tests/task-workflows.test.mjs",
+        "tests/ui-contract.test.mjs",
+        "tests/workbench-interaction-runtime.test.mjs",
+        "tests/worker-output-diagnostics.test.mjs"
+      ]
+    },
+    "bundle/maintenance-process-identity.js": {
+      "lines": 93,
+      "imports": [
+        "node:child_process",
+        "node:crypto",
+        "node:fs/promises",
+        "node:path",
+        "node:util"
+      ],
+      "exports": [
+        "createDarwinProcessReader",
+        "createMaintenanceProcessIdentity",
+        "validMaintenanceProcess"
+      ],
+      "referencedByTests": [
+        "tests/maintenance-process-identity.test.mjs"
+      ]
+    },
+    "bundle/model-selection.js": {
+      "lines": 71,
+      "imports": [
+        "./recovery.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "ModelSelection"
+      ],
+      "referencedByTests": [
+        "tests/model-selection.test.mjs"
+      ]
+    },
+    "bundle/native-context.js": {
+      "lines": 14,
+      "imports": [
+        "./task-envelope.js",
+        "node:fs"
+      ],
+      "exports": [
+        "installNativeContext"
+      ],
+      "referencedByTests": [
+        "tests/im-delivery.test.mjs"
+      ]
+    },
+    "bundle/native-entry-admission.js": {
+      "lines": 2,
+      "imports": [
+        "./index.js?admission-v1"
+      ],
+      "exports": [],
+      "referencedByTests": []
+    },
+    "bundle/native-entry.js": {
+      "lines": 58,
+      "imports": [
+        "./index.js",
+        "./onboarding-host.js",
+        "./onboarding-identity.js",
+        "./onboarding-repositories.js",
+        "./onboarding-repository.js",
+        "./onboarding-state.js",
+        "./onboarding-task-runtime-native.js",
+        "./onboarding-task-runtime.js",
+        "./task-artifacts.js",
+        "./task-board.js",
+        "./workbench-host.js"
+      ],
+      "exports": [
+        "apply",
+        "inject"
+      ],
+      "referencedByTests": [
+        "tests/market-bundle.test.mjs",
+        "tests/native-entry-baseline.test.mjs",
+        "tests/native-entry-lifetime.test.mjs",
+        "tests/onboarding-identity.test.mjs",
+        "tests/onboarding-repositories.test.mjs",
+        "tests/onboarding.test.mjs"
+      ]
+    },
+    "bundle/native-file-reference.js": {
+      "lines": 32,
+      "imports": [
+        "node:path"
+      ],
+      "exports": [
+        "currentFileRequest",
+        "nativeFileReference"
+      ],
+      "referencedByTests": [
+        "tests/native-file-message.test.mjs"
+      ]
+    },
+    "bundle/native-owner-origin.js": {
+      "lines": 12,
+      "imports": [],
+      "exports": [
+        "authenticatedOwnerOrigin",
+        "officialDesktopCarrier"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/native-tools.js": {
+      "lines": 108,
+      "imports": [
+        "./delivery-contract.js",
+        "./development-plan.js",
+        "./diagnostics.js",
+        "./native-context.js",
+        "./native-file-reference.js",
+        "./store.js",
+        "./task-envelope.js"
+      ],
+      "exports": [
+        "apply",
+        "inject",
+        "registerNativeTools"
+      ],
+      "referencedByTests": [
+        "tests/approval-reference.test.mjs",
+        "tests/approval.test.mjs",
+        "tests/artifacts.test.mjs",
+        "tests/delivery-preview.test.mjs",
+        "tests/direct-peer.test.mjs",
+        "tests/files.test.mjs",
+        "tests/model-selection.test.mjs",
+        "tests/native-entry-baseline.test.mjs",
+        "tests/native-file-message.test.mjs",
+        "tests/native-file-reference.test.mjs",
+        "tests/native-file-scope.test.mjs",
+        "tests/native-schedule-budget.test.mjs",
+        "tests/task-a2a.test.mjs",
+        "tests/task-catalog.test.mjs",
+        "tests/task-envelope.test.mjs",
+        "tests/task-notifications.test.mjs",
+        "tests/task-results.test.mjs",
+        "tests/trigger-entry.test.mjs",
+        "tests/ui-contract.test.mjs"
+      ]
+    },
+    "bundle/notification-artifacts.js": {
+      "lines": 70,
+      "imports": [
+        "./artifact-media.js",
+        "./notification-contract.js",
+        "./recovery.js",
+        "./task-context.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "NotificationArtifacts"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/notification-contract.js": {
+      "lines": 29,
+      "imports": [
+        "node:crypto"
+      ],
+      "exports": [
+        "delivery",
+        "digest",
+        "json",
+        "outcome",
+        "policy",
+        "roles",
+        "targets",
+        "text"
+      ],
+      "referencedByTests": [
+        "tests/delivery-artifacts.test.mjs",
+        "tests/notification-discovery.test.mjs",
+        "tests/notification-feishu.test.mjs",
+        "tests/notification-media.test.mjs",
+        "tests/task-notifications.test.mjs"
+      ]
+    },
+    "bundle/notification-defaults.js": {
+      "lines": 81,
+      "imports": [
+        "./notification-contract.js",
+        "./recovery.js"
+      ],
+      "exports": [
+        "NotificationDefaults",
+        "defaultPolicy"
+      ],
+      "referencedByTests": [
+        "tests/notification-defaults.test.mjs"
+      ]
+    },
+    "bundle/notification-discovery.js": {
+      "lines": 65,
+      "imports": [
+        "./notification-contract.js",
+        "./recovery.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "NotificationDiscovery"
+      ],
+      "referencedByTests": [
+        "tests/notification-discovery.test.mjs"
+      ]
+    },
+    "bundle/notification-endpoint.js": {
+      "lines": 54,
+      "imports": [
+        "./notification-contract.js",
+        "./notification-feishu.js",
+        "./notification-media-endpoint.js",
+        "./recovery.js"
+      ],
+      "exports": [
+        "NotificationEndpoint"
+      ],
+      "referencedByTests": [
+        "tests/task-notifications.test.mjs"
+      ]
+    },
+    "bundle/notification-feishu.js": {
+      "lines": 51,
+      "imports": [
+        "./approval-feishu.js",
+        "./artifact-media.js",
+        "./notification-contract.js"
+      ],
+      "exports": [
+        "FeishuNotificationSender",
+        "feishuNotificationTarget"
+      ],
+      "referencedByTests": [
+        "tests/approval-local-relay.test.mjs",
+        "tests/notification-feishu.test.mjs",
+        "tests/notification-media-fixture.mjs",
+        "tests/task-notifications.test.mjs"
+      ]
+    },
+    "bundle/notification-media-endpoint.js": {
+      "lines": 94,
+      "imports": [
+        "./artifact-media.js",
+        "./notification-contract.js",
+        "./recovery.js"
+      ],
+      "exports": [
+        "NotificationMediaEndpoint"
+      ],
+      "referencedByTests": [
+        "tests/delivery-artifacts.test.mjs",
+        "tests/notification-media.test.mjs"
+      ]
+    },
+    "bundle/notification-review.js": {
+      "lines": 27,
+      "imports": [
+        "./notification-contract.js",
+        "./recovery.js",
+        "./task-context.js"
+      ],
+      "exports": [
+        "NotificationReview"
+      ],
+      "referencedByTests": [
+        "tests/intervention-actions.test.mjs",
+        "tests/task-notifications.test.mjs"
+      ]
+    },
+    "bundle/notification-targets.js": {
+      "lines": 54,
+      "imports": [
+        "./notification-contract.js",
+        "./recovery.js",
+        "./task-context.js"
+      ],
+      "exports": [
+        "NotificationTargets"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/onboarding-activity.js": {
+      "lines": 66,
+      "imports": [
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingActivity"
+      ],
+      "referencedByTests": [
+        "tests/notification-defaults.test.mjs",
+        "tests/onboarding-activity.test.mjs",
+        "tests/onboarding-admission.test.mjs",
+        "tests/onboarding-cloud-web.test.mjs",
+        "tests/onboarding-coordinated-hold.test.mjs",
+        "tests/onboarding-im-maintenance.test.mjs",
+        "tests/onboarding-maintenance-record.test.mjs",
+        "tests/onboarding-model-probe.test.mjs",
+        "tests/onboarding-runtime-admission.test.mjs",
+        "tests/onboarding-self-disable.test.mjs",
+        "tests/onboarding-self-remove.test.mjs",
+        "tests/onboarding-self-stop.test.mjs",
+        "tests/self-lifecycle-flow-contract.test.mjs",
+        "tests/self-stop-flow.test.mjs"
+      ]
+    },
+    "bundle/onboarding-agent-hold.js": {
+      "lines": 94,
+      "imports": [
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingAgentHold"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-admission.test.mjs",
+        "tests/onboarding-agent-hold.test.mjs",
+        "tests/onboarding-coordinated-hold.test.mjs",
+        "tests/onboarding-maintenance-record.test.mjs",
+        "tests/onboarding-self-disable.test.mjs",
+        "tests/onboarding-self-remove.test.mjs",
+        "tests/onboarding-self-stop.test.mjs",
+        "tests/self-lifecycle-flow-contract.test.mjs",
+        "tests/self-stop-flow.test.mjs"
+      ]
+    },
+    "bundle/onboarding-boundary.js": {
+      "lines": 20,
+      "imports": [
+        "./onboarding-paths.js",
+        "node:os",
+        "node:path"
+      ],
+      "exports": [
+        "onboardingBoundary"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-defaults.test.mjs"
+      ]
+    },
+    "bundle/onboarding-cloud-contract.js": {
+      "lines": 29,
+      "imports": [
+        "./onboarding-ssh.js",
+        "node:path"
+      ],
+      "exports": [
+        "baselineOf",
+        "validateRemoteSnapshot"
+      ],
+      "referencedByTests": [
+        "tests/cloud-remote-probe.test.mjs",
+        "tests/cloud.test.mjs"
+      ]
+    },
+    "bundle/onboarding-cloud-file-review.js": {
+      "lines": 58,
+      "imports": [
+        "./onboarding-file-contract.js",
+        "./onboarding-file-review-contract.js",
+        "./onboarding-handoff.js",
+        "./onboarding-ssh.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingCloudFileReview"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-file-review.test.mjs"
+      ]
+    },
+    "bundle/onboarding-cloud-files.js": {
+      "lines": 100,
+      "imports": [
+        "./onboarding-file-contract.js",
+        "./onboarding-handoff.js",
+        "./onboarding-ssh.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingCloudFiles"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-files.test.mjs"
+      ]
+    },
+    "bundle/onboarding-cloud-im.js": {
+      "lines": 34,
+      "imports": [
+        "./onboarding-handoff.js"
+      ],
+      "exports": [
+        "createOnboardingCloudIm",
+        "validateCloudImInventory"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-im.test.mjs"
+      ]
+    },
+    "bundle/onboarding-cloud-model-probe.js": {
+      "lines": 53,
+      "imports": [
+        "./onboarding-handoff.js",
+        "./onboarding-model-probe.js",
+        "./onboarding-ssh.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingCloudModelProbe"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-model-probe.test.mjs"
+      ]
+    },
+    "bundle/onboarding-cloud-models.js": {
+      "lines": 68,
+      "imports": [
+        "./onboarding-cloud-model-probe.js",
+        "./onboarding-handoff.js",
+        "./onboarding-ssh.js",
+        "./onboarding-token-plan.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingCloudModels"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-models.test.mjs",
+        "tests/onboarding-cloud-token.test.mjs"
+      ]
+    },
+    "bundle/onboarding-cloud-operation.js": {
+      "lines": 276,
+      "imports": [
+        "./onboarding-cloud-package.js",
+        "./onboarding-cloud-retirement.js",
+        "./onboarding-cloud-web.js",
+        "./onboarding-install-fs.js",
+        "./onboarding-runtime-artifacts-client.js",
+        "./onboarding-runtime-program.js",
+        "./onboarding-runtime-reclaim-client.js",
+        "./onboarding-runtime-repair-client.js",
+        "./onboarding-runtime-uninstall-client.js",
+        "./onboarding-runtime-version-client.js",
+        "./onboarding-ssh.js",
+        "./onboarding-version-activation-client.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto",
+        "node:fs/promises",
+        "node:path"
+      ],
+      "exports": [
+        "createCloudOperations"
+      ],
+      "referencedByTests": [
+        "tests/cloud-operation.test.mjs",
+        "tests/onboarding-cloud-im.test.mjs",
+        "tests/onboarding-runtime-version.test.mjs"
+      ]
+    },
+    "bundle/onboarding-cloud-package.js": {
+      "lines": 38,
+      "imports": [
+        "node:crypto",
+        "node:fs/promises",
+        "node:path",
+        "node:url"
+      ],
+      "exports": [
+        "cloudPackage"
+      ],
+      "referencedByTests": [
+        "tests/cloud-control.test.mjs",
+        "tests/cloud-operation.test.mjs",
+        "tests/cloud-remote-probe.test.mjs",
+        "tests/market-v0331.test.mjs",
+        "tests/onboarding-runtime-version-client.test.mjs"
+      ]
+    },
+    "bundle/onboarding-cloud-repositories.js": {
+      "lines": 89,
+      "imports": [
+        "./onboarding-handoff.js",
+        "./onboarding-repositories.js",
+        "./onboarding-ssh.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingCloudRepositories"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-repositories.test.mjs"
+      ]
+    },
+    "bundle/onboarding-cloud-retirement.js": {
+      "lines": 59,
+      "imports": [
+        "node:crypto"
+      ],
+      "exports": [
+        "remoteRetirement",
+        "retirementCLI",
+        "retirementProgram"
+      ],
+      "referencedByTests": [
+        "tests/cloud-operation.test.mjs",
+        "tests/cloud-retirement.test.mjs"
+      ]
+    },
+    "bundle/onboarding-cloud-task-runtime.js": {
+      "lines": 90,
+      "imports": [
+        "./onboarding-handoff.js",
+        "./onboarding-ssh.js",
+        "./onboarding-task-runtime-contract.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingCloudTaskRuntime"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-task-runtime.test.mjs"
+      ]
+    },
+    "bundle/onboarding-cloud-web.js": {
+      "lines": 85,
+      "imports": [
+        "./onboarding-handoff.js",
+        "./onboarding-ssh.js",
+        "./workbench-proxy.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingCloudWeb",
+        "validateCloudWebAccess"
+      ],
+      "referencedByTests": [
+        "tests/managed-workbench.test.mjs",
+        "tests/onboarding-cloud-web.test.mjs",
+        "tests/workbench-maintenance.test.mjs"
+      ]
+    },
+    "bundle/onboarding-cloud.js": {
+      "lines": 110,
+      "imports": [
+        "./onboarding-cloud-contract.js",
+        "./onboarding-cloud-operation.js",
+        "./onboarding-cloud-package.js",
+        "./onboarding-node.js",
+        "./onboarding-paths.js",
+        "./onboarding-ssh.js",
+        "./onboarding-state.js",
+        "node:crypto",
+        "node:fs/promises",
+        "node:os",
+        "node:path"
+      ],
+      "exports": [
+        "createOnboardingCloud"
+      ],
+      "referencedByTests": [
+        "tests/cloud.test.mjs"
+      ]
+    },
+    "bundle/onboarding-coordinated-hold.js": {
+      "lines": 94,
+      "imports": [
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingCoordinatedHold"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-admission.test.mjs",
+        "tests/onboarding-coordinated-hold.test.mjs",
+        "tests/onboarding-maintenance-record.test.mjs"
+      ]
+    },
+    "bundle/onboarding-exclusive-rename.js": {
+      "lines": 16,
+      "imports": [
+        "node:path"
+      ],
+      "exports": [
+        "createExclusiveRename",
+        "renameExclusive"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-plugin-version.test.mjs",
+        "tests/onboarding-runtime-version.test.mjs"
+      ]
+    },
+    "bundle/onboarding-existing-host.js": {
+      "lines": 63,
+      "imports": [
+        "./link-contract.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "createExistingHostInspection",
+        "existingHostView"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-existing-host.test.mjs"
+      ]
+    },
+    "bundle/onboarding-existing-setup.js": {
+      "lines": 123,
+      "imports": [
+        "./onboarding-schema.js",
+        "./repository-gitee.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createExistingSetup",
+        "existingRepositorySnapshot"
+      ],
+      "referencedByTests": [
+        "tests/notification-defaults.test.mjs",
+        "tests/onboarding-existing-setup.test.mjs"
+      ]
+    },
+    "bundle/onboarding-file-contract.js": {
+      "lines": 31,
+      "imports": [
+        "./onboarding-ssh.js",
+        "node:path"
+      ],
+      "exports": [
+        "bindCloudFiles",
+        "cloudFileMigrationPlan",
+        "cloudFilePlan",
+        "cloudFileStatus",
+        "fileAuthorizationHash",
+        "fileConfigurationInput",
+        "fileMigrationInput"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-files.test.mjs",
+        "tests/onboarding-file-scope-presentation.test.mjs"
+      ]
+    },
+    "bundle/onboarding-file-review-contract.js": {
+      "lines": 38,
+      "imports": [
+        ",",
+        "./onboarding-ssh.js",
+        "./peer-file-fs.js"
+      ],
+      "exports": [
+        "cloudQueueList",
+        "cloudQueueOutcome",
+        "cloudQueuePlan",
+        "cloudQueueReceipt",
+        "reviewHash",
+        "reviewInput",
+        "reviewItem",
+        "reviewUuid"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/onboarding-file-transfer.js": {
+      "lines": 133,
+      "imports": [
+        "./onboarding-ssh.js",
+        "./peer-file-fs.js",
+        "./peer-file-migration.js",
+        "./peer-file-review.js",
+        "./peer-files.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "createOnboardingFileTransfer",
+        "isManagedFileOutbox"
+      ],
+      "referencedByTests": [
+        "tests/handoff-remote.test.mjs",
+        "tests/native-file-reference.test.mjs",
+        "tests/native-file-scope.test.mjs",
+        "tests/onboarding-cloud-file-review.test.mjs",
+        "tests/onboarding-cloud-files.test.mjs",
+        "tests/onboarding-file-migration.test.mjs",
+        "tests/onboarding-file-transfer.test.mjs"
+      ]
+    },
+    "bundle/onboarding-handoff-remote.js": {
+      "lines": 98,
+      "imports": [],
+      "exports": [
+        "handoffCLI",
+        "handoffControl"
+      ],
+      "referencedByTests": [
+        "tests/cloud-operation.test.mjs",
+        "tests/handoff-remote.test.mjs",
+        "tests/onboarding-cloud-im.test.mjs",
+        "tests/runtime-transport.test.mjs"
+      ]
+    },
+    "bundle/onboarding-handoff.js": {
+      "lines": 112,
+      "imports": [
+        "./onboarding-ssh.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingHandoff",
+        "handoffTarget"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-token.test.mjs",
+        "tests/onboarding-handoff.test.mjs",
+        "tests/onboarding-repository.test.mjs"
+      ]
+    },
+    "bundle/onboarding-host-stop-observation.js": {
+      "lines": 44,
+      "imports": [
+        "node:crypto",
+        "node:path"
+      ],
+      "exports": [
+        "observeRuntimeHost"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-host-stop-observation.test.mjs"
+      ]
+    },
+    "bundle/onboarding-host.js": {
+      "lines": 254,
+      "imports": [
+        "./index.js",
+        "./link-contract.js",
+        "./onboarding-activity.js",
+        "./onboarding-agent-hold.js",
+        "./onboarding-cloud-file-review.js",
+        "./onboarding-cloud-files.js",
+        "./onboarding-cloud-im.js",
+        "./onboarding-cloud-models.js",
+        "./onboarding-cloud-repositories.js",
+        "./onboarding-cloud-task-runtime.js",
+        "./onboarding-cloud-web.js",
+        "./onboarding-cloud.js",
+        "./onboarding-coordinated-hold.js",
+        "./onboarding-existing-host.js",
+        "./onboarding-existing-setup.js",
+        "./onboarding-handoff.js",
+        "./onboarding-identity.js",
+        "./onboarding-im-maintenance-native.js",
+        "./onboarding-im-maintenance.js",
+        "./onboarding-im.js",
+        "./onboarding-installer.js",
+        "./onboarding-local-pair-native.js",
+        "./onboarding-local-pair.js",
+        "./onboarding-maintenance-record.js",
+        "./onboarding-maintenance.js",
+        "./onboarding-models.js",
+        "./onboarding-notification-defaults.js",
+        "./onboarding-paths.js",
+        "./onboarding-repositories.js",
+        "./onboarding-repository.js",
+        "./onboarding-schema.js",
+        "./onboarding-self-disable.js",
+        "./onboarding-self-maintenance.js",
+        "./onboarding-self-remove.js",
+        "./onboarding-self-stop.js",
+        "./onboarding-state.js",
+        "./onboarding-token-plan.js",
+        "./workbench-host.js",
+        "node:crypto",
+        "node:fs",
+        "node:fs/promises",
+        "node:os",
+        "node:path"
+      ],
+      "exports": [
+        "createOnboardingService",
+        "installOnboarding"
+      ],
+      "referencedByTests": [
+        "tests/cloud-operation.test.mjs",
+        "tests/gateway-maintenance.test.mjs",
+        "tests/notification-defaults.test.mjs",
+        "tests/onboarding-activity.test.mjs",
+        "tests/onboarding-agent-hold.test.mjs",
+        "tests/onboarding-cloud-im.test.mjs",
+        "tests/onboarding-cloud-repositories.test.mjs",
+        "tests/onboarding-cloud-token.test.mjs",
+        "tests/onboarding-coordinated-hold.test.mjs",
+        "tests/onboarding-defaults.test.mjs",
+        "tests/onboarding-existing-host.test.mjs",
+        "tests/onboarding-file-migration.test.mjs",
+        "tests/onboarding-file-review.test.mjs",
+        "tests/onboarding-file-transfer.test.mjs",
+        "tests/onboarding-handoff.test.mjs",
+        "tests/onboarding-identity.test.mjs",
+        "tests/onboarding-im-maintenance.test.mjs",
+        "tests/onboarding-im.test.mjs",
+        "tests/onboarding-install.test.mjs",
+        "tests/onboarding-maintenance-record.test.mjs",
+        "tests/onboarding-maintenance.test.mjs",
+        "tests/onboarding-models.test.mjs",
+        "tests/onboarding-peer-binding.test.mjs",
+        "tests/onboarding-repositories.test.mjs",
+        "tests/onboarding-repository.test.mjs",
+        "tests/onboarding-rpc.test.mjs",
+        "tests/onboarding-runtime-admission.test.mjs",
+        "tests/onboarding-self-disable.test.mjs",
+        "tests/onboarding-self-maintenance.test.mjs",
+        "tests/onboarding-self-remove.test.mjs",
+        "tests/onboarding-self-stop.test.mjs",
+        "tests/onboarding-state.test.mjs",
+        "tests/onboarding-task-runtime.test.mjs",
+        "tests/onboarding-token-plan.test.mjs",
+        "tests/onboarding.test.mjs",
+        "tests/self-lifecycle-flow-contract.test.mjs",
+        "tests/self-stop-flow.test.mjs"
+      ]
+    },
+    "bundle/onboarding-identity.js": {
+      "lines": 9,
+      "imports": [],
+      "exports": [
+        "onboardingIdentity"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-identity.test.mjs"
+      ]
+    },
+    "bundle/onboarding-im-maintenance-native.js": {
+      "lines": 30,
+      "imports": [
+        "node:crypto"
+      ],
+      "exports": [
+        "nativeImMaintenanceTransport",
+        "projectMaintenanceBots"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-im-maintenance-official.test.mjs",
+        "tests/onboarding-im-maintenance.test.mjs"
+      ]
+    },
+    "bundle/onboarding-im-maintenance.js": {
+      "lines": 70,
+      "imports": [
+        "./maintenance-process-identity.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingImMaintenance"
+      ],
+      "referencedByTests": [
+        "tests/im-maintenance-flow.test.mjs",
+        "tests/onboarding-im-maintenance.test.mjs"
+      ]
+    },
+    "bundle/onboarding-im.js": {
+      "lines": 31,
+      "imports": [
+        "./onboarding-identity.js"
+      ],
+      "exports": [
+        "createOnboardingIm"
+      ],
+      "referencedByTests": [
+        "tests/handoff-remote.test.mjs",
+        "tests/onboarding-cloud-im.test.mjs",
+        "tests/onboarding-im.test.mjs"
+      ]
+    },
+    "bundle/onboarding-inspection-guard.js": {
+      "lines": 15,
+      "imports": [],
+      "exports": [
+        "createNativeInspectionGuard",
+        "inspectionSessionIds"
+      ],
+      "referencedByTests": [
+        "tests/native-inspection-guard.test.mjs"
+      ]
+    },
+    "bundle/onboarding-install-fs.js": {
+      "lines": 58,
+      "imports": [
+        "node:crypto",
+        "node:fs",
+        "node:fs/promises",
+        "node:path"
+      ],
+      "exports": [
+        "ancestors",
+        "appendExact",
+        "atomicState",
+        "bytes",
+        "cleanStage",
+        "equal",
+        "fail",
+        "hash",
+        "identity",
+        "inside",
+        "restoreAppend",
+        "sameIdentity",
+        "snapshot",
+        "syncWrite"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-plugin-repair.test.mjs",
+        "tests/onboarding-plugin-version.test.mjs",
+        "tests/package-source.test.mjs"
+      ]
+    },
+    "bundle/onboarding-installer.js": {
+      "lines": 157,
+      "imports": [
+        "./onboarding-boundary.js",
+        "./onboarding-identity.js",
+        "./onboarding-install-fs.js",
+        "./onboarding-maintenance.js",
+        "./onboarding-package-source.js",
+        "node:crypto",
+        "node:path",
+        "node:url"
+      ],
+      "exports": [
+        "createOnboardingInstaller"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-identity.test.mjs",
+        "tests/onboarding-install.test.mjs",
+        "tests/onboarding-maintenance-apply.test.mjs",
+        "tests/onboarding-maintenance.test.mjs",
+        "tests/onboarding-runtime-version.test.mjs",
+        "tests/package-source.test.mjs"
+      ]
+    },
+    "bundle/onboarding-local-pair-native.js": {
+      "lines": 21,
+      "imports": [
+        "./index.js",
+        "./native-tools.js",
+        "./onboarding-boundary.js",
+        "./onboarding-file-transfer.js",
+        "./onboarding-local-pair.js",
+        "./onboarding-task-runtime-native.js",
+        "./task-artifacts.js",
+        "./task-board.js",
+        "./workbench-host.js"
+      ],
+      "exports": [
+        "nativeLocalPairAdapter"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-local-pair.test.mjs"
+      ]
+    },
+    "bundle/onboarding-local-pair.js": {
+      "lines": 99,
+      "imports": [
+        "./onboarding-handoff.js",
+        "./onboarding-peer-contract.js",
+        "./onboarding-ssh.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingLocalPair",
+        "localPairKey"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-local-pair.test.mjs"
+      ]
+    },
+    "bundle/onboarding-maintenance-fs.js": {
+      "lines": 69,
+      "imports": [
+        "./onboarding-install-fs.js",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "knownFile",
+        "publishMaintenanceItem",
+        "rollbackMaintenanceItem",
+        "statMaybe",
+        "syncDirectory"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/onboarding-maintenance-plan.js": {
+      "lines": 213,
+      "imports": [
+        "./onboarding-boundary.js",
+        "./onboarding-identity.js",
+        "./onboarding-install-fs.js",
+        "./onboarding-package-source.js",
+        "node:crypto",
+        "node:path",
+        "node:url"
+      ],
+      "exports": [
+        "createMaintenancePlanner"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/onboarding-maintenance-record.js": {
+      "lines": 169,
+      "imports": [
+        "./maintenance-process-identity.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingMaintenanceRecord"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-admission.test.mjs",
+        "tests/onboarding-maintenance-record.test.mjs"
+      ]
+    },
+    "bundle/onboarding-maintenance.js": {
+      "lines": 163,
+      "imports": [
+        "./onboarding-install-fs.js",
+        "./onboarding-maintenance-fs.js",
+        "./onboarding-maintenance-plan.js",
+        "node:crypto",
+        "node:path"
+      ],
+      "exports": [
+        "createOnboardingMaintenance"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-maintenance-apply.test.mjs",
+        "tests/onboarding-maintenance.test.mjs",
+        "tests/package-source.test.mjs"
+      ]
+    },
+    "bundle/onboarding-model-probe.js": {
+      "lines": 119,
+      "imports": [
+        "@deepseek-ai/dsh-credentials",
+        "@deepseek-ai/dsh-llm",
+        "node:crypto"
+      ],
+      "exports": [
+        "MODEL_PROBE_INPUT",
+        "MODEL_PROBE_LIMITS",
+        "MODEL_PROBE_SYSTEM",
+        "createOnboardingModelProbe"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-model-probe.test.mjs",
+        "tests/onboarding-model-probe.test.mjs"
+      ]
+    },
+    "bundle/onboarding-models.js": {
+      "lines": 107,
+      "imports": [
+        "./model-selection.js",
+        "./onboarding-identity.js",
+        "./onboarding-model-probe.js",
+        "./onboarding-state.js",
+        "@deepseek-ai/dsh-credentials",
+        "@deepseek-ai/dsh-llm",
+        "@deepseek-ai/dsh-llm-deepseek",
+        "node:crypto"
+      ],
+      "exports": [
+        "ONBOARDING_PROVIDER",
+        "createOnboardingModelBinding",
+        "createOnboardingModels"
+      ],
+      "referencedByTests": [
+        "tests/handoff-remote.test.mjs",
+        "tests/onboarding-cloud-models.test.mjs",
+        "tests/onboarding-cloud-token.test.mjs",
+        "tests/onboarding-identity.test.mjs",
+        "tests/onboarding-models.test.mjs",
+        "tests/onboarding-token-plan.test.mjs"
+      ]
+    },
+    "bundle/onboarding-native-host.js": {
+      "lines": 101,
+      "imports": [
+        "./onboarding-installer.js",
+        "./onboarding-task-runtime-contract.js",
+        "node:child_process",
+        "node:crypto",
+        "node:fs/promises",
+        "node:path"
+      ],
+      "exports": [
+        "initializeNativeHost",
+        "nativeEnvironment",
+        "nativeImRows",
+        "restartNativeHost",
+        "validateNativeOverlay",
+        "validateNativePluginIdentity",
+        "watchChild"
+      ],
+      "referencedByTests": [
+        "tests/cloud-native.test.mjs",
+        "tests/native-inspection-guard.test.mjs",
+        "tests/onboarding-identity.test.mjs"
+      ]
+    },
+    "bundle/onboarding-native-probe.js": {
+      "lines": 56,
+      "imports": [
+        "./link-contract.js",
+        "./onboarding-inspection-guard.js",
+        "./onboarding-task-runtime-contract.js",
+        "@deepseek-ai/dsh-agent",
+        "node:crypto",
+        "node:fs/promises",
+        "node:module",
+        "node:path"
+      ],
+      "exports": [
+        "apply",
+        "inject"
+      ],
+      "referencedByTests": [
+        "tests/native-inspection-guard.test.mjs"
+      ]
+    },
+    "bundle/onboarding-native-runner.js": {
+      "lines": 29,
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "node:url"
+      ],
+      "exports": [
+        "nativeRunPaths",
+        "nativeRunner",
+        "validateNativeRestartConsent"
+      ],
+      "referencedByTests": [
+        "tests/cloud-native.test.mjs"
+      ]
+    },
+    "bundle/onboarding-node-bootstrap.py": {
+      "lines": 678,
+      "imports": [],
+      "exports": [],
+      "referencedByTests": []
+    },
+    "bundle/onboarding-node.js": {
+      "lines": 77,
+      "imports": [
+        "./onboarding-install-fs.js",
+        "./onboarding-ssh.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto",
+        "node:fs/promises",
+        "node:path"
+      ],
+      "exports": [
+        "NODE_RELEASE",
+        "createNodeBootstrap",
+        "nodeCommand",
+        "validateNodePlan"
+      ],
+      "referencedByTests": [
+        "tests/node-bootstrap.test.mjs"
+      ]
+    },
+    "bundle/onboarding-notification-defaults.js": {
+      "lines": 93,
+      "imports": [
+        "./notification-contract.js",
+        "./notification-defaults.js",
+        "./notification-discovery.js",
+        "./onboarding-handoff.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingNotificationDefaults"
+      ],
+      "referencedByTests": [
+        "tests/notification-defaults.test.mjs"
+      ]
+    },
+    "bundle/onboarding-package-source.js": {
+      "lines": 33,
+      "imports": [
+        "./onboarding-install-fs.js",
+        "node:fs",
+        "node:fs/promises",
+        "node:path"
+      ],
+      "exports": [
+        "packageSourceParents",
+        "packageSourceSnapshot"
+      ],
+      "referencedByTests": [
+        "tests/package-source.test.mjs"
+      ]
+    },
+    "bundle/onboarding-paths.js": {
+      "lines": 58,
+      "imports": [
+        "node:crypto",
+        "node:fs",
+        "node:fs/promises",
+        "node:path"
+      ],
+      "exports": [
+        "inspectRuleFile",
+        "inspectSkillRoot",
+        "resolveOnboardingPaths"
+      ],
+      "referencedByTests": [
+        "tests/onboarding.test.mjs"
+      ]
+    },
+    "bundle/onboarding-peer-binding.js": {
+      "lines": 61,
+      "imports": [
+        "./link-contract.js",
+        "./onboarding-ssh.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingPeerBinding",
+        "peerBindingKey"
+      ],
+      "referencedByTests": [
+        "tests/handoff-remote.test.mjs",
+        "tests/onboarding-local-pair.test.mjs",
+        "tests/onboarding-peer-binding.test.mjs"
+      ]
+    },
+    "bundle/onboarding-peer-contract.js": {
+      "lines": 12,
+      "imports": [],
+      "exports": [
+        "peerBindingPlan",
+        "peerBindingStatus"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-local-pair.test.mjs"
+      ]
+    },
+    "bundle/onboarding-plugin-repair.js": {
+      "lines": 116,
+      "imports": [
+        "./onboarding-install-fs.js",
+        "./onboarding-maintenance-fs.js",
+        "node:crypto",
+        "node:path"
+      ],
+      "exports": [
+        "createPluginRepair"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-plugin-repair.test.mjs"
+      ]
+    },
+    "bundle/onboarding-plugin-version.js": {
+      "lines": 143,
+      "imports": [
+        "./onboarding-exclusive-rename.js",
+        "./onboarding-install-fs.js",
+        "./onboarding-maintenance-fs.js",
+        "./onboarding-version-repair.js",
+        "node:crypto",
+        "node:path"
+      ],
+      "exports": [
+        "createPluginVersion"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-plugin-version.test.mjs"
+      ]
+    },
+    "bundle/onboarding-remote-control.js": {
+      "lines": 140,
+      "imports": [
+        "node:crypto",
+        "node:fs",
+        "node:fs/promises",
+        "node:os",
+        "node:path"
+      ],
+      "exports": [
+        "remoteControl",
+        "remoteControlCLI"
+      ],
+      "referencedByTests": [
+        "tests/cloud-control.test.mjs",
+        "tests/cloud-operation.test.mjs",
+        "tests/cloud-retirement.test.mjs",
+        "tests/cloud-runtime.test.mjs",
+        "tests/handoff-remote.test.mjs",
+        "tests/onboarding-runtime-version.test.mjs",
+        "tests/runtime-transport.test.mjs"
+      ]
+    },
+    "bundle/onboarding-remote-probe.js": {
+      "lines": 40,
+      "imports": [
+        "node:crypto",
+        "node:fs",
+        "node:fs/promises",
+        "node:os",
+        "node:path"
+      ],
+      "exports": [],
+      "referencedByTests": [
+        "tests/cloud-control.test.mjs",
+        "tests/cloud-operation.test.mjs",
+        "tests/cloud-remote-probe.test.mjs",
+        "tests/cloud-retirement.test.mjs",
+        "tests/cloud-runtime.test.mjs",
+        "tests/handoff-remote.test.mjs",
+        "tests/onboarding-runtime-version.test.mjs"
+      ]
+    },
+    "bundle/onboarding-repositories.js": {
+      "lines": 88,
+      "imports": [
+        "./onboarding-identity.js",
+        "./onboarding-ssh.js",
+        "./repository-gitee.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingRepositories",
+        "repositoryAlias",
+        "repositoryRegistrationInput",
+        "repositoryRegistryPlan",
+        "repositoryRegistryStatus"
+      ],
+      "referencedByTests": [
+        "tests/handoff-remote.test.mjs",
+        "tests/onboarding-cloud-repositories.test.mjs",
+        "tests/onboarding-peer-binding.test.mjs",
+        "tests/onboarding-repositories.test.mjs"
+      ]
+    },
+    "bundle/onboarding-repository.js": {
+      "lines": 49,
+      "imports": [
+        "./onboarding-handoff.js",
+        "./onboarding-identity.js",
+        "./repository-gitee.js"
+      ],
+      "exports": [
+        "createOnboardingCloudRepository",
+        "createOnboardingRepository",
+        "repositoryCheckArgs",
+        "repositoryCheckResult"
+      ],
+      "referencedByTests": [
+        "tests/handoff-remote.test.mjs",
+        "tests/onboarding-peer-binding.test.mjs",
+        "tests/onboarding-repositories.test.mjs",
+        "tests/onboarding-repository.test.mjs"
+      ]
+    },
+    "bundle/onboarding-runtime-activation.js": {
+      "lines": 83,
+      "imports": [
+        "./onboarding-host-stop-observation.js"
+      ],
+      "exports": [
+        "createRuntimeActivation"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-runtime-activation.test.mjs"
+      ]
+    },
+    "bundle/onboarding-runtime-artifacts-client.js": {
+      "lines": 87,
+      "imports": [
+        "./onboarding-runtime-program.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "artifactsPending",
+        "artifactsRecordKey",
+        "parseArtifactsRequest",
+        "runtimeArtifactsClient"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-runtime-artifacts-client.test.mjs",
+        "tests/onboarding-runtime-version.test.mjs"
+      ]
+    },
+    "bundle/onboarding-runtime-artifacts.js": {
+      "lines": 126,
+      "imports": [
+        "./onboarding-install-fs.js",
+        "./onboarding-maintenance-plan.js",
+        "./onboarding-maintenance.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "createRuntimeArtifacts"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/onboarding-runtime-extension.js": {
+      "lines": 400,
+      "imports": [
+        "node:child_process",
+        "node:url"
+      ],
+      "exports": [
+        "runtimeCLI",
+        "runtimeControl",
+        "runtimeVersionCLI",
+        "runtimeVersionControl",
+        "runtimeWorkerCLI"
+      ],
+      "referencedByTests": [
+        "tests/cloud-operation.test.mjs",
+        "tests/cloud-runtime.test.mjs",
+        "tests/handoff-remote.test.mjs",
+        "tests/onboarding-runtime-version.test.mjs",
+        "tests/runtime-transport.test.mjs"
+      ]
+    },
+    "bundle/onboarding-runtime-inventory.js": {
+      "lines": 88,
+      "imports": [
+        "node:crypto",
+        "node:fs",
+        "node:fs/promises",
+        "node:path"
+      ],
+      "exports": [
+        "runtimeAdmissionDelta",
+        "runtimeInventory",
+        "verifyRuntimePlugin"
+      ],
+      "referencedByTests": [
+        "tests/cloud-runtime.test.mjs",
+        "tests/onboarding-runtime-activation.test.mjs",
+        "tests/runtime-inventory-bounded.test.mjs",
+        "tests/runtime-plugin-ownership.test.mjs"
+      ]
+    },
+    "bundle/onboarding-runtime-program.js": {
+      "lines": 42,
+      "imports": [
+        "./onboarding-ssh.js",
+        "node:crypto",
+        "node:zlib"
+      ],
+      "exports": [
+        "RUNTIME_COMMAND_LIMIT",
+        "runtimeAbsenceCLI",
+        "runtimeAbsenceProgram",
+        "runtimeCommand",
+        "runtimeProgram"
+      ],
+      "referencedByTests": [
+        "tests/cloud-runtime.test.mjs",
+        "tests/handoff-remote.test.mjs",
+        "tests/onboarding-runtime-version.test.mjs",
+        "tests/runtime-transport.test.mjs"
+      ]
+    },
+    "bundle/onboarding-runtime-reclaim-client.js": {
+      "lines": 94,
+      "imports": [
+        "./onboarding-runtime-program.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "parseReclaimRequest",
+        "reclaimBlocked",
+        "reclaimPending",
+        "reclaimRecordKey",
+        "runtimeReclaimClient"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-runtime-reclaim-client.test.mjs",
+        "tests/onboarding-runtime-version.test.mjs"
+      ]
+    },
+    "bundle/onboarding-runtime-reclaim-worker.js": {
+      "lines": 63,
+      "imports": [
+        "node:child_process",
+        "node:crypto"
+      ],
+      "exports": [
+        "createReclamationWorker",
+        "launchReclamationWorker"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/onboarding-runtime-reclaim.js": {
+      "lines": 132,
+      "imports": [
+        "node:crypto"
+      ],
+      "exports": [
+        "createRuntimeReclamation"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/onboarding-runtime-repair-client.js": {
+      "lines": 50,
+      "imports": [
+        "./onboarding-runtime-program.js",
+        "@deepseek-ai/dsh-credentials"
+      ],
+      "exports": [
+        "parseRepairRequest",
+        "repairPending",
+        "repairRecordKey",
+        "runtimeRepairClient"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-runtime-repair-client.test.mjs",
+        "tests/onboarding-runtime-version.test.mjs"
+      ]
+    },
+    "bundle/onboarding-runtime-repair.js": {
+      "lines": 88,
+      "imports": [
+        "./onboarding-plugin-repair.js",
+        "./onboarding-runtime-activation.js"
+      ],
+      "exports": [
+        "createRuntimeRepair"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/onboarding-runtime-stop.js": {
+      "lines": 90,
+      "imports": [
+        "./onboarding-host-stop-observation.js"
+      ],
+      "exports": [
+        "createRuntimeStop"
+      ],
+      "referencedByTests": [
+        "tests/cloud-operation.test.mjs"
+      ]
+    },
+    "bundle/onboarding-runtime-uninstall-client.js": {
+      "lines": 88,
+      "imports": [
+        "./onboarding-runtime-program.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "parseUninstallRequest",
+        "runtimeUninstallClient",
+        "uninstallBlocked",
+        "uninstallPending",
+        "uninstallRecordKey"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-runtime-uninstall-client.test.mjs",
+        "tests/onboarding-runtime-version.test.mjs"
+      ]
+    },
+    "bundle/onboarding-runtime-uninstall.js": {
+      "lines": 167,
+      "imports": [
+        "./onboarding-install-fs.js",
+        "./onboarding-maintenance-fs.js",
+        "./onboarding-maintenance-plan.js",
+        "./onboarding-maintenance.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "createRuntimeUninstall"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/onboarding-runtime-version-client.js": {
+      "lines": 138,
+      "imports": [
+        "./onboarding-cloud-package.js",
+        "./onboarding-install-fs.js",
+        "./onboarding-maintenance-fs.js",
+        "./onboarding-runtime-program.js",
+        "./onboarding-version-candidate.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto",
+        "node:path"
+      ],
+      "exports": [
+        "parseVersionRequest",
+        "runtimeVersionClient",
+        "versionPending",
+        "versionRecordKey"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-runtime-version-client.test.mjs",
+        "tests/onboarding-runtime-version.test.mjs",
+        "tests/onboarding-version-activation-client.test.mjs"
+      ]
+    },
+    "bundle/onboarding-runtime-version.js": {
+      "lines": 145,
+      "imports": [
+        "./onboarding-exclusive-rename.js",
+        "./onboarding-plugin-version.js",
+        "./onboarding-runtime-activation.js",
+        "./onboarding-version-candidate.js",
+        "node:module"
+      ],
+      "exports": [
+        "createRuntimeVersion",
+        "dispatchRuntimeVersion"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/onboarding-schema.js": {
+      "lines": 42,
+      "imports": [],
+      "exports": [
+        "ONBOARDING_CONTRACT",
+        "assertNonsecretDraft",
+        "defaults",
+        "repositoryURL",
+        "validateDraft"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-token.test.mjs",
+        "tests/onboarding-defaults.test.mjs",
+        "tests/onboarding-state.test.mjs",
+        "tests/onboarding.test.mjs"
+      ]
+    },
+    "bundle/onboarding-self-disable.js": {
+      "lines": 3,
+      "imports": [
+        "./onboarding-self-lifecycle.js"
+      ],
+      "exports": [
+        "createOnboardingSelfDisable"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-self-disable.test.mjs",
+        "tests/onboarding-self-remove.test.mjs"
+      ]
+    },
+    "bundle/onboarding-self-lifecycle.js": {
+      "lines": 95,
+      "imports": [
+        "./maintenance-process-identity.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingSelfLifecycle"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/onboarding-self-maintenance.js": {
+      "lines": 52,
+      "imports": [
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingSelfMaintenance"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-self-maintenance.test.mjs"
+      ]
+    },
+    "bundle/onboarding-self-remove.js": {
+      "lines": 3,
+      "imports": [
+        "./onboarding-self-lifecycle.js"
+      ],
+      "exports": [
+        "createOnboardingSelfRemove"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-self-remove.test.mjs"
+      ]
+    },
+    "bundle/onboarding-self-stop.js": {
+      "lines": 85,
+      "imports": [
+        "./maintenance-process-identity.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingSelfStop"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-self-stop.test.mjs"
+      ]
+    },
+    "bundle/onboarding-ssh-forward.js": {
+      "lines": 48,
+      "imports": [
+        "node:child_process",
+        "node:net"
+      ],
+      "exports": [
+        "forwardStderrCategory",
+        "reserveForwardPort",
+        "startForwardProcess"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-ssh-forward.test.mjs"
+      ]
+    },
+    "bundle/onboarding-ssh.js": {
+      "lines": 105,
+      "imports": [
+        "./onboarding-install-fs.js",
+        "./onboarding-ssh-forward.js",
+        "node:child_process",
+        "node:crypto",
+        "node:fs/promises",
+        "node:path"
+      ],
+      "exports": [
+        "connection",
+        "createSSH",
+        "digest",
+        "fail",
+        "hostKeys",
+        "identity",
+        "runProcess",
+        "shellQuote"
+      ],
+      "referencedByTests": [
+        "tests/cloud-control.test.mjs",
+        "tests/cloud-operation.test.mjs",
+        "tests/cloud-remote-probe.test.mjs",
+        "tests/cloud-retirement.test.mjs",
+        "tests/cloud-runtime.test.mjs",
+        "tests/cloud.test.mjs",
+        "tests/handoff-remote.test.mjs",
+        "tests/node-bootstrap.test.mjs",
+        "tests/onboarding-cloud-file-review.test.mjs",
+        "tests/onboarding-cloud-files.test.mjs",
+        "tests/onboarding-cloud-model-probe.test.mjs",
+        "tests/onboarding-cloud-models.test.mjs",
+        "tests/onboarding-cloud-repositories.test.mjs",
+        "tests/onboarding-cloud-token.test.mjs",
+        "tests/onboarding-local-pair.test.mjs",
+        "tests/onboarding-repository.test.mjs",
+        "tests/onboarding-runtime-version.test.mjs",
+        "tests/onboarding-ssh-forward.test.mjs",
+        "tests/runtime-transport.test.mjs"
+      ]
+    },
+    "bundle/onboarding-state.js": {
+      "lines": 95,
+      "imports": [
+        "./onboarding-boundary.js",
+        "./onboarding-schema.js",
+        "@deepseek-ai/dsh-credentials"
+      ],
+      "exports": [
+        "createOnboardingState"
+      ],
+      "referencedByTests": [
+        "tests/handoff-remote.test.mjs",
+        "tests/onboarding-cloud-models.test.mjs",
+        "tests/onboarding-cloud-repositories.test.mjs",
+        "tests/onboarding-cloud-token.test.mjs",
+        "tests/onboarding-handoff.test.mjs",
+        "tests/onboarding-local-pair.test.mjs",
+        "tests/onboarding-models.test.mjs",
+        "tests/onboarding-peer-binding.test.mjs",
+        "tests/onboarding-repositories.test.mjs",
+        "tests/onboarding-repository.test.mjs",
+        "tests/onboarding-state.test.mjs",
+        "tests/onboarding-token-plan.test.mjs"
+      ]
+    },
+    "bundle/onboarding-task-runtime-contract.js": {
+      "lines": 38,
+      "imports": [],
+      "exports": [
+        "cloudTaskRuntimePlan",
+        "cloudTaskRuntimeStatus",
+        "isManagedGatewayReceipt",
+        "isManagedGatewayRuntime",
+        "isManagedTaskRuntime"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-task-runtime.test.mjs",
+        "tests/onboarding-local-pair.test.mjs",
+        "tests/onboarding-peer-binding.test.mjs",
+        "tests/onboarding-task-runtime.test.mjs"
+      ]
+    },
+    "bundle/onboarding-task-runtime-native.js": {
+      "lines": 80,
+      "imports": [
+        "./index.js",
+        "./link-contract.js",
+        "./native-tools.js",
+        "./onboarding-boundary.js",
+        "./onboarding-file-transfer.js",
+        "./onboarding-peer-binding.js",
+        "./onboarding-repositories.js",
+        "./onboarding-repository.js",
+        "./task-artifacts.js",
+        "./task-board.js",
+        "./workbench-host.js",
+        "node:fs/promises",
+        "node:path",
+        "node:sqlite",
+        "node:url"
+      ],
+      "exports": [
+        "nativeTaskRuntimeAdapter",
+        "taskRuntimeLease"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-file-transfer.test.mjs",
+        "tests/onboarding-local-pair.test.mjs",
+        "tests/onboarding-peer-binding.test.mjs",
+        "tests/onboarding-task-runtime.test.mjs"
+      ]
+    },
+    "bundle/onboarding-task-runtime.js": {
+      "lines": 66,
+      "imports": [
+        "./onboarding-identity.js",
+        "./onboarding-peer-binding.js",
+        "./onboarding-ssh.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "createOnboardingTaskRuntime"
+      ],
+      "referencedByTests": [
+        "tests/handoff-remote.test.mjs",
+        "tests/onboarding-cloud-task-runtime.test.mjs",
+        "tests/onboarding-local-pair.test.mjs",
+        "tests/onboarding-peer-binding.test.mjs",
+        "tests/onboarding-task-runtime.test.mjs"
+      ]
+    },
+    "bundle/onboarding-token-plan.js": {
+      "lines": 52,
+      "imports": [
+        "./onboarding-models.js"
+      ],
+      "exports": [
+        "TOKEN_PLAN_ENDPOINT",
+        "TOKEN_PLAN_NAME",
+        "TOKEN_PLAN_PROVIDER",
+        "createOnboardingTokenPlanModels"
+      ],
+      "referencedByTests": [
+        "tests/handoff-remote.test.mjs",
+        "tests/onboarding-cloud-token.test.mjs",
+        "tests/onboarding-token-plan.test.mjs"
+      ]
+    },
+    "bundle/onboarding-version-activation-client.js": {
+      "lines": 48,
+      "imports": [
+        "./onboarding-runtime-program.js",
+        "./onboarding-runtime-version-client.js",
+        "@deepseek-ai/dsh-credentials",
+        "node:crypto"
+      ],
+      "exports": [
+        "runtimeVersionActivationClient",
+        "versionActivationKey"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-version-activation-client.test.mjs"
+      ]
+    },
+    "bundle/onboarding-version-candidate.js": {
+      "lines": 96,
+      "imports": [
+        "./onboarding-install-fs.js",
+        "./onboarding-maintenance-fs.js",
+        "node:path"
+      ],
+      "exports": [
+        "createVersionCandidates",
+        "validateVersionCandidatePackage"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-runtime-version.test.mjs"
+      ]
+    },
+    "bundle/onboarding-version-repair.js": {
+      "lines": 128,
+      "imports": [
+        "./onboarding-install-fs.js",
+        "./onboarding-maintenance-fs.js",
+        "./onboarding-plugin-repair.js",
+        "node:crypto",
+        "node:path"
+      ],
+      "exports": [
+        "createVersionRepair"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/peer-file-fs.js": {
+      "lines": 62,
+      "imports": [
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "FileRoot",
+        "fileHash",
+        "fileIdentity",
+        "fileName",
+        "sourceFile"
+      ],
+      "referencedByTests": [
+        "tests/files.test.mjs",
+        "tests/gateway-maintenance.test.mjs",
+        "tests/native-file-reference.test.mjs",
+        "tests/onboarding-file-review.test.mjs"
+      ]
+    },
+    "bundle/peer-file-migration.js": {
+      "lines": 59,
+      "imports": [
+        "./onboarding-ssh.js",
+        "./peer-file-fs.js",
+        "node:path"
+      ],
+      "exports": [
+        "fileScopeConfig",
+        "migrateFileScope",
+        "migrationSnapshot"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/peer-file-review.js": {
+      "lines": 107,
+      "imports": [
+        "./onboarding-ssh.js",
+        "./peer-file-fs.js",
+        "./peer-file-migration.js",
+        "./peer-files.js",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "applyFileQueuePlan",
+        "closeFileQueuePlan",
+        "fileQueueClosed",
+        "fileQueueItem",
+        "fileQueueList",
+        "fileQueuePlan",
+        "fileQueueReceipt"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/peer-files.js": {
+      "lines": 157,
+      "imports": [
+        ",",
+        "./peer-file-fs.js",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "FILE_CHUNK",
+        "PeerFiles",
+        "fileMetadata"
+      ],
+      "referencedByTests": [
+        "tests/files.test.mjs"
+      ]
+    },
+    "bundle/peer-mailbox.js": {
+      "lines": 75,
+      "imports": [
+        ",",
+        "./link-contract.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "PeerMailbox"
+      ],
+      "referencedByTests": [
+        "tests/link-diagnostics.test.mjs",
+        "tests/onboarding-peer-binding.test.mjs"
+      ]
+    },
+    "bundle/protocol.js": {
+      "lines": 17,
+      "imports": [
+        "node:crypto"
+      ],
+      "exports": [
+        "prefix",
+        "signedNotice",
+        "verifyNotice"
+      ],
+      "referencedByTests": [
+        "tests/gateway.test.mjs",
+        "tests/scheduler-gateway.test.mjs"
+      ]
+    },
+    "bundle/recovery.js": {
+      "lines": 40,
+      "imports": [
+        "node:crypto"
+      ],
+      "exports": [
+        "bounded",
+        "migrateRecovery",
+        "outboxInsert",
+        "permanentErrors",
+        "resolveOutbox",
+        "safeError",
+        "tx"
+      ],
+      "referencedByTests": [
+        "tests/im-delivery.test.mjs",
+        "tests/link-diagnostics.test.mjs",
+        "tests/recovery.test.mjs"
+      ]
+    },
+    "bundle/repository-catalog.js": {
+      "lines": 85,
+      "imports": [
+        "./approval-ledger.js",
+        "./task-context.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "RepositoryCatalog"
+      ],
+      "referencedByTests": [
+        "tests/artifacts.test.mjs",
+        "tests/development-workspace.test.mjs",
+        "tests/development.test.mjs",
+        "tests/repository.test.mjs",
+        "tests/task-board.test.mjs",
+        "tests/task-interventions.test.mjs",
+        "tests/task-results.test.mjs",
+        "tests/workspace-fixture.mjs"
+      ]
+    },
+    "bundle/repository-gitee.js": {
+      "lines": 76,
+      "imports": [
+        "node:crypto",
+        "node:fs"
+      ],
+      "exports": [
+        "GiteeReadOnly",
+        "repositoryBranch",
+        "repositoryLabel",
+        "repositoryURL"
+      ],
+      "referencedByTests": [
+        "tests/artifacts.test.mjs",
+        "tests/delivery-artifacts.test.mjs",
+        "tests/delivery-ssh.test.mjs",
+        "tests/onboarding-repositories.test.mjs",
+        "tests/repository.test.mjs"
+      ]
+    },
+    "bundle/repository-managed.js": {
+      "lines": 46,
+      "imports": [
+        "./onboarding-repositories.js",
+        "./repository-gitee.js"
+      ],
+      "exports": [
+        "ManagedGiteeReadOnly"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-repositories.test.mjs"
+      ]
+    },
+    "bundle/repository-writer.js": {
+      "lines": 43,
+      "imports": [
+        "node:child_process",
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "RepositoryWriter"
+      ],
+      "referencedByTests": [
+        "tests/gateway.test.mjs"
+      ]
+    },
+    "bundle/scheduler-migration.js": {
+      "lines": 45,
+      "imports": [
+        "./approval-ledger.js",
+        "node:fs",
+        "node:net",
+        "node:os",
+        "node:path",
+        "node:sqlite"
+      ],
+      "exports": [
+        "adoptSchedulerOwner",
+        "schedulerMigrationPlan"
+      ],
+      "referencedByTests": [
+        "tests/scheduler-migration.test.mjs"
+      ]
+    },
+    "bundle/search-contract.js": {
+      "lines": 19,
+      "imports": [],
+      "exports": [
+        "activeSchedule",
+        "preparedState",
+        "searchActive",
+        "searchExecutor",
+        "taskExecutor",
+        "validateSearch"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/source-search.js": {
+      "lines": 89,
+      "imports": [
+        "./job-version.js",
+        "./source-web.js",
+        "./task-envelope.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "TaskSearch",
+        "createTaskSearchReader"
+      ],
+      "referencedByTests": [
+        "tests/source-search.test.mjs"
+      ]
+    },
+    "bundle/source-web.js": {
+      "lines": 17,
+      "imports": [],
+      "exports": [
+        "createAnonymousWebReader",
+        "sourceUrl"
+      ],
+      "referencedByTests": [
+        "tests/source-web.test.mjs"
+      ]
+    },
+    "bundle/ssh-connector.js": {
+      "lines": 24,
+      "imports": [
+        "node:child_process"
+      ],
+      "exports": [
+        "SshConnector"
+      ],
+      "referencedByTests": [
+        "tests/recovery.test.mjs"
+      ]
+    },
+    "bundle/store.js": {
+      "lines": 102,
+      "imports": [
+        "./task-envelope.js",
+        "node:crypto",
+        "node:fs",
+        "node:path",
+        "node:sqlite"
+      ],
+      "exports": [
+        "Coordinator",
+        "hash"
+      ],
+      "referencedByTests": [
+        "tests/approval-chat.test.mjs",
+        "tests/approval-fixture.mjs",
+        "tests/approval-process-child.mjs",
+        "tests/approval-reference.test.mjs",
+        "tests/approval.test.mjs",
+        "tests/delivery-approval-reopen.mjs",
+        "tests/delivery-commit-fixture.mjs",
+        "tests/delivery-journal-crash-child.mjs",
+        "tests/delivery-journal.test.mjs",
+        "tests/delivery-push.test.mjs",
+        "tests/delivery-receipt-crash-child.mjs",
+        "tests/gateway.test.mjs",
+        "tests/handoff-process.test.mjs",
+        "tests/legacy-store.test.mjs",
+        "tests/repository.test.mjs",
+        "tests/task-catalog.test.mjs",
+        "tests/task-interventions.test.mjs"
+      ]
+    },
+    "bundle/task-a2a.js": {
+      "lines": 298,
+      "imports": [
+        "./a2a-dispatches.js",
+        "./recovery.js",
+        "./task-context.js",
+        "./task-envelope.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "TaskA2A"
+      ],
+      "referencedByTests": [
+        "tests/a2a-board.test.mjs"
+      ]
+    },
+    "bundle/task-artifacts.js": {
+      "lines": 179,
+      "imports": [
+        "./approval-ledger.js",
+        "./artifact-media.js",
+        "./delivery-artifacts.js",
+        "./link-contract.js",
+        "./native-owner-origin.js",
+        "./task-context.js",
+        "./task-envelope.js",
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "TaskArtifacts",
+        "artifactName",
+        "installArtifactAccess"
+      ],
+      "referencedByTests": [
+        "tests/artifact-download.test.mjs",
+        "tests/artifacts.test.mjs",
+        "tests/delivery-artifacts.test.mjs",
+        "tests/development-native-workspace.test.mjs",
+        "tests/development.test.mjs",
+        "tests/source-search.test.mjs",
+        "tests/source-web.test.mjs",
+        "tests/task-sources.test.mjs"
+      ]
+    },
+    "bundle/task-board-a2a.js": {
+      "lines": 55,
+      "imports": [],
+      "exports": [
+        "a2aDisplayState",
+        "a2aRecentRuns",
+        "a2aSession",
+        "a2aSnapshot",
+        "ownedA2ASession"
+      ],
+      "referencedByTests": [
+        "tests/a2a-board.test.mjs"
+      ]
+    },
+    "bundle/task-board-development.js": {
+      "lines": 83,
+      "imports": [
+        "./link-contract.js"
+      ],
+      "exports": [
+        "developmentConfiguration",
+        "developmentDisplayState",
+        "developmentPeerSnapshot",
+        "developmentSnapshot"
+      ],
+      "referencedByTests": [
+        "tests/development-native-workspace.test.mjs",
+        "tests/development.test.mjs"
+      ]
+    },
+    "bundle/task-board-planning.js": {
+      "lines": 84,
+      "imports": [
+        "./job-version.js"
+      ],
+      "exports": [
+        "jobLineage",
+        "planningGate",
+        "planningSnapshot",
+        "taskDisplayState"
+      ],
+      "referencedByTests": [
+        "tests/source-version.test.mjs"
+      ]
+    },
+    "bundle/task-board.js": {
+      "lines": 132,
+      "imports": [
+        "./delivery-preview.js",
+        "./delivery-state.js",
+        "./diagnostics.js",
+        "./link-contract.js",
+        "./task-board-a2a.js",
+        "./task-board-development.js",
+        "./task-board-planning.js",
+        "./task-envelope.js",
+        "./task-interventions.js"
+      ],
+      "exports": [
+        "TaskBoard",
+        "boardHost",
+        "boardPending",
+        "installTaskBoard",
+        "queueReason"
+      ],
+      "referencedByTests": [
+        "tests/delivery-gateway.test.mjs",
+        "tests/development.test.mjs",
+        "tests/task-board.test.mjs",
+        "tests/task-interventions.test.mjs",
+        "tests/task-results.test.mjs",
+        "tests/worker-output-diagnostics.test.mjs"
+      ]
+    },
+    "bundle/task-branch.js": {
+      "lines": 2,
+      "imports": [],
+      "exports": [
+        "managedTaskBranch"
+      ],
+      "referencedByTests": [
+        "tests/task-branch.test.mjs"
+      ]
+    },
+    "bundle/task-catalog.js": {
+      "lines": 77,
+      "imports": [
+        "./search-contract.js",
+        "./task-context.js",
+        "./task-envelope.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "TaskCatalog"
+      ],
+      "referencedByTests": [
+        "tests/approval-chat.test.mjs",
+        "tests/approval-fixture.mjs",
+        "tests/approval-process-child.mjs",
+        "tests/approval-reference.test.mjs",
+        "tests/approval.test.mjs",
+        "tests/delivery-approval-reopen.mjs",
+        "tests/repository.test.mjs",
+        "tests/task-catalog.test.mjs"
+      ]
+    },
+    "bundle/task-context.js": {
+      "lines": 40,
+      "imports": [
+        "node:crypto"
+      ],
+      "exports": [
+        "newCloudPolicy",
+        "validPolicy",
+        "validReferences",
+        "validSources",
+        "validSuggestions"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/task-envelope.js": {
+      "lines": 96,
+      "imports": [
+        "./search-contract.js",
+        "./task-context.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "assertScheduleEnvelope",
+        "currentHumanRequest",
+        "envelopeVersion",
+        "identity",
+        "makeEnvelope",
+        "parseEnvelope",
+        "sameNativeTask",
+        "schedulePolicy",
+        "selectedHumanContext"
+      ],
+      "referencedByTests": [
+        "tests/a2a-endpoint.test.mjs",
+        "tests/approval-chat.test.mjs",
+        "tests/approval-fixture.mjs",
+        "tests/approval-local-gateway.test.mjs",
+        "tests/approval-reference.test.mjs",
+        "tests/approval-workbench.test.mjs",
+        "tests/approval.test.mjs",
+        "tests/development.test.mjs",
+        "tests/intervention-actions.test.mjs",
+        "tests/native-file-message.test.mjs",
+        "tests/notification-defaults.test.mjs",
+        "tests/notification-media-fixture.mjs",
+        "tests/notification-version.test.mjs",
+        "tests/onboarding-repositories.test.mjs",
+        "tests/repository.test.mjs",
+        "tests/search-contract.test.mjs",
+        "tests/source-search.test.mjs",
+        "tests/source-version.test.mjs",
+        "tests/source-web.test.mjs",
+        "tests/task-a2a.test.mjs",
+        "tests/task-board.test.mjs",
+        "tests/task-catalog.test.mjs",
+        "tests/task-envelope.test.mjs",
+        "tests/task-notifications.test.mjs",
+        "tests/task-sources.test.mjs",
+        "tests/task-triggers.test.mjs",
+        "tests/task-workflows.test.mjs",
+        "tests/trigger-process.test.mjs",
+        "tests/workbench-interaction-runtime.test.mjs",
+        "tests/worker-budget.test.mjs",
+        "tests/workflow-process.test.mjs"
+      ]
+    },
+    "bundle/task-interventions.js": {
+      "lines": 54,
+      "imports": [
+        "./intervention-state.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "TaskInterventions"
+      ],
+      "referencedByTests": [
+        "tests/intervention-actions.test.mjs",
+        "tests/task-interventions.test.mjs"
+      ]
+    },
+    "bundle/task-jobs.js": {
+      "lines": 156,
+      "imports": [
+        "./job-version.js",
+        "./task-envelope.js",
+        "node:crypto",
+        "node:fs",
+        "node:path",
+        "node:sqlite"
+      ],
+      "exports": [
+        "TaskJobs",
+        "digest"
+      ],
+      "referencedByTests": [
+        "tests/artifact-download.test.mjs",
+        "tests/artifacts.test.mjs",
+        "tests/development-native-workspace.test.mjs",
+        "tests/development-version.test.mjs",
+        "tests/development-worker-review.test.mjs",
+        "tests/development-workspace.test.mjs",
+        "tests/development.test.mjs",
+        "tests/intervention-actions.test.mjs",
+        "tests/native-schedule-budget.test.mjs",
+        "tests/notification-version.test.mjs",
+        "tests/search-contract.test.mjs",
+        "tests/source-search.test.mjs",
+        "tests/source-version.test.mjs",
+        "tests/source-web.test.mjs",
+        "tests/task-board.test.mjs",
+        "tests/task-interventions.test.mjs",
+        "tests/task-jobs.test.mjs",
+        "tests/task-results.test.mjs",
+        "tests/task-sources.test.mjs",
+        "tests/task-triggers.test.mjs",
+        "tests/task-workflows.test.mjs",
+        "tests/trigger-process-child.mjs",
+        "tests/worker-budget.test.mjs",
+        "tests/workflow-process-child.mjs",
+        "tests/workflow-rollback.test.mjs"
+      ]
+    },
+    "bundle/task-notifications.js": {
+      "lines": 132,
+      "imports": [
+        "./notification-artifacts.js",
+        "./notification-contract.js",
+        "./notification-defaults.js",
+        "./notification-discovery.js",
+        "./notification-endpoint.js",
+        "./notification-review.js",
+        "./notification-targets.js",
+        "./recovery.js",
+        "./task-context.js",
+        "./task-envelope.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "TaskNotifications"
+      ],
+      "referencedByTests": [
+        "tests/notification-defaults.test.mjs",
+        "tests/notification-discovery.test.mjs",
+        "tests/worker-output-diagnostics.test.mjs"
+      ]
+    },
+    "bundle/task-results.js": {
+      "lines": 16,
+      "imports": [],
+      "exports": [
+        "taskResults"
+      ],
+      "referencedByTests": [
+        "tests/task-results.test.mjs"
+      ]
+    },
+    "bundle/task-scheduler.js": {
+      "lines": 77,
+      "imports": [
+        "./task-jobs.js",
+        "./task-triggers.js",
+        "./task-worker.js",
+        "./task-workflows.js",
+        "node:fs",
+        "node:net",
+        "node:os",
+        "node:path"
+      ],
+      "exports": [
+        "TaskScheduler"
+      ],
+      "referencedByTests": [
+        "tests/entry-controls.test.mjs",
+        "tests/process-ownership.test.mjs",
+        "tests/scheduler-migration.test.mjs",
+        "tests/task-jobs.test.mjs",
+        "tests/task-triggers.test.mjs",
+        "tests/task-workflows.test.mjs"
+      ]
+    },
+    "bundle/task-sources.js": {
+      "lines": 101,
+      "imports": [
+        "./bounded-text.js",
+        "./job-version.js",
+        "./source-search.js",
+        "./source-web.js",
+        "./task-envelope.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "TaskSources"
+      ],
+      "referencedByTests": [
+        "tests/source-search.test.mjs",
+        "tests/source-web.test.mjs",
+        "tests/task-sources.test.mjs"
+      ]
+    },
+    "bundle/task-trigger-time.js": {
+      "lines": 46,
+      "imports": [
+        "@js-temporal/polyfill"
+      ],
+      "exports": [
+        "coalesceDue",
+        "firstDue",
+        "validateTiming"
+      ],
+      "referencedByTests": [
+        "tests/task-triggers.test.mjs"
+      ]
+    },
+    "bundle/task-triggers.js": {
+      "lines": 157,
+      "imports": [
+        "./search-contract.js",
+        "./task-context.js",
+        "./task-envelope.js",
+        "./task-jobs.js",
+        "./task-trigger-time.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "TaskTriggers"
+      ],
+      "referencedByTests": [
+        "tests/notification-version.test.mjs",
+        "tests/search-contract.test.mjs",
+        "tests/source-version.test.mjs",
+        "tests/task-board.test.mjs",
+        "tests/task-triggers.test.mjs",
+        "tests/trigger-process-child.mjs"
+      ]
+    },
+    "bundle/task-worker.js": {
+      "lines": 73,
+      "imports": [
+        "./task-envelope.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "NativeTaskWorker"
+      ],
+      "referencedByTests": [
+        "tests/task-worker.test.mjs"
+      ]
+    },
+    "bundle/task-workflows.js": {
+      "lines": 117,
+      "imports": [
+        "./job-version.js",
+        "./search-contract.js",
+        "./task-context.js",
+        "./task-envelope.js",
+        "./task-jobs.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "TaskWorkflows",
+        "workflowGraph"
+      ],
+      "referencedByTests": [
+        "tests/notification-version.test.mjs",
+        "tests/search-contract.test.mjs",
+        "tests/source-version.test.mjs",
+        "tests/task-board.test.mjs",
+        "tests/task-workflows.test.mjs",
+        "tests/workflow-process-child.mjs"
+      ]
+    },
+    "bundle/tools.js": {
+      "lines": 13,
+      "imports": [],
+      "exports": [
+        "apply",
+        "inject"
+      ],
+      "referencedByTests": [
+        "tests/entry-controls.test.mjs",
+        "tests/native-entry-baseline.test.mjs"
+      ]
+    },
+    "bundle/workbench-decisions.js": {
+      "lines": 48,
+      "imports": [
+        "./approval-ledger.js",
+        "./approval-semantics.js",
+        "./workbench-im-identity.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "WorkbenchDecisions"
+      ],
+      "referencedByTests": [
+        "tests/approval-local-relay.test.mjs",
+        "tests/intervention-actions.test.mjs",
+        "tests/workbench-decisions.test.mjs"
+      ]
+    },
+    "bundle/workbench-host.js": {
+      "lines": 122,
+      "imports": [
+        "./native-owner-origin.js",
+        "./ssh-connector.js",
+        "./task-board-a2a.js",
+        "./task-board-development.js",
+        "./workbench-proxy.js",
+        "node:fs/promises"
+      ],
+      "exports": [
+        "Workbench",
+        "installWorkbench",
+        "workbenchAppearance",
+        "workbenchBrowserHost",
+        "workbenchSnapshot"
+      ],
+      "referencedByTests": [
+        "tests/a2a-board.test.mjs",
+        "tests/approval-workbench.test.mjs",
+        "tests/managed-workbench.test.mjs",
+        "tests/ui-contract.test.mjs",
+        "tests/workbench-interaction-runtime.test.mjs",
+        "tests/workbench.test.mjs"
+      ]
+    },
+    "bundle/workbench-im-identity.js": {
+      "lines": 51,
+      "imports": [
+        "./approval-ledger.js",
+        "./approval-semantics.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "WorkbenchIMIdentity"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/workbench-proxy.js": {
+      "lines": 127,
+      "imports": [
+        "node:crypto",
+        "node:http"
+      ],
+      "exports": [
+        "WorkbenchProxy"
+      ],
+      "referencedByTests": [
+        "tests/workbench-carrier-headers.test.mjs",
+        "tests/workbench-maintenance.test.mjs",
+        "tests/workbench.test.mjs"
+      ]
+    },
+    "bundle/worker-tools.js": {
+      "lines": 13,
+      "imports": [
+        "node:fs"
+      ],
+      "exports": [
+        "apply",
+        "inject"
+      ],
+      "referencedByTests": [
+        "tests/artifacts.test.mjs",
+        "tests/task-sources.test.mjs"
+      ]
+    },
+    "ui-source/approval-workbench-client.mjs": {
+      "lines": 35,
+      "imports": [],
+      "exports": [
+        "createWorkbenchDecisionAdapter"
+      ],
+      "referencedByTests": [
+        "tests/approval-workbench-client.test.mjs",
+        "tests/intervention-client.test.mjs"
+      ]
+    },
+    "ui-source/artifact-download-client.mjs": {
+      "lines": 19,
+      "imports": [],
+      "exports": [
+        "decodeArtifactDownload",
+        "saveArtifactDownload"
+      ],
+      "referencedByTests": [
+        "tests/artifact-download-client.test.mjs"
+      ]
+    },
+    "ui-source/bundle-shim.js": {
+      "lines": 1,
+      "imports": [
+        "../bundle/onboarding-schema.js"
+      ],
+      "exports": [],
+      "referencedByTests": []
+    },
+    "ui-source/intervention-action-view.js": {
+      "lines": 37,
+      "imports": [],
+      "exports": [],
+      "referencedByTests": [
+        "tests/intervention-client.test.mjs"
+      ]
+    },
+    "ui-source/labels.js": {
+      "lines": 3,
+      "imports": [],
+      "exports": [],
+      "referencedByTests": []
+    },
+    "ui-source/onboarding/app.jsx": {
+      "lines": 78,
+      "imports": [
+        "../bundle-shim",
+        "./cloud",
+        "./cloud-installation",
+        "./components",
+        "./credentials",
+        "./existing-pair",
+        "./existing-setup",
+        "./file-transfer",
+        "./handoff",
+        "./im",
+        "./im-client-bridge",
+        "./im-maintenance",
+        "./installation",
+        "./local-pair",
+        "./maintenance",
+        "./maintenance-session",
+        "./models",
+        "./notification-defaults",
+        "./registry",
+        "./repository",
+        "./rpc",
+        "./self-lifecycle",
+        "./task-runtime",
+        "react"
+      ],
+      "exports": [
+        "Onboarding",
+        "titles"
+      ],
+      "referencedByTests": [
+        "tests/compact-ui.test.mjs",
+        "tests/im-maintenance-flow.test.mjs",
+        "tests/maintenance-session-flow.test.mjs",
+        "tests/onboarding-cloud-files.test.mjs",
+        "tests/self-disable-flow.test.mjs",
+        "tests/self-remove-flow.test.mjs",
+        "tests/self-stop-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/cloud-flow.js": {
+      "lines": 130,
+      "imports": [],
+      "exports": [
+        "cloudActions",
+        "cloudRecovery",
+        "cloudStateLabels",
+        "createCloudFlow"
+      ],
+      "referencedByTests": [
+        "tests/cloud-first-install-refresh.test.mjs",
+        "tests/cloud-flow.test.mjs",
+        "tests/cloud-recovery-ui.test.mjs",
+        "tests/cloud-removal-refresh.test.mjs",
+        "tests/plugin-repair-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/cloud-installation.jsx": {
+      "lines": 68,
+      "imports": [
+        "./cloud-flow",
+        "./components",
+        "./node-bootstrap",
+        "./plugin-repair",
+        "./plugin-uninstall",
+        "./plugin-version",
+        "./runtime-reclaim",
+        "react"
+      ],
+      "exports": [
+        "CloudInstallation"
+      ],
+      "referencedByTests": [
+        "tests/cloud-recovery-ui.test.mjs",
+        "tests/cloud-web-ui-state.test.mjs",
+        "tests/maintenance-presentation.test.mjs",
+        "tests/onboarding-runtime-version.test.mjs",
+        "tests/plugin-uninstall-flow.test.mjs",
+        "tests/runtime-reclaim-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/cloud.jsx": {
+      "lines": 28,
+      "imports": [
+        "./components",
+        "react"
+      ],
+      "exports": [
+        "CloudConnection"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/onboarding/components.jsx": {
+      "lines": 42,
+      "imports": [
+        "./field-help",
+        "lucide-react",
+        "react"
+      ],
+      "exports": [
+        "Badge",
+        "Button",
+        "Callout",
+        "CheckRow",
+        "Field",
+        "HelpButton",
+        "HelpProvider",
+        "Icon",
+        "InfoHelp",
+        "InfoRow",
+        "Mascot",
+        "Modal",
+        "Panel",
+        "RequirementBadge",
+        "Summary",
+        "Toggle"
+      ],
+      "referencedByTests": [
+        "tests/compact-ui.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/credentials.jsx": {
+      "lines": 33,
+      "imports": [
+        "./components",
+        "react"
+      ],
+      "exports": [
+        "Credentials"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-repository.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/existing-pair.jsx": {
+      "lines": 30,
+      "imports": [
+        "./components",
+        "react"
+      ],
+      "exports": [
+        "ExistingPairInspection"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/onboarding/existing-setup.jsx": {
+      "lines": 71,
+      "imports": [
+        "./components",
+        "./existing-pair",
+        "./installation",
+        "./maintenance",
+        "./notification-defaults",
+        "react"
+      ],
+      "exports": [
+        "ExistingSetupGuide"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/onboarding/field-help.js": {
+      "lines": 63,
+      "imports": [],
+      "exports": [
+        "featureHelp",
+        "fieldHelp",
+        "requirementLabels"
+      ],
+      "referencedByTests": [
+        "tests/im-maintenance-flow.test.mjs",
+        "tests/onboarding-cloud-files.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/file-queue.jsx": {
+      "lines": 51,
+      "imports": [
+        "./components",
+        "react"
+      ],
+      "exports": [
+        "FileQueue"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/onboarding/file-scope-presentation.js": {
+      "lines": 12,
+      "imports": [],
+      "exports": [
+        "fileScopeObservation"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-file-scope-presentation.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/file-transfer.jsx": {
+      "lines": 43,
+      "imports": [
+        "./components",
+        "./file-queue",
+        "./file-scope-presentation",
+        "react"
+      ],
+      "exports": [
+        "FileTransfer"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-files.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/handoff.jsx": {
+      "lines": 28,
+      "imports": [
+        "./components",
+        "react"
+      ],
+      "exports": [
+        "CloudCredentialHandoff"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/onboarding/im-client-bridge.js": {
+      "lines": 15,
+      "imports": [],
+      "exports": [
+        "createImClientBridge"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-im.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/im-maintenance-flow.js": {
+      "lines": 51,
+      "imports": [],
+      "exports": [
+        "createImMaintenanceFlow",
+        "imMaintenanceActions"
+      ],
+      "referencedByTests": [
+        "tests/im-maintenance-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/im-maintenance.jsx": {
+      "lines": 30,
+      "imports": [
+        "./components",
+        "./im-maintenance-flow",
+        "react"
+      ],
+      "exports": [
+        "ImMaintenance"
+      ],
+      "referencedByTests": [
+        "tests/im-maintenance-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/im.jsx": {
+      "lines": 71,
+      "imports": [
+        "./components",
+        "react"
+      ],
+      "exports": [
+        "CloudImManager",
+        "ImConnection",
+        "NativeImManager"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-web.test.mjs",
+        "tests/onboarding-im.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/installation.jsx": {
+      "lines": 44,
+      "imports": [
+        "./components",
+        "react"
+      ],
+      "exports": [
+        "Installation"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/onboarding/local-pair.jsx": {
+      "lines": 41,
+      "imports": [
+        "./components",
+        "react"
+      ],
+      "exports": [
+        "LocalPair"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-local-pair.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/maintenance-flow.js": {
+      "lines": 54,
+      "imports": [],
+      "exports": [
+        "createMaintenanceFlow",
+        "maintenanceActions"
+      ],
+      "referencedByTests": [
+        "tests/maintenance-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/maintenance-session-flow.js": {
+      "lines": 53,
+      "imports": [],
+      "exports": [
+        "createMaintenanceSessionFlow",
+        "maintenanceSessionActions"
+      ],
+      "referencedByTests": [
+        "tests/maintenance-session-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/maintenance-session.jsx": {
+      "lines": 36,
+      "imports": [
+        "./components",
+        "./maintenance-session-flow",
+        "react"
+      ],
+      "exports": [
+        "MaintenanceSession"
+      ],
+      "referencedByTests": [
+        "tests/maintenance-session-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/maintenance.jsx": {
+      "lines": 33,
+      "imports": [
+        "./components",
+        "./maintenance-flow",
+        "react"
+      ],
+      "exports": [
+        "Maintenance"
+      ],
+      "referencedByTests": [
+        "tests/maintenance-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/model-probe.jsx": {
+      "lines": 51,
+      "imports": [
+        "./components",
+        "react"
+      ],
+      "exports": [
+        "ModelProbe"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/onboarding/models.jsx": {
+      "lines": 50,
+      "imports": [
+        "./components",
+        "./model-probe",
+        "react"
+      ],
+      "exports": [
+        "ModelConnection"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/onboarding/node-bootstrap.jsx": {
+      "lines": 24,
+      "imports": [
+        "./components",
+        "./node-flow",
+        "react"
+      ],
+      "exports": [
+        "NodeBootstrap"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/onboarding/node-flow.js": {
+      "lines": 28,
+      "imports": [],
+      "exports": [
+        "createNodeFlow",
+        "nodeActions"
+      ],
+      "referencedByTests": [
+        "tests/node-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/notification-defaults.jsx": {
+      "lines": 44,
+      "imports": [
+        "./components",
+        "react"
+      ],
+      "exports": [
+        "NotificationDefaults"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/onboarding/plugin-repair.jsx": {
+      "lines": 35,
+      "imports": [
+        "./components",
+        "./repair-presentation",
+        "react"
+      ],
+      "exports": [
+        "PluginRepair"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/onboarding/plugin-uninstall-flow.js": {
+      "lines": 37,
+      "imports": [],
+      "exports": [
+        "createUninstallFlow",
+        "uninstallLabels",
+        "uninstallUiActions"
+      ],
+      "referencedByTests": [
+        "tests/plugin-uninstall-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/plugin-uninstall.jsx": {
+      "lines": 45,
+      "imports": [
+        "./components",
+        "./plugin-uninstall-flow",
+        "react"
+      ],
+      "exports": [
+        "PluginUninstall"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/onboarding/plugin-version-flow.js": {
+      "lines": 52,
+      "imports": [],
+      "exports": [
+        "createVersionFlow",
+        "versionLabels",
+        "versionUiActions"
+      ],
+      "referencedByTests": [
+        "tests/plugin-version-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/plugin-version.jsx": {
+      "lines": 62,
+      "imports": [
+        "./components",
+        "./plugin-version-flow",
+        "react"
+      ],
+      "exports": [
+        "PluginVersionMaintenance"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/onboarding/registry.jsx": {
+      "lines": 53,
+      "imports": [
+        "./components",
+        "react"
+      ],
+      "exports": [
+        "RepositoryRegistry"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-repositories.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/repair-presentation.js": {
+      "lines": 17,
+      "imports": [],
+      "exports": [
+        "repairPresentation"
+      ],
+      "referencedByTests": [
+        "tests/maintenance-presentation.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/repository.jsx": {
+      "lines": 25,
+      "imports": [
+        "./components",
+        "react"
+      ],
+      "exports": [
+        "RepositoryConnection"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-repository.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/rpc.js": {
+      "lines": 20,
+      "imports": [],
+      "exports": [
+        "callOnboarding"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-rpc.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/runtime-reclaim-flow.js": {
+      "lines": 37,
+      "imports": [],
+      "exports": [
+        "createReclaimFlow",
+        "reclaimLabels",
+        "reclaimResultLabel",
+        "reclaimUiActions"
+      ],
+      "referencedByTests": [
+        "tests/runtime-reclaim-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/runtime-reclaim.jsx": {
+      "lines": 41,
+      "imports": [
+        "./components",
+        "./runtime-reclaim-flow",
+        "react"
+      ],
+      "exports": [
+        "RuntimeReclaim"
+      ],
+      "referencedByTests": [
+        "tests/runtime-reclaim-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/self-disable-flow.js": {
+      "lines": 50,
+      "imports": [],
+      "exports": [
+        "createSelfDisableFlow",
+        "selfDisableActions",
+        "selfDisableRecoveryGuide"
+      ],
+      "referencedByTests": [
+        "tests/self-disable-flow.test.mjs",
+        "tests/self-lifecycle-flow-contract.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/self-disable.jsx": {
+      "lines": 30,
+      "imports": [
+        "./components",
+        "./self-disable-flow",
+        "react"
+      ],
+      "exports": [
+        "SelfDisable"
+      ],
+      "referencedByTests": [
+        "tests/self-disable-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/self-lifecycle.jsx": {
+      "lines": 10,
+      "imports": [
+        "./components",
+        "./self-disable",
+        "./self-remove",
+        "./self-stop",
+        "react"
+      ],
+      "exports": [
+        "SelfLifecycle"
+      ],
+      "referencedByTests": [
+        "tests/self-remove-flow.test.mjs",
+        "tests/self-stop-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/self-remove-flow.js": {
+      "lines": 51,
+      "imports": [],
+      "exports": [
+        "createSelfRemoveFlow",
+        "selfRemoveActions",
+        "selfRemoveRecoveryGuide"
+      ],
+      "referencedByTests": [
+        "tests/self-lifecycle-flow-contract.test.mjs",
+        "tests/self-remove-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/self-remove.jsx": {
+      "lines": 30,
+      "imports": [
+        "./components",
+        "./self-remove-flow",
+        "react"
+      ],
+      "exports": [
+        "SelfRemove"
+      ],
+      "referencedByTests": [
+        "tests/self-remove-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/self-stop-flow.js": {
+      "lines": 50,
+      "imports": [],
+      "exports": [
+        "createSelfStopFlow",
+        "selfStopActions",
+        "selfStopRecoveryGuide"
+      ],
+      "referencedByTests": [
+        "tests/self-stop-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/self-stop.jsx": {
+      "lines": 31,
+      "imports": [
+        "./components",
+        "./self-stop-flow",
+        "react"
+      ],
+      "exports": [
+        "SelfStop"
+      ],
+      "referencedByTests": [
+        "tests/self-stop-flow.test.mjs"
+      ]
+    },
+    "ui-source/onboarding/task-runtime.jsx": {
+      "lines": 52,
+      "imports": [
+        "./components",
+        "react"
+      ],
+      "exports": [
+        "TaskRuntime"
+      ],
+      "referencedByTests": [
+        "tests/onboarding-cloud-task-runtime.test.mjs"
+      ]
+    },
+    "ui-source/preview/InterventionPanel.jsx": {
+      "lines": 32,
+      "imports": [
+        "./attention-flow.mjs",
+        "react"
+      ],
+      "exports": [
+        "InterventionPanel"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/preview/attention-flow.mjs": {
+      "lines": 67,
+      "imports": [],
+      "exports": [
+        "advanceFlow",
+        "createFlow",
+        "flowCue",
+        "flowKinds",
+        "flowView"
+      ],
+      "referencedByTests": [
+        "tests/attention-flow-preview.test.mjs"
+      ]
+    },
+    "ui-source/preview/task-focus-preview.jsx": {
+      "lines": 66,
+      "imports": [
+        "../../bundle/approval-semantics.js",
+        "../task-focus.mjs",
+        "./InterventionPanel.jsx",
+        "./attention-flow.mjs",
+        "./intervention-preview.css",
+        "react",
+        "react-dom/client"
+      ],
+      "exports": [],
+      "referencedByTests": [
+        "tests/task-focus.test.mjs"
+      ]
+    },
+    "ui-source/task-focus-view.js": {
+      "lines": 80,
+      "imports": [],
+      "exports": [],
+      "referencedByTests": [
+        "tests/task-focus.test.mjs"
+      ]
+    },
+    "ui-source/task-focus.mjs": {
+      "lines": 57,
+      "imports": [],
+      "exports": [
+        "decisionSelection",
+        "taskAttention"
+      ],
+      "referencedByTests": [
+        "tests/task-focus.test.mjs"
+      ]
+    },
+    "ui-source/workbench-client.js": {
+      "lines": 491,
+      "imports": [],
+      "exports": [],
+      "referencedByTests": [
+        "tests/attention-flow-preview.test.mjs",
+        "tests/cloud-web-ui-state.test.mjs",
+        "tests/compact-ui.test.mjs",
+        "tests/delivery-preview.test.mjs",
+        "tests/im-maintenance-flow.test.mjs",
+        "tests/maintenance-flow.test.mjs",
+        "tests/maintenance-session-flow.test.mjs",
+        "tests/managed-browser-navigation.test.mjs",
+        "tests/notification-media.test.mjs",
+        "tests/onboarding-cloud-files.test.mjs",
+        "tests/onboarding-cloud-web.test.mjs",
+        "tests/onboarding-im.test.mjs",
+        "tests/onboarding-local-pair.test.mjs",
+        "tests/self-disable-flow.test.mjs",
+        "tests/self-remove-flow.test.mjs",
+        "tests/self-stop-flow.test.mjs",
+        "tests/task-focus.test.mjs",
+        "tests/task-interventions-ui.test.mjs",
+        "tests/ui-contract.test.mjs"
+      ]
+    }
+  }
+}

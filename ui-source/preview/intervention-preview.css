@@ -1,0 +1,22 @@
+/* Isolated preview only; no production state machine or execution controls. */
+.dtu .flow-steps{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:11px;color:#647c94;padding:10px 0 0}
+.dtu .flow-steps [aria-current=step]{color:#1467b6;font-weight:650}
+.dtu .flow-steps span{white-space:nowrap}
+.dtu .flow-facts{margin:10px 0 14px;padding-left:18px;color:#536b83;font-size:12px;line-height:1.8}
+.dtu .flow-facts li+li{margin-top:4px}
+.dtu .flow-heading{outline-offset:4px;scroll-margin-top:20px}
+.dtu .flow-heading:focus-visible{outline:2px solid #5799df;border-radius:4px}
+.dtu .preview-intervention .attention-item{padding-bottom:4px}
+.dtu .flow-next{font-size:12px;line-height:1.7;color:#37685b;margin-top:10px}
+.dtu .flow-history{border-top:1px solid #e4edf5;margin-top:12px;padding-top:10px}
+.dtu .flow-history summary{font-size:12px;color:#476989;cursor:pointer}
+.dtu .flow-history ol{padding-left:20px;margin:12px 0 0}
+.dtu .flow-history li{padding:0 0 12px 8px;border-left:1px solid #dce9f6;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
+.dtu .flow-history li>span{display:block;color:#61788d;font-size:11px}
+.dtu .flow-history li>p{white-space:pre-wrap;margin:3px 0;font-size:12px}
+.dtu .preview-intervention .decision-hint{max-width:100%}
+.dtu .flow-demo-hint{margin-bottom:0}
+.dtu .preview-intervention .button{transition:background 160ms ease,color 160ms ease,box-shadow 160ms ease}
+.dtu.keyboard .preview-intervention .button{transition:none;transform:none}
+@container(max-width:680px){.dtu .preview-intervention .decision-actions .button{min-height:44px}.dtu .flow-steps{gap:6px 12px}.dtu .preview-intervention .task-decision-box textarea{font-size:16px}}
+@media(prefers-reduced-motion:reduce){.dtu .preview-intervention .button{transition:none;transform:none}}

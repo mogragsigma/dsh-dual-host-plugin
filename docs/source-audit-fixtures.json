@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "files": {
+    "tests/managed-browser-navigation.test.mjs": {
+      "sha256": "9220dee1f608539f922dc8697390637e4586301445451e4d374332f19b92582e",
+      "patterns": [
+        "url_credential"
+      ],
+      "reason": "Reviewed synthetic invalid-input fixture; not a live credential. Any source change requires re-review."
+    },
+    "tests/onboarding-cloud-models.test.mjs": {
+      "sha256": "8debc484facc7aa4a5d28f2b2b87fd7564bc25b445e1c4925f59541631582fa7",
+      "patterns": [
+        "api_key_shape"
+      ],
+      "reason": "Reviewed synthetic invalid-input fixture; not a live credential. Any source change requires re-review."
+    },
+    "tests/onboarding-existing-setup.test.mjs": {
+      "sha256": "5926055616d428d27f071a6c9b382be6cb994fbc1ee5e130ffc52efef6992bec",
+      "patterns": [
+        "api_key_shape",
+        "url_credential"
+      ],
+      "reason": "Reviewed synthetic invalid-input fixture; not a live credential. Any source change requires re-review."
+    },
+    "tests/onboarding-models.test.mjs": {
+      "sha256": "d60b1d1b22dbc68cba4fd0fc3337039049f08ee26a32a92e1d58f3ea6e9041ef",
+      "patterns": [
+        "api_key_shape"
+      ],
+      "reason": "Reviewed synthetic invalid-input fixture; not a live credential. Any source change requires re-review."
+    },
+    "tests/onboarding-repository.test.mjs": {
+      "sha256": "e5aef6ae15bbf86a7d5a32263fbf833297f4ef6523ce18e97d77e6bb2c299aa8",
+      "patterns": [
+        "url_credential"
+      ],
+      "reason": "Reviewed synthetic invalid-input fixture; not a live credential. Any source change requires re-review."
+    },
+    "tests/onboarding-self-maintenance.test.mjs": {
+      "sha256": "337718f14e522e3638365c69b0bd9ddcf3d81574747fdc8e18cebfbb0c6ec407",
+      "patterns": [
+        "url_credential"
+      ],
+      "reason": "Reviewed synthetic invalid-input fixture; not a live credential. Any source change requires re-review."
+    },
+    "tests/onboarding-state.test.mjs": {
+      "sha256": "a767c1b26ddb19c2b824379d3854d4e9f9cdc295137b5adc0381ecc5e810e6f2",
+      "patterns": [
+        "api_key_shape",
+        "url_credential"
+      ],
+      "reason": "Reviewed synthetic invalid-input fixture; not a live credential. Any source change requires re-review."
+    },
+    "tests/onboarding-token-plan.test.mjs": {
+      "sha256": "9cf186301e001afe4e0ff524bc27ee3f97d01d83aa62a3b898b22d7adfcd1f3c",
+      "patterns": [
+        "api_key_shape"
+      ],
+      "reason": "Reviewed synthetic invalid-input fixture; not a live credential. Any source change requires re-review."
+    },
+    "tests/repository.test.mjs": {
+      "sha256": "9f17955c8091c5c2539ae90c73a3d9f83b7cd0da489d40454f182f8eeb19ab09",
+      "patterns": [
+        "url_credential"
+      ],
+      "reason": "Reviewed synthetic invalid-input fixture; not a live credential. Any source change requires re-review."
+    },
+    "tests/source-web.test.mjs": {
+      "sha256": "054deeb43ba42419bafbe6ebc1c0c44f01a87463543d74d67cac666d15c6963d",
+      "patterns": [
+        "url_credential"
+      ],
+      "reason": "Reviewed synthetic invalid-input fixture; not a live credential. Any source change requires re-review."
+    },
+    "tests/task-catalog.test.mjs": {
+      "sha256": "71e66092d12691dc923bc4b7f05e01b6f85afdbb5526e289b782b9107407da07",
+      "patterns": [
+        "url_credential"
+      ],
+      "reason": "Reviewed synthetic invalid-input fixture; not a live credential. Any source change requires re-review."
+    }
+  }
+}

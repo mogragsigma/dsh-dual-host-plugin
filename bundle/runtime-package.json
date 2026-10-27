@@ -1,0 +1,17 @@
+{
+  "name": "dsh-dual-host-isolated-runtime",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@deepseek-ai/dsh": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-credentials": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-http-proxy": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-web-fetch-http": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-web-search-deepseek": "0.2.1-rc.3",
+    "@js-temporal/polyfill": "0.5.1",
+    "@simplewebauthn/browser": "13.3.0",
+    "@simplewebauthn/server": "13.3.3",
+    "acorn": "8.15.0",
+    "koffi": "3.1.1"
+  }
+}

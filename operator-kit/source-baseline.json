@@ -1,0 +1,24 @@
+{
+  "source": "44-路线图16-全链路与可回滚交付",
+  "frozenSource": true,
+  "files": {
+    "scripts/upgrade_plan.py": "a91c09c87f64095273294730afd825d552631690b969b4fe626d8a634e57b2ba",
+    "scripts/state_inspection.py": "263c961e465097ba6fd586b4e096429316d181415c2e795f794182daff592e81",
+    "scripts/transaction_state.py": "61ae3b85c226c48b9283e7fc98234503a6b259a2aa290493ed17d0151679d5ee",
+    "scripts/install_transaction.py": "a64e793125f0606f81bf04a9b485a2a22ab1b290c904c78cd84306f21d7aa986",
+    "scripts/stopped_host.py": "16ed931029d783127d016c057fc2503ba8a07c76de3047a79ef886f48e530367",
+    "scripts/service_guard.py": "9415d4014b4de52bb9d5b1ce3cc76c010e9704d6d8778e8853dda4b7db76c3a6",
+    "scripts/rollback_policy.py": "85ab9c183bcccaf60507f637807966e0c69651ec787b302db34e2fb1fe9fe74c",
+    "scripts/release_bundle.py": "d502ce1b04676250b3d53b1057c73713ffec0fb9e45158b350b5670f4f6271e4",
+    "scripts/operator_cli.py": "b0dc1806c1638697e8fc304a6329994ece4bd1e2a2f732491abefcdc5aded40c",
+    "scripts/owner_migration.py": "5092cfd8de12bb86ba5d95a6db3dcf116e959467b985d31d59bb3d9fc7133710",
+    "tests/install_transaction_test.py": "36e5e77691dcbd73821f37dbad97261650d9e3cdeb928864f97e12b81876f1b7",
+    "tests/operator_cli_test.py": "bd279eaddd5d7615a3395857224958d1df87da10ad4ccaea96ea54620b841cdf",
+    "tests/release_bundle_test.py": "9311f66410a7160c8c81b8e4992562626dfd9c7735b3e4ceeb27cb7818480de2",
+    "tests/rollback_policy_test.py": "923cb51c6a838c5e64cd6bc8eb2fe59541b6251fd990e2647622af1eff91bb8b",
+    "tests/service_guard_test.py": "20255459a45379e8f22a6d4ae4093bb579be9cb6493721adb857127230a98c2a",
+    "tests/state_inspection_test.py": "92aef5985b1230ece6a53fd45a8e1e4b41084a80484ea4ca6663077c71e6478c",
+    "tests/stopped_host_test.py": "57565933753309dbc4f4d0e47a8051fe3687be21ffe7dbe4c0d064ec8fd48d9d",
+    "tests/upgrade_plan_test.py": "247e75c8f73249e31fd0c6f9fd59c5a1861634fea1ad6820f50fb7a8d750cb19"
+  }
+}

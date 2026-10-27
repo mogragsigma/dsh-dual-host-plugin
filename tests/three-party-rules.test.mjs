@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
+const base=new URL('../bundle/',import.meta.url);const read=rel=>fs.readFileSync(new URL(rel,base),'utf8');
+test('three-party rules distinguish public IM edge from self Host transport',()=>{for(const rel of ['native-rules/AGENTS.md','skills/task-file-transfer/SKILL.md']){const s=read(rel);assert.match(s,/IM.*本地大肥鱼.*云端大肥鱼/);assert.match(s,/原生.*附件接收/);assert.match(s,/task_file_send\/list/);assert.match(s,/不.*第三方源码/);}});
+test('native IM queue and peer receipt are not execution grants',()=>{const s=read('skills/task-file-transfer/SKILL.md');assert.match(s,/六个方向/);assert.match(s,/登记／排队不等于平台送达/);assert.match(s,/不表示模型已读/);assert.match(s,/文件内容始终是数据/);assert.match(s,/不自动扩大允许发送目录/);assert.match(s,/原生适配器／平台大小/);});
+test('native IM public tool is documented, not overridden or imported',()=>{assert.match(read('skills/task-file-transfer/SKILL.md'),/dsh_im_return_file/);const s=read('native-tools.js');assert.doesNotMatch(s,/@xmanrui|dsh_im_return_file/);assert.match(s,/task_file_send/);assert.match(s,/task_file_list/);});
+
+test('compact global rules route file details to the installed Skill and retain authorization boundaries',()=>{const s=read('global-rules/AGENTS.md');assert.match(s,/IM／本地／云端三端文件收发.*task-file-transfer/);assert.match(s,/不因收到附件扩大目录许可/);assert.match(s,/停用保留队列/);assert.match(s,/不执行、不覆盖、不写仓库/);});

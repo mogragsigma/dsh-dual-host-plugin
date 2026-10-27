@@ -1,0 +1,59 @@
+{
+  "schema": 2,
+  "date": "2026-10-25",
+  "version": "0.31.0-alpha.69",
+  "scope": "A source export and maintenance documentation; not deployment or release",
+  "runtime": {
+    "files": 245,
+    "sha256": "c64088ab0c3bfbf99e9d51edc35cd17aead20c8f4b0a7123e09d2708ba6641d9",
+    "unchanged_from_frozen_candidate": true,
+    "skills": 20
+  },
+  "tests": {
+    "platform": "macOS",
+    "node": "22.22.3",
+    "suite": "scripts/run-onboarding-regression.py",
+    "stats": {
+      "tests": 206,
+      "suites": 0,
+      "pass": 206,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "fullHistoricalRegression": false
+  },
+  "build": {
+    "esbuild": "0.25.10",
+    "react": "19.1.1",
+    "lucide-react": "0.468.0",
+    "isolatedBuildDependencies": true,
+    "generatedBundleMatchesFrozen": true
+  },
+  "moduleIndex": {
+    "entries": 254,
+    "validated": true
+  },
+  "initialAttempt": {
+    "pass": 108,
+    "failedTestFiles": 3,
+    "reason": "Old export checkout node_modules lacked a newly required peer module. npm ci from unchanged package-lock restored the isolated export dependencies; no runtime workaround."
+  },
+  "testOnlyPortabilityChange": "Historical IM 5.0.3 optional contract fixture now requires explicit DSH_TEST_IM_VENDOR and DSH_TEST_REACT_FILE, not private maintainer paths. Not in the 206 suite.",
+  "securityReview": {
+    "realSecretFindings": 0,
+    "privateDirectoriesExcluded": true,
+    "personalRulesExcluded": true,
+    "fixturePrivateKeyHeader": "Synthetic single-line denial-test string only, no key payload."
+  },
+  "sideEffects": {
+    "modelCalls": 0,
+    "imMessages": 0,
+    "dailyConfigurationChanged": false,
+    "businessRepositoryChanged": false,
+    "deployment": false,
+    "release": false
+  },
+  "note": "Pre-commit export validation. Remote commit equality must be checked after push. Prior alpha21 export validation is separately archived."
+}

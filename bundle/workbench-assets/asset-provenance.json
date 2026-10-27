@@ -1,0 +1,26 @@
+{
+  "method": "built-in image_gen",
+  "userReference": "User-attached deep-blue whale maid character",
+  "transparentBackground": true,
+  "atlas": {
+    "columns": 4,
+    "rows": 3,
+    "pairs": [
+      "local",
+      "cloud",
+      "tasks",
+      "model",
+      "files",
+      "repository"
+    ]
+  },
+  "sha256": "f92bff7b6695a1e0a4e58339363b0361fbf47ce4e46fd046b175bf278fd2911e",
+  "dimensions": [
+    1448,
+    1086
+  ],
+  "prompt": "Using the user reference as the EXACT character identity, create one transparent UI sprite atlas in a strict 4-column by 3-row grid, landscape 4:3, twelve equally sized square cells. A coherent set of refined chibi/half-body illustrations of THIS SAME whale-maid character for a white and pale-blue productivity app. Preserve dark slate-blue long hair with cyan tips, navy whale-fin ears, frilly white maid headband, navy dress and sleeves, white frilled apron, black neck bow, blue eyes. Never change to pale baby-blue hair, ordinary human ears, simple blue dress or a different mascot. Soft clean professional anime linework and delicate shading, readable at 70–100px. Wholesome, no text, no logos or lettering, no picture backgrounds or card frames. Each cell has a centered half-body character or head portrait, transparent 15% margin on every side; NO figure may cross cell boundary. Paired neighboring cells must have IDENTICAL framing, scale, head and body location, only small expression/gesture change.\nRow 1: cell1 three-quarter head-and-shoulders portrait, relaxed attentive smile (local host); cell2 same portrait and pose, one eye winking. Cell3 half-body with a small light-blue cloud accessory near shoulder, looking slightly left (cloud host); cell4 exact same, warmer smile and a tiny raised hand.\nRow 2: cell1 half-body holding a white clipboard with small blue checkbox marks (tasks); cell2 exact same pose, looking up with a wink, same clipboard. Cell3 half-body sitting behind a small silver-blue laptop, focused eyes visible above laptop (model selection); cell4 same position, eyes look up and smile, laptop unchanged.\nRow 3: cell1 half-body holding a neatly stacked set of white documents with blue corners (deliverables); cell2 same location, extending the top page only slightly toward viewer and winking. Cell3 half-body with an upside-down small metallic steel rice bowl perched like a helmet on TOP of her maid headband (repository), calm playful expression; cell4 identical position, bowl tilted only slightly and one eye winking.\nUse transparent alpha for all empty space. No captions, words, decorative stars, bubbles, colors behind characters, gridlines, drop shadows or floor. Strict 4x3 equal square cell sprite-sheet geometry. All twelve stay visibly the same character as the user image, including hairstyle, headband, whale ears and costume, even where simplified. Pair alignment is critical for hover crossfades.",
+  "officialEndorsementClaimed": false,
+  "uploadedToGitee": false,
+  "thirdPartyPluginAssetsCopied": false
+}

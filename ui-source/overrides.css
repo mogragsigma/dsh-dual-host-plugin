@@ -1,0 +1,211 @@
+/* Integration adjustments: native DSH owns its navigation and theme. */
+.dtu{height:100%;width:100%;overflow:auto;container-type:inline-size;background:#f5f8fc;color:#192534;--mascot:none;min-width:0;color-scheme:light}
+.dtu .surface{max-width:1500px;width:100%;padding:calc(var(--dsh-frame-top-clearance,0px) + 28px) 36px 24px;margin:0 auto;min-width:0}
+.dtu h1{font-size:36px}.dtu p,.dtu dd,.dtu strong,.dtu h2,.dtu h3{overflow-wrap:anywhere}
+.dtu button{font:inherit}.dtu button.button{font-size:13px}.dtu .host-copy{max-width:calc(100% - 95px)}
+.dtu .host-companion{width:112px;height:112px;right:5px;bottom:4px}.dtu .host-block{min-height:200px;padding:22px}
+.dtu .host-state{max-width:none}.dtu .host-copy p{font-size:11px;line-height:1.7}
+.dtu .warning{padding:12px 16px;color:#86490b;background:#fff3df;border-radius:12px;margin:14px 0;overflow-wrap:anywhere}
+.dtu .pending{padding:12px 16px;background:#eef4fb;border-radius:12px}.dtu summary{cursor:pointer;font-weight:550;list-style:revert;padding:5px 0}
+.dtu details p{margin:8px 0}.dtu .page-footer{margin-top:24px}.dtu .pagination{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 24px 22px}.dtu .pagination .button{min-height:34px;font-size:12px;padding:6px 12px}
+.dtu .task-card .card-top{align-items:flex-start;flex-wrap:wrap;gap:8px}.dtu .card-foot{flex-wrap:wrap;gap:8px}
+.dtu .record{padding:12px 0;border-top:1px solid var(--line)}.dtu .record p{margin:6px 0}
+.dtu .empty-detail{padding:42px 28px;display:grid;justify-items:start;gap:12px}.dtu .empty-detail h2{font-size:20px}
+.dtu .back-button{display:none;margin:16px 20px 4px}.dtu .inner-timeline{padding:12px 0 0 14px;margin-top:16px}.dtu .inner-timeline:before{left:4px;top:36px;bottom:32px}.dtu .session-card .session-actions{flex-wrap:wrap}
+.dtu .evidence{padding-top:18px;margin-top:18px;border-top:1px solid var(--line)}.dtu .evidence p{margin-top:10px}.dtu pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:180px;overflow:auto;font:12px/1.7 inherit;background:#f5f8fc;padding:12px;border-radius:10px}
+.dtu .empty-artifact .button{margin-top:10px}.dtu .detail-grid .fact{margin:0;min-width:0}.dtu .fact dd{margin:6px 0 0;overflow-wrap:anywhere}.dtu .fact.with-companion{padding-right:72px}.dtu .fact.with-companion .companion{width:62px;height:62px}
+.dtu .workspace-banner p{max-width:570px}.dtu .about-dialog{padding:28px;border:1px solid #dfebf7;border-radius:24px;color:#192534;background:#ffffffed;max-width:min(560px,calc(100% - 32px));box-shadow:0 25px 80px #153f6b25;animation:dtu-modal-in 200ms var(--ease-out)}.dtu .about-dialog::backdrop{background:#17355933;backdrop-filter:blur(5px)}.dtu .about-dialog>p{margin:16px 0;font-size:13px;line-height:1.8}
+.dtu .task-layout{grid-template-columns:minmax(260px,.9fr) minmax(320px,1.1fr)}
+.dtu.compact .surface{padding:14px}.dtu.compact h1{font-size:23px}.dtu.compact .eyebrow{display:none}.dtu.compact .page-header{flex-wrap:wrap}.dtu.compact .header-actions{padding:0}.dtu.compact .task-layout{display:block}.dtu.compact .host-strip{grid-template-columns:1fr;margin-bottom:18px}.dtu.compact .host-block{min-height:175px}.dtu.compact .task-layout:not(.has-selection) .detail-panel{display:none}.dtu.compact .back-button{display:inline-flex}.dtu.compact .snapshot-line{flex-wrap:wrap}.dtu.compact .detail-grid{grid-template-columns:1fr}.dtu.compact .surface>.page-footer{font-size:10px}
+@container(max-width:900px){.dtu .surface{padding-left:22px;padding-right:22px}.dtu .task-layout{gap:16px;grid-template-columns:minmax(230px,.85fr) minmax(280px,1.15fr)}.dtu .detail-head,.dtu .detail-body{padding:20px}.dtu .fact.with-companion{padding-right:14px;padding-bottom:65px}.dtu .host-block{padding:18px}}
+@container(max-width:680px){.dtu .surface{padding-left:16px;padding-right:16px}.dtu .task-layout{display:block}.dtu .task-layout.has-selection .tasklist{display:none}.dtu .task-layout:not(.has-selection) .detail-panel{display:none}.dtu .back-button{display:inline-flex}.dtu .host-strip{grid-template-columns:1fr}.dtu .host-block{min-height:170px}.dtu .host-copy{max-width:calc(100% - 110px)}.dtu .host-copy p{max-width:none}.dtu .host-companion{width:114px;height:114px}.dtu .workspace-layout{display:block}.dtu .workspace-aside{margin-top:18px}.dtu .view-toolbar{flex-wrap:wrap}.dtu .section-tabs{max-width:100%}.dtu .detail-grid{grid-template-columns:1fr 1fr}.dtu .fact.with-companion{padding-right:65px;padding-bottom:16px}.dtu .page-header{flex-wrap:wrap}.dtu .header-actions{flex-direction:row;align-items:center;flex-wrap:wrap;padding:0}.dtu .host-menu{right:auto;left:0;max-width:calc(100vw - 48px)}.dtu .about-dialog{padding:22px}}
+@container(max-width:360px){.dtu .surface{padding-left:12px;padding-right:12px}.dtu .detail-grid{grid-template-columns:1fr}.dtu .detail-head,.dtu .detail-body{padding:16px}.dtu .session-head{flex-wrap:wrap}.dtu .pagination{padding-left:16px;padding-right:16px}.dtu .pagination .button{font-size:11px;padding:6px 10px}.dtu .module-tools{padding-left:16px;padding-right:16px}}
+@container(min-width:681px){.dtu:not(.compact) .tasklist>.timeline{max-height:610px;overflow:auto;overscroll-behavior:contain}}
+/* Per-row axis remains continuous when the task list itself scrolls. */
+.dtu .timeline:before{display:none}.dtu .timeline-row:before{z-index:1}.dtu .timeline-row:after{content:"";position:absolute;left:-9px;top:0;bottom:-4px;width:2px;background:#dce9f9;pointer-events:none}.dtu .timeline-row:first-child:after{top:26px}.dtu .timeline-row:last-child:after{bottom:auto;height:26px}.dtu .timeline-row:only-child:after{display:none}
+@container(max-width:360px){.dtu .host-block{min-height:196px;padding:16px}.dtu .host-copy{max-width:100%}.dtu .host-companion{width:78px;height:78px;right:5px;bottom:4px}.dtu .host-copy>p:nth-last-child(-n+2){max-width:calc(100% - 68px)}.dtu .host-state{max-width:none}}
+
+.artifact-card{border:1px solid #d6e6f3;border-radius:16px;padding:16px;background:#f5faff;margin-block:12px;overflow-wrap:anywhere}.artifact-card h4{display:flex;align-items:center;gap:8px;margin:0}.artifact-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.artifact-card p{margin-block:8px}
+
+.dtu .artifact-introduction{font-size:14px;line-height:1.65;color:var(--text);white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* Persistent planning reads only. Static budget meters are not completion progress. */
+.dtu .planning-heading,.dtu .plan-card-heading,.dtu .budget-caption{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.dtu .planning-heading h3{display:flex;align-items:center;gap:8px}.dtu .plan-card{margin-top:14px;padding:18px;border:1px solid #d7e6f6;border-radius:16px;background:linear-gradient(135deg,#f5faff,#fff)}
+.dtu .plan-card h4{margin:0;font-size:14px;line-height:1.6}.dtu .plan-card p{font-size:12px;line-height:1.7}.dtu .plan-rule{color:#285c91;font-weight:550}
+.dtu .plan-budget{margin:14px 0 10px;padding:12px;border-radius:10px;background:#eaf3fc}.dtu .budget-caption{font-size:12px;font-variant-numeric:tabular-nums}.dtu .plan-budget meter{width:100%;height:8px;display:block;margin-top:8px;accent-color:#438be1}
+.dtu .planning-empty{padding:14px 16px;border:1px dashed #ccdeef;border-radius:12px;background:#f8fbff}.dtu .child-timeline{margin:12px 0 0;padding-left:14px}.dtu .child-card{padding:12px;background:#fff;border:1px solid #e1eaf4;border-radius:12px}.dtu .child-card .input-question{color:#80501b;background:#fff4e4;padding:10px;border-radius:8px;white-space:pre-wrap}
+.dtu .plan-budget meter::-webkit-meter-bar{border:0;border-radius:6px;background:#d9e6f5;box-shadow:none;height:8px}.dtu .plan-budget meter::-webkit-meter-optimum-value{border-radius:6px;background:#438be1}.dtu .plan-budget meter::-moz-meter-bar{border-radius:6px;background:#438be1}
+@container(max-width:360px){.dtu .plan-card{padding:12px}.dtu .child-card{padding:10px}.dtu .plan-card-heading .badge{white-space:normal}.dtu .planning-heading{align-items:flex-start}}
+
+/* Task notification snapshots reuse the accepted blue/white panels and left timeline. */
+.dtu .notification-binding{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:14px 16px;margin:12px 0;border:1px solid #d9e8f7;border-radius:16px;background:#f4f9ff}
+.dtu .notification-binding p{flex-basis:100%;margin:0}
+.dtu .notification-card{border:1px solid #e0eaf4;border-radius:14px;background:#fff;padding:12px 14px;overflow-wrap:anywhere}
+.dtu .notification-reason{color:#40576c;font-size:13px;line-height:1.6}
+.dtu .notification-discovery{margin-top:16px;border-top:1px solid #e0eaf4;padding-top:14px}
+.dtu .notification-discovery summary{font-weight:600;cursor:pointer;color:#185a97;padding:5px 0}
+.dtu .notification-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.dtu .notification-targets{list-style:none;padding:0;display:grid;gap:10px}
+.dtu .notification-targets li{padding:12px 14px;background:#f6faff;border:1px solid #deebf7;border-radius:12px;overflow-wrap:anywhere}
+
+/* A2A is a read-only timeline; no ambient motion or additional display polling. */
+.dtu .a2a-budgets{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dtu .a2a-card{background:#fff;border:1px solid #dbe8f7;border-radius:14px;padding:16px;overflow-wrap:anywhere}
+.dtu .a2a-result{margin:12px 0;padding:12px;border-radius:10px;background:#f2f8ff}
+.dtu .a2a-models{border-top:1px solid #e1eaf4;margin-top:14px;padding:12px 0}
+.dtu .a2a-models summary{cursor:pointer;color:#185a97;font-size:12px}
+.dtu .a2a-timeline{margin-top:18px;padding-left:14px}
+@container(max-width:480px){.dtu .a2a-budgets{grid-template-columns:1fr;gap:0}.dtu .a2a-card{padding:12px}}
+
+.dtu .a2a-workspace{margin-bottom:22px}.dtu .a2a-workspace>.inner-timeline{padding:0 22px 18px 28px}
+
+/* Static safety evidence: no auto-refresh, progress animation or new destructive controls. */
+.dtu .development-facts{display:grid;grid-template-columns:74px minmax(0,1fr);gap:8px 12px;margin:14px 0;padding:14px;border-radius:12px;background:#edf5fd;font-size:12px;line-height:1.65}.dtu .development-facts dt{color:#4b6d8d}.dtu .development-facts dd{margin:0;overflow-wrap:anywhere}.dtu .development-events{border-top:1px solid #dbe8f5;margin-top:14px;padding-top:12px}.dtu .development-events summary{cursor:pointer;font-size:12px;color:#185a97}.dtu .development-events .inner-timeline{margin-top:14px}.dtu .development-local{border:1px dashed #bcd5ee;border-radius:14px;padding:14px;margin-top:16px;background:#f7fbff}.dtu .development-local h4{margin:0;font-size:13px}.dtu .development-local .record:last-child{border-bottom:0}.dtu .development-card .badge{white-space:normal;text-align:left}
+@container(max-width:360px){.dtu .development-facts{grid-template-columns:1fr;gap:4px}.dtu .development-facts dd{margin-bottom:8px}.dtu .development-events .notification-card{padding:10px}}
+
+/* Delivery snapshots reuse accepted cards; no automatic refresh or decorative motion. */
+.dtu .delivery-section dd,.dtu .delivery-section h4{overflow-wrap:anywhere}
+.dtu .delivery-files summary{cursor:pointer;padding:10px 0}
+.dtu .delivery-files pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;padding:12px;border:1px solid #d6e8fa;border-radius:12px;background:#f5faff;color:#18344f;font-size:12px;line-height:1.55}
+.dtu .delivery-files summary:focus-visible{outline:2px solid #438fe8;outline-offset:3px;border-radius:6px}
+
+/* Own boundary only: never target or restyle the optional IM provider's descendants. */
+.dsh-native-im-shell{display:flex;flex-direction:column;gap:20px;height:100%;min-width:0;padding:24px;box-sizing:border-box;background:#f5f8fc}
+.dsh-native-im-frame{flex:1 1 auto;min-height:0;min-width:0;overflow:auto;padding:20px;border:1px solid #e1ebf6;border-radius:24px;box-sizing:border-box;background:#fff;box-shadow:0 4px 16px #345c7f05}
+
+.dsh-cloud-im-web{flex:1 1 auto;width:100%;min-height:360px;border:1px solid #e1ebf6;border-radius:24px;background:#fff}
+
+/* Compact presentation pass: no change to requests, permissions or expiry gates. */
+.dtu .surface{padding:calc(var(--dsh-frame-top-clearance,0px) + 16px) 24px 16px}
+.dtu .page-header{align-items:center;margin-bottom:12px;gap:16px}
+.dtu .workbench-brand{display:flex;align-items:center;gap:10px;min-width:0}
+.dtu .workbench-brand h1{font-size:25px;line-height:1.3;white-space:nowrap}
+.dtu .brand-companion{width:44px;height:44px;flex:none}
+.dtu .header-actions{gap:10px;padding:0;flex-wrap:wrap;align-items:center}
+.dtu .header-actions .button{min-height:38px;padding:8px 13px}
+.dtu .snapshot-line{margin:8px 0 12px;gap:6px 16px;flex-wrap:wrap;font-size:11px}
+.dtu .host-strip{gap:12px;margin-bottom:16px}
+.dtu .host-block{min-height:126px;padding:14px 16px;border-radius:18px}
+.dtu .host-block h2{font-size:18px;margin:4px 0 6px}
+.dtu .host-copy{max-width:calc(100% - 74px)}
+.dtu .host-copy p{margin:4px 0;font-size:11px;line-height:1.5}
+.dtu .host-companion{width:78px;height:78px;right:8px;bottom:12px}
+.dtu .view-toolbar{margin-bottom:12px}
+.dtu .module-header{padding:14px 18px;min-height:0;gap:12px}
+.dtu .module-header h2{font-size:17px;line-height:1.4}
+.dtu .module-header>.companion{width:44px;height:44px}
+.dtu .heading-with-help{display:flex;align-items:center;gap:6px;min-width:0}
+.dtu .info-help{display:inline-flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;border:0;border-radius:50%;background:transparent;color:#5681a6;corner-shape:round}
+.dtu .info-help svg{width:18px;height:18px}
+.dtu .info-help:focus-visible{outline:2px solid #438fe8;outline-offset:-2px}
+.dtu .help-dialog{width:480px;max-height:80dvh;overflow:auto}
+.dtu .execution-tools{display:flex;align-items:center;gap:12px;flex:none}
+.dtu .execution-tools .companion{width:50px;height:50px}
+.dtu .execution-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:0 18px 12px;border-bottom:1px solid #e3edf7}
+.dtu .execution-toolbar p{margin:0;font-size:11px}
+.dtu .execution-switch{display:flex;gap:4px;align-items:center;padding:3px;background:#edf4fc;border-radius:12px}
+.dtu .execution-switch button{display:flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:9px;padding:7px 12px;min-height:34px;background:transparent;color:#546e87;font-size:12px}
+.dtu .execution-switch button[aria-pressed=true]{background:#fff;color:#246eaf;box-shadow:0 1px 5px #315f8c10}
+.dtu .paged-timeline>.timeline{padding:12px 18px 0 30px;margin:0}
+.dtu .paged-timeline .session-card{padding:10px 14px;border-radius:12px}
+.dtu .paged-timeline .timeline-row{margin-bottom:8px}
+.dtu .paged-timeline .session-head{margin-bottom:4px;gap:8px;flex-wrap:wrap}
+.dtu .paged-timeline .session-card h3{font-size:14px;line-height:1.5;margin:2px 0}
+.dtu .paged-timeline .session-card p{font-size:12px;line-height:1.5;margin:4px 0}
+.dtu .paged-timeline .session-actions{margin-top:8px;gap:8px}
+.dtu .paged-timeline .button{min-height:32px;padding:6px 12px;font-size:12px}
+.dtu .paged-timeline .pagination{padding:10px 18px 14px}
+.dtu .pagination p{margin:0;font-variant-numeric:tabular-nums;font-size:12px;text-align:center}
+.dtu .tasklist .module-tools{padding:0 18px 12px}
+.dtu .tasklist .task-card{padding:14px 16px}
+.dtu .tasklist .timeline{padding-top:6px}
+.dtu .empty-detail{padding:24px;gap:8px}
+.dtu .empty-list{padding:16px 18px;font-size:12px}
+.dtu .page-footer{margin-top:12px}
+.dtu.compact .workbench-brand h1{font-size:20px}
+.dtu.compact .host-block{min-height:126px}
+@media(hover:hover) and (pointer:fine){.dtu .info-help:hover{background:#e7f2ff;color:#226caf}.dtu .execution-switch button:hover{color:#2168a4}}
+@container(max-width:680px){.dtu .surface{padding-left:14px;padding-right:14px}.dtu .page-header{gap:10px}.dtu .header-actions{gap:8px}.dtu .header-actions .button{min-height:44px}.dtu .host-strip{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dtu .host-block{padding:12px;min-height:156px}.dtu .host-copy{max-width:100%}.dtu .host-companion{width:42px;height:42px;right:6px;bottom:4px;opacity:.85}.dtu .host-copy>p:nth-last-child(-n+2){max-width:calc(100% - 30px)}.dtu .host-block h2{font-size:15px}.dtu .execution-module>.module-header{flex-wrap:wrap}.dtu .execution-tools{justify-content:space-between;width:100%}.dtu .paged-timeline .button,.dtu .execution-switch button{min-height:44px}.dtu .info-help{width:44px;height:44px}.dtu .module-header{padding:12px}.dtu .execution-toolbar{padding:0 12px 12px}.dtu .paged-timeline>.timeline{padding-left:26px;padding-right:12px}.dtu .paged-timeline .pagination{padding:10px 12px}.dtu .pagination{gap:4px}.dtu .pagination p{font-size:11px}.dtu .execution-switch{width:100%}.dtu .execution-switch button{flex:1}.dtu .heading-with-help{gap:0}.dtu.compact .host-strip{grid-template-columns:1fr}}
+.dtu .empty-detail>.companion{width:48px;height:48px}
+.dtu .empty-detail h2{font-size:17px}
+@container(min-width:801px){.dtu .paged-timeline .session-card{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:20px}.dtu .paged-timeline .session-card>.session-head,.dtu .paged-timeline .session-card>h3,.dtu .paged-timeline .session-card>p,.dtu .paged-timeline .session-card>details{grid-column:1}.dtu .paged-timeline .session-actions,.dtu .paged-timeline .session-card>.button{grid-column:2;grid-row:1/span 5;align-self:center;margin:0}.dtu .paged-timeline .session-head{justify-content:flex-start;gap:12px}}
+.dtu .host-caption{display:none}
+.dtu .host-block{min-height:120px}
+.dtu .host-state{margin-top:4px}
+.dtu .view-toolbar{margin-top:12px}
+@container(max-width:680px){.dtu .host-block{min-height:144px}.dtu .view-toolbar{margin-top:10px}}
+
+/* Task focus: outcomes first; internal evidence lives behind an explicit dialog. */
+.dtu .task-layout{grid-template-columns:minmax(240px,.67fr) minmax(360px,1.33fr);align-items:start}
+.dtu .detail-head{padding:18px 22px 14px;min-height:0}
+.dtu .detail-head h2{font-size:22px;max-width:calc(100% - 72px);padding-right:0}
+.dtu .detail-head .companion{width:64px;height:64px;right:18px;top:24px}
+.dtu .detail-body{padding:18px 22px 20px}
+.dtu .empty-artifact{padding:12px 14px;border:1px dashed #cfdeee;border-radius:14px;background:#f8fbff}
+.dtu .empty-artifact p{margin-top:4px;font-size:12px}
+.dtu .artifact-card{padding:14px 16px;margin:10px 0 0;background:#f8fbff;border:1px solid #dae7f5;border-radius:16px}
+.dtu .artifact-card h4{font-size:14px;line-height:1.5}
+.dtu .artifact-card .artifact-introduction{font-size:13px;line-height:1.7;margin:6px 0}
+.dtu .artifact-provenance summary{font-size:11px;color:#5d7894;font-weight:450;padding:2px 0}
+.dtu .artifact-actions{gap:8px;margin-top:10px}
+.dtu .artifact-actions .button{min-height:34px;padding:6px 12px;font-size:12px}
+.dtu .artifact-files>p:last-child{font-size:11px;margin-top:10px;color:#61788d}
+.dtu .task-attention{border-top:1px solid #e2ebf4;padding-top:18px;margin-top:20px}
+.dtu .attention-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.dtu .attention-heading h3{display:flex;align-items:center;gap:7px;font-size:17px}
+.dtu .attention-heading p{font-size:12px;margin-top:4px}
+.dtu .attention-heading .companion{width:52px;height:52px;flex:none}
+.dtu .attention-heading .count{font-size:11px;background:#eaf2ff;color:#2666a6;padding:2px 7px;border-radius:8px}
+.dtu .attention-item{margin-top:12px;padding:14px 0;border-top:1px solid #ebf0f6}
+.dtu .attention-item h4{font-size:14px;margin:0 0 6px;color:#243b54}
+.dtu .attention-description{font-size:13px;color:#536b83;line-height:1.75;white-space:pre-wrap;margin:0 0 10px}
+.dtu .decision-context{display:flex;gap:6px 16px;flex-wrap:wrap;margin-bottom:10px;color:#5b728a}
+.dtu .task-decision-box label{display:block;font-size:12px;color:#38516b;margin-bottom:7px}
+.dtu .task-decision-box textarea{display:block;width:100%;min-height:88px;resize:vertical;max-height:220px;box-sizing:border-box;font:13px/1.7 inherit;font-family:inherit;padding:12px 14px;color:#243b54;background:#f8fbff;border:1px solid #c6daef;border-radius:14px;outline-offset:3px}
+.dtu .task-decision-box textarea:focus-visible{outline:2px solid #4f93e0;background:#fff}
+.dtu .task-decision-box textarea::placeholder{color:#71859b}
+.dtu .decision-hint{font-size:11px;color:#61768b;margin:7px 0 12px;line-height:1.6}
+.dtu .decision-actions{display:flex;flex-wrap:wrap;gap:8px}
+.dtu .decision-actions .button{min-height:36px;padding:7px 13px;font-size:12px}
+.dtu .decision-actions .decision-reject{color:#8d3c46;background:#fcf0f1}
+.dtu .decision-result{margin-top:12px;padding:12px 14px;border:1px solid #ccdfed;border-radius:12px;background:#f1f8ff;color:#2d5476;font-size:13px}
+.dtu .decision-result p{font-size:12px;margin:4px 0 0}
+.dtu .attention-inline-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dtu .attention-inline-actions p{width:100%;font-size:11px}
+.dtu .attention-clear{padding:14px 0 8px;font-size:12px;color:#4b756d}
+.dtu .detail-more{margin-top:12px;font-size:12px}
+.dtu .task-diagnostics-dialog{width:780px;max-width:calc(100% - 32px);max-height:84dvh;overflow:auto;overscroll-behavior:contain}
+.dtu .task-diagnostics-dialog .detail-grid{margin:20px 0}
+.dtu .task-diagnostics-dialog .fact{min-height:0}
+@media(hover:hover) and (pointer:fine){.dtu .decision-actions .button:hover{transform:translateY(-1px)}.dtu .decision-actions .button:active{transform:scale(.97)}}
+@container(max-width:900px){.dtu .task-layout{grid-template-columns:minmax(210px,.68fr) minmax(310px,1.32fr);gap:14px}.dtu .detail-body{padding:16px 18px}}
+@container(max-width:680px){.dtu .task-layout{display:block}.dtu .detail-head,.dtu .detail-body{padding:16px}.dtu .detail-head h2{font-size:20px}.dtu .task-diagnostics-dialog{padding:18px}.dtu .decision-actions .button{min-height:40px}}
+@media(prefers-reduced-motion:reduce){.dtu .decision-actions .button:hover,.dtu .decision-actions .button:active{transform:none}}
+
+/* Workbench decision review is part of the existing action card, not another dashboard tile. */
+.dtu .decision-review{margin-top:12px;padding:16px;border:1px solid #cbdff2;background:#f5faff;border-radius:16px;min-width:0;outline-offset:3px}
+.dtu .decision-review h5{margin:0 0 8px;font-size:15px;line-height:1.5;color:#23496b}
+.dtu .decision-quote{padding:8px 12px;border-left:3px solid #88b7e3;white-space:pre-wrap;overflow-wrap:anywhere}
+.dtu .decision-proposal{margin:12px 0;font-size:13px;line-height:1.6}
+.dtu .decision-proposal summary{cursor:pointer;padding:6px 0;color:#245b8b}
+.dtu .decision-proposal>div{margin-top:10px;overflow-wrap:anywhere}
+.dtu .decision-proposal p{margin:2px 0;white-space:pre-wrap}
+.dtu .decision-proposal pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;max-height:220px;overflow:auto}
+.dtu .decision-query{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:#55718b}
+.dtu .decision-actions{flex-wrap:wrap}
+
+/* Step 02: compact source-backed intervention guidance; no attention animation. */
+.dtu .intervention-owner{font-size:12px;color:#35688f;margin:4px 0 8px}
+.dtu .intervention-next{border-left:2px solid #c2dcf7;padding:2px 0 2px 12px;margin:10px 0}
+.dtu .intervention-next strong{font-size:12px;color:#355a7e}
+.dtu .intervention-next p{margin:4px 0 10px}
+.dtu .intervention-history{border-top:1px solid #e4edf6;margin-top:16px;padding-top:12px;overflow-wrap:anywhere}
+.dtu .intervention-history summary{cursor:pointer;color:#35688f;padding:7px 0}
+.dtu .intervention-event{border-left:2px solid #e1ecf8;margin-left:4px;padding-left:12px;font-size:12px}
+.dtu .decision-identity{padding:12px;margin:12px 0;background:#f1f7ff;border:1px solid #d2e6fb;border-radius:12px;font-size:13px}
+.dtu .decision-identity p{margin:6px 0;color:#526b82}
+
+.dtu .task-query-helper{margin:10px 0 16px;min-width:0}
+.dtu .task-query-helper textarea{display:block;box-sizing:border-box;width:100%;min-height:88px;resize:vertical;max-height:200px;padding:12px 14px;margin:8px 0;font-family:inherit;font-size:13px;line-height:1.7;color:#243b54;background:#f8fbff;border:1px solid #c6daef;border-radius:14px;outline-offset:3px}
+.dtu .task-query-helper textarea:focus-visible{outline:2px solid #4f93e0;background:#fff}

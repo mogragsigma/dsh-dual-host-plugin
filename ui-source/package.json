@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "description": "Isolated build dependencies only; never install through bundle/node_modules",
+  "devDependencies": {
+    "esbuild": "0.25.10",
+    "lucide-react": "0.468.0",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  }
+}

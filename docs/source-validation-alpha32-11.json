@@ -1,0 +1,30 @@
+{
+  "version": "0.32.0-alpha.11",
+  "date": "2026-10-26",
+  "sourceOnly": true,
+  "formalDeployment": false,
+  "externalModelCalls": 0,
+  "testEnvironment": "temporary HOME, synthetic services, no daily credentials",
+  "focused": {
+    "tests": 144,
+    "pass": 144,
+    "fail": 0
+  },
+  "onboarding": {
+    "tests": 208,
+    "pass": 208,
+    "fail": 0
+  },
+  "setsOverlapDoNotSum": true,
+  "historicalFirstFocusedRun": {
+    "pass": 138,
+    "fail": 2,
+    "cause": "new test fixture platform separator and case-insensitive mkdir; fixed before final run"
+  },
+  "bundleFiles": 249,
+  "skills": 20,
+  "formalBaselinePreserved": true,
+  "runtimeChangesFromFormal": "equivalent regular-expression spelling only; image metadata removed, encoded pixel chunks unchanged",
+  "taskRepositoryTouched": false,
+  "marketplacePreparation": "paused_pending_user_changes"
+}

@@ -1,0 +1,92 @@
+{
+  "schema": 1,
+  "date": "2026-10-20",
+  "version": "0.24.0-alpha.21",
+  "scope": "clean A source export; not deployment or release",
+  "runtime": {
+    "files": 144,
+    "sha256": "b6483b7951d8876bc9c5d9ddc70d78b8544cb39d2584326339ed322a86e3b214",
+    "unchanged_from_frozen_candidate": true,
+    "skills": 18
+  },
+  "tests": {
+    "foundation": {
+      "exit_code": 0,
+      "seconds": 5.17,
+      "stats": {
+        "tests": 693,
+        "suites": 0,
+        "pass": 684,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 9
+      }
+    },
+    "model-guidance": {
+      "exit_code": 0,
+      "seconds": 0.8,
+      "stats": {
+        "tests": 32,
+        "suites": 0,
+        "pass": 32,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "global-rules": {
+      "exit_code": 0,
+      "seconds": 0.08,
+      "stats": {
+        "tests": 2,
+        "passed": true
+      }
+    },
+    "operator": {
+      "exit_code": 0,
+      "seconds": 10.8,
+      "stats": {
+        "tests": 149,
+        "passed": true
+      }
+    }
+  },
+  "total": {
+    "passed": 867,
+    "skipped": 9,
+    "failed": 0
+  },
+  "skip_reason": "macOS run: Linux-specific receipt/process cases",
+  "initial_foundation_result": {
+    "exit_code": 1,
+    "seconds": 3.67,
+    "stats": {
+      "tests": 693,
+      "suites": 0,
+      "pass": 683,
+      "fail": 1,
+      "cancelled": 0,
+      "skipped": 9
+    }
+  },
+  "test_only_fix": "Replace obsolete 32-capability assertion with actual current-descriptor validation and 64/65 boundary checks; runtime untouched.",
+  "security_review": {
+    "synthetic_fixture_findings_reviewed": 5,
+    "unresolved_findings": 0,
+    "excluded": [
+      "private credentials and configuration",
+      "session databases and logs",
+      "personal global rules",
+      "node_modules and third-party source"
+    ]
+  },
+  "side_effects": {
+    "production_host_started": false,
+    "model_calls": 0,
+    "im_messages": 0,
+    "business_repository_changed": false,
+    "deployment": false,
+    "release": false
+  },
+  "note": "Pre-commit export validation; remote push verification is recorded separately after pushing."
+}

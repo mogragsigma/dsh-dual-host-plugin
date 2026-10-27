@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "Test-only historical approval ledger fixtures; never packaged with the plugin",
+  "devDependencies": {
+    "@simplewebauthn/server": "13.3.3",
+    "yaml": "2.8.1"
+  }
+}
