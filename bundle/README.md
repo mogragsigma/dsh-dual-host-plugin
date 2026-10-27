@@ -67,9 +67,9 @@ Skill 安装先检查冲突及文件归属；未知改动、同名文件或符�
 
 ## 支持与问题反馈
 
-- 产品源码及说明：[Gitee 项目](https://gitee.com/wenheng-Zhang/dsh-dual-host-plugin)
-- 反馈：[Issues](https://gitee.com/wenheng-Zhang/dsh-dual-host-plugin/issues)
-- 公开可达性以仓库实际状态为准。
+- 产品源码及说明：[GitHub 仓库](https://github.com/mogragsigma/dsh-dual-host-plugin)
+- 反馈：[Issues](https://github.com/mogragsigma/dsh-dual-host-plugin/issues)
+- Gitee 镜像：<https://gitee.com/wenheng-Zhang/dsh-dual-host-plugin>（可见性以该站实际状态为准）。
 
 提交问题前移除 API Key、机器人密钥、用户消息、内网地址、签名及私有任务数据。
 本项目是独立插件，不代表 DeepSeek 或依赖作者的官方产品。

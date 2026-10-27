@@ -29,6 +29,8 @@ status: "review"
 本轮在独立副本准备 `@mogragsigma/dsh-dual-host-plugin@0.33.1`，未修改原始 Git 工作区。
 
 - 作者、版权署名使用 `mogragsigma`。
+  - 包元数据 `homepage`／`repository`／`bugs` 指向公开 GitHub 镜像 `mogragsigma/dsh-dual-host-plugin`
+    （`repository.directory` 仍为 `bundle`）；npm 页面链接不再依赖私有 Gitee 仓库。
 - 本轮相对上一轮候选（归档于 `history/20261027-pre-publish/`）只改发行元数据与文档，不改运行代码：
   - 移除 `private: true` 防护，新增 `publishConfig.access: "public"`，作为发布准备；
     **发布动作本身仍待用户明确授权**，本轮未执行 `npm publish`。
@@ -74,8 +76,8 @@ status: "review"
 
 - 包：`@mogragsigma/dsh-dual-host-plugin@0.33.1`。
 - 归档：`mogragsigma-dsh-dual-host-plugin-0.33.1.tgz`。
-- 内容：264 个文件，解压后 6,560,799 字节；压缩后 3,617,855 字节。
-- SHA-256：`920c4a0db8bbaa4fa234967c3fd9ad161f82db7c84d3039c0bb7d89d34636571`。
+- 内容：264 个文件，解压后 6,560,864 字节；压缩后 3,617,863 字节。
+- SHA-256：`44e3798f5fed125373e1b0b301d1fc00dd33a0ca5f62232c0cc3a6db8a11082b`。
 - 机器可读逐文件 SHA-256 清单：`PACKAGE-MANIFEST-v0.33.1.json`。
 - 上一轮候选归档：`history/20261027-pre-publish/`（SHA-256 `2f0592d750be4f14e4d039b9992a67b03399fb211b79b104c3ca84621e1c9384`）。
 
@@ -110,7 +112,7 @@ npm 自动排除 `package-lock.json`，因此随包加入字节等同的 `distri
 | 插件归属观察 | 官方插件管理器观察到 1 个新命名包、1 个入口，版本为 0.33.1 |
 | 导览 HTTP／原生预设／全局规则与 Skill／minimal 边界／实际规则卸载重装 | 上一轮通过；本轮未重跑，不重复声明为本轮结果 |
 | npm 账号与包名 | `npm whoami` 为 `mogragsigma`；2FA 未开启；包名在 registry 返回 404（未占用）。未执行 publish |
-| Gitee 公开可达性 | **未通过**：匿名 API 404、页面 403、匿名 `git ls-remote` 需要凭据，产品仓库当前对公开用户不可访问；npm 主页与 Issues 链接在公开化前不可用 |
+| 源码仓库公开可达性 | GitHub 镜像 `mogragsigma/dsh-dual-host-plugin` 已公开（Public，首推 727 文件，含 `dsh-plugin` topic 与 Issues）；Gitee 仓库仍私有，仅作内部镜像 |
 | 默认动作安全 | 模型调用 0；未绑定 taskGateway，未启动任务、开发、提交、推送 |
 | 历史冻结跳过项 | S65 旧 UI-only 快照不适用本候选；另有当前包清单及逐文件边界审核 |
 
@@ -123,7 +125,7 @@ npm 自动排除 `package-lock.json`，因此随包加入字节等同的 `distri
 1. ✅ npm 作用域：用户名为 `mogragsigma`（个人 scope），2FA 未开启，包名未占用。
 2. ✅ 联网后官方 DSH 插件管理器全新安装／移除／重装：通过；构建脚本放行方式已写入 README。
 3. ⏳ 平台范围：Linux／pnpm 实际安装形态与 Windows 未验证，不宣称全平台支持。
-4. ⏳ 公开可达性：Gitee 产品仓库与 Issues 当前对匿名用户不可访问；发布前应公开化或改用公开镜像。
+4. ✅ 公开可达性：npm 包元数据已指向公开 GitHub 镜像（Public，含 `dsh-plugin` topic 与 Issues 入口）；Gitee 仓库仍私有。
 5. ⏳ 旧包名迁移：未开始；首次发布新包不要求，但旧 `@local/dsh-task-gateway` 实例仍需单独方案。
 6. ⏳ 正式发布：尚未执行 `npm publish`；需用户明确授权后执行，并在发布后回读 registry 并从 registry 重装验证。
 

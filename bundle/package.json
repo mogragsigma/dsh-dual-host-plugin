@@ -78,14 +78,14 @@
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://gitee.com/wenheng-Zhang/dsh-dual-host-plugin",
+  "homepage": "https://github.com/mogragsigma/dsh-dual-host-plugin",
   "repository": {
     "type": "git",
-    "url": "git+https://gitee.com/wenheng-Zhang/dsh-dual-host-plugin.git",
+    "url": "git+https://github.com/mogragsigma/dsh-dual-host-plugin.git",
     "directory": "bundle"
   },
   "bugs": {
-    "url": "https://gitee.com/wenheng-Zhang/dsh-dual-host-plugin/issues"
+    "url": "https://github.com/mogragsigma/dsh-dual-host-plugin/issues"
   },
   "keywords": [
     "dsh-plugin",
