@@ -1,0 +1,3 @@
+- insert:
+    - id: dual-host-onboarding
+      name: '@mogragsigma/dsh-dual-host-plugin'
