@@ -1,6 +1,6 @@
 {
   "name": "@mogragsigma/dsh-dual-host-plugin",
-  "version": "0.33.1",
+  "version": "0.33.2",
   "type": "module",
   "exports": {
     ".": "./native-entry.js",
@@ -60,9 +60,9 @@
     "koffi": "3.1.1"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-llm": "0.2.1-rc.2 || 0.2.1-rc.3",
-    "@deepseek-ai/dsh-llm-deepseek": "0.2.1-rc.2 || 0.2.1-rc.3",
-    "@deepseek-ai/dsh-llm-pi-ai": "0.2.1-rc.2 || 0.2.1-rc.3",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5",
+    "@deepseek-ai/dsh-llm-deepseek": "0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5",
+    "@deepseek-ai/dsh-llm-pi-ai": "0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5",
     "@earendil-works/pi-ai": "1.3.0"
   },
   "peerDependenciesMeta": {
@@ -94,6 +94,6 @@
     "task-approval"
   ],
   "engines": {
-    "dsh": "0.2.1-rc.3"
+    "dsh": "0.2.1-rc.5"
   }
 }

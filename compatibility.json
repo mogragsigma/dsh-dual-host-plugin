@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "plugin": "@mogragsigma/dsh-dual-host-plugin",
-  "version": "0.33.1",
+  "version": "0.33.2",
   "publicEntry": "native-entry.js",
-  "hostBaseline": "0.2.1-rc.3",
+  "hostBaseline": "0.2.1-rc.5",
   "imOptional": {
     "package": "@xmanrui/dsh-im",
     "testedVersion": "5.6.0",
