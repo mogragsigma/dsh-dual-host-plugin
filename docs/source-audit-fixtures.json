@@ -38,11 +38,11 @@
       "reason": "Reviewed synthetic invalid-input fixture; not a live credential. Any source change requires re-review."
     },
     "tests/onboarding-self-maintenance.test.mjs": {
-      "sha256": "337718f14e522e3638365c69b0bd9ddcf3d81574747fdc8e18cebfbb0c6ec407",
+      "sha256": "a18c6d604948ad1a6405809491162d96f255032bd33e5e160490b9f0b14e3ca2",
       "patterns": [
         "url_credential"
       ],
-      "reason": "Reviewed synthetic invalid-input fixture; not a live credential. Any source change requires re-review."
+      "reason": "Reviewed synthetic invalid-input fixture (example.test / SECRET); 0.33.3 only changes package namespace. Not a live credential. Any source change requires re-review."
     },
     "tests/onboarding-state.test.mjs": {
       "sha256": "a767c1b26ddb19c2b824379d3854d4e9f9cdc295137b5adc0381ecc5e810e6f2",
