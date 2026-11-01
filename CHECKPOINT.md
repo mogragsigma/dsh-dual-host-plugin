@@ -1,11 +1,3 @@
-> **v0.33.1 独立发行候选（2026-10-27）**：新包名 `@mogragsigma/dsh-dual-host-plugin`，
-> 作者／版权署名 `mogragsigma`。当前候选、许可和安装边界以
-> [发行候选报告](docs/market-v0.33.1.md)为准；下面保留 v0.33.0 历史记录，不代表本候选已发布。
-> 原始 Git 工作区和正式环境不变。官方插件管理器联网全新安装／移除／重装已通过
-> （DSH `0.2.1-rc.3`＋registry.npmjs.org；`koffi` 构建脚本需 `allowBuilds` 放行，README 已说明）。
-> 许可已定稿（中文控制文本＋英文参考译本）；`private` 防护已移除并加入 `publishConfig.access: public`，
-> 但**尚未执行 npm publish**；发布、市场收录（需公开 GitHub 镜像）与旧包名迁移仍需用户分别确认。
-
 ---
 title: "v0.33.0 源码正式版交接记录"
 description: "用于恢复维护上下文的当前版本与限制"
@@ -25,6 +17,8 @@ related:
   - "./docs/workbench-approval-alpha33.md"
   - "./docs/integration-alpha33-7.md"
 ---
+
+> 当前 R0 候选为0.33.3，见根清单与当前验收脚本；以下0.33.0记录为冻结历史。
 
 # v0.33.0 源码正式版交接记录
 

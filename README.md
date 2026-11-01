@@ -4,8 +4,8 @@
 在本地对话或 IM 中自然语言交办，云端独立 worker 持续处理有界任务，
 在统一工作台查看成果并处理需要你决定的事项。
 
-- npm 包：`@mogragsigma/dsh-dual-host-plugin`（发布内容为本仓库 `bundle/` 目录）
-- 兼容基线：官方 DSH `0.2.1-rc.3`
+- npm 包：`@mogragsigma/dsh-dual-host-plugin`（从仓库根目录打包，入口指向 `bundle/`）
+- 兼容基线：官方 DSH `0.2.1-rc.5`
 - 许可：自定义源码可见许可（以中文文本为准），允许免费自用，禁止转售与收费对外托管
 - 本仓库是产品源码仓库；`bundle/` 为 npm 发布内容，`docs/` 为设计与验收文档
 
@@ -42,7 +42,7 @@ Desktop 与 Web 请选择各自实际使用的 profile；安装后按当前 Host
 
 ## 兼容与边界
 
-- 仅声明已测试的官方 DSH `0.2.1-rc.3`；其他 Host 版本或平台需自行验证
+- 仅声明已测试的官方 DSH `0.2.1-rc.5`；其他 Host 版本或平台需自行验证
 - 不修改 DSH 内核或第三方 IM 插件源码
 - 不承诺操作系统级隔离、全平台支持或全部 IM 渠道能力一致
 - 开发、commit、push、发布分别授权；源码可见不等于授权分发、部署或商业托管
@@ -65,8 +65,7 @@ Desktop 与 Web 请选择各自实际使用的 profile；安装后按当前 Host
 - 定向回归（先阅读脚本清单，不通配执行历史测试）：
 
 ```sh
-python3 scripts/run-market-regression.py
-python3 scripts/run-onboarding-regression.py
+python3 scripts/run-release-regression.py
 ```
 
 ## 许可
@@ -87,3 +86,13 @@ npm 包内 `bundle/LICENSE` 与内容相同。核心规则：
 - Gitee 镜像：<https://gitee.com/wenheng-Zhang/dsh-dual-host-plugin>（可见性以该站实际状态为准）
 
 提交问题前请移除 API Key、机器人密钥、用户消息、内网地址、签名及私有任务数据。
+
+## 0.33.3 验收合同
+
+- 根包是唯一 npm 发布入口；内层 `bundle/package.json` 供受控云端归档使用，不单独发布。
+- DSH 组件使用 Host 提供的可选 peer 依赖：可选仅表示包管理器不自动安装，功能仍要求 Host 服务。
+  本版明确要求 rc.5，不在插件下安装旧版 DSH 组件，也不修改 Host 的依赖。
+- `runtime-*-package/lock.json` 是另行确认后创建独立 Host 的固定依赖，不用于修改现有 Host。
+- `run-release-regression.py` 是当前具名验收入口；旧 `release-promotion`／`market-v0331`
+  与冻结清单保留作历史，不参与当前版本验收。当前合同保留身份、锁冲突、符号链接等拒绝测试。
+- UI 从 `ui-source/` 构建，模块索引从源码生成；GitHub 镜像不再另行修改发行代码。

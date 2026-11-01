@@ -8,7 +8,7 @@ from pathlib import Path
 import argparse, hashlib, json, re, subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
-ROOT_FILES = {'.gitignore', 'README.md', 'AGENTS.md', 'CHECKPOINT.md', 'SOURCE-MANIFEST.json'}
+ROOT_FILES = {'.gitignore', 'README.md', 'AGENTS.md', 'CHECKPOINT.md', 'SOURCE-MANIFEST.json', 'package.json', 'package-lock.json', 'compatibility.json', 'cordis.patch.yml', 'LICENSE', 'LICENSE.en.md'}
 DIRECTORIES = {'bundle', 'docs', 'operator-kit', 'scripts', 'tests', 'ui-source'}
 FORBIDDEN_PARTS = {'private', 'runtime', 'runtime-home', 'node_modules', '__pycache__', '.git'}
 FORBIDDEN_NAMES = {'config.json', 'tokens.json', 'credentials.json', '.credentials.yaml', '.DS_Store'}

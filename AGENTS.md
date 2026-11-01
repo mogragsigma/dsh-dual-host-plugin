@@ -1,10 +1,9 @@
-> **v0.33.1 独立发行候选（2026-10-27）**：新包名 `@mogragsigma/dsh-dual-host-plugin`，
-> 作者／版权署名 `mogragsigma`。当前候选、许可和安装边界以
-> [发行候选报告](docs/market-v0.33.1.md)为准；下面保留 v0.33.0 历史记录，不代表本候选已发布。
-> 原始 Git 工作区和正式环境不变。官方插件管理器联网全新安装／移除／重装已通过
-> （DSH `0.2.1-rc.3`＋registry.npmjs.org；`koffi` 构建脚本需 `allowBuilds` 放行，README 已说明）。
-> `private` 防护已移除并加入 `publishConfig.access: public`，但**尚未执行 npm publish**；
-> 发布、市场收录与旧包名迁移仍需用户分别确认。
+# 当前维护入口（0.33.3 R0）
+
+- 当前身份、版本和兼容范围以根 package.json、bundle/package.json 与 compatibility.json 为准。
+- 当前验收：scripts/run-release-regression.py；历史冻结验收不可改写为当前通过证据。
+- GitHub 是正源的字节一致镜像，禁止仅在镜像修改发行代码；UI 必须从 ui-source 构建。
+- 仅隔离测试；发布、部署、Git 写入仍需当前用户授权。下文0.33.0为历史边界记录。
 
 # 本项目维护边界
 

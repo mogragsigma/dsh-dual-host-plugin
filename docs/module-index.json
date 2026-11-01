@@ -1,5 +1,5 @@
 {
-  "version": "0.33.1",
+  "version": "0.33.3",
   "scope": "Static imports/exports and literal test references; dynamic injection and transitive coverage require manual review.",
   "modules": {
     "bundle/a2a-dispatches.js": {
@@ -1285,6 +1285,7 @@
         "tests/onboarding-existing-host.test.mjs",
         "tests/onboarding-peer-binding.test.mjs",
         "tests/onboarding.test.mjs",
+        "tests/release-current.test.mjs",
         "tests/search-contract.test.mjs",
         "tests/task-board.test.mjs",
         "tests/task-interventions.test.mjs",
@@ -1770,6 +1771,7 @@
         "tests/cloud-control.test.mjs",
         "tests/cloud-operation.test.mjs",
         "tests/cloud-remote-probe.test.mjs",
+        "tests/market-current.test.mjs",
         "tests/market-v0331.test.mjs",
         "tests/onboarding-runtime-version-client.test.mjs"
       ]

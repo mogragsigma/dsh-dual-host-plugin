@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "plugin": "@mogragsigma/dsh-dual-host-plugin",
-  "version": "0.33.2",
+  "version": "0.33.3",
   "publicEntry": "native-entry.js",
   "hostBaseline": "0.2.1-rc.5",
   "imOptional": {
@@ -17,8 +17,8 @@
       }
     ],
     "validation": "isolated actual macOS/ECS Host; public delivery contract v1; no private runtime import",
-    "installationVersion": "5.6.0",
-    "installationAcceptance": "step07 isolated real Mac/ECS exclusive-consumer regression; native Desktop carrier verified in alpha33.8; no private IM imports"
+    "installationVersion": "5.9.1",
+    "installationAcceptance": "0.33.3: isolated rc.5 Host load only; historical delivery/receipt acceptance remains tied to testedVersion 5.6.0"
   },
   "nativePresets": [
     "standard",
@@ -28,7 +28,7 @@
   "retiredPreset": "dsh-task-intake",
   "legacyImConsumer": false,
   "development": false,
-  "publish": false,
+  "publish": true,
   "globalSkills": [
     "task-direct-link",
     "dsh-dual-end",

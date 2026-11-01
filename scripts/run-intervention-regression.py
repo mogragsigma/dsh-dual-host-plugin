@@ -1,4 +1,4 @@
-"""Reviewed v0.33.0 intervention and release suite. No external credentials, models, Git writes or live Host actions.
+"""Reviewed current intervention suite; frozen 0.33.0 promotion test remains historical. No external credentials, models, Git writes or live Host actions.
 Tests use synthetic services, temporary files and loopback listeners.
 Historical tests outside this list require a separate scope review.
 """
@@ -6,7 +6,7 @@ from pathlib import Path
 import os, subprocess, tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-TESTS = ['approval-workbench', 'approval-workbench-client', 'approval', 'approval-semantics', 'workbench', 'attention-flow-preview', 'task-focus', 'compact-ui', 'delivery-ui-render', 'repository-ui-render', 'task-board', 'artifacts', 'link-diagnostics', 'ui-contract', 'approval-chat', 'approval-guidance', 'approval-receipts', 'approval-reference', 'approval-semantic-model', 'onboarding-install', 'three-party-rules', 'task-interventions', 'task-interventions-ui', 'workbench-decisions', 'workbench-interaction-runtime', 'approval-local-relay', 'approval-local-gateway', 'notification-defaults', 'notification-discovery', 'notification-feishu', 'notification-version', 'task-notifications', 'intervention-actions', 'intervention-client', 'task-worker', 'worker-budget', 'worker-output-diagnostics', 'artifact-download', 'artifact-download-client', 'artifact-download-ui', 'task-results', 'onboarding-maintenance', 'approval-credential-reference', 'market-bundle', 'release-promotion']
+TESTS = ['approval-workbench', 'approval-workbench-client', 'approval', 'approval-semantics', 'workbench', 'attention-flow-preview', 'task-focus', 'compact-ui', 'delivery-ui-render', 'repository-ui-render', 'task-board', 'artifacts', 'link-diagnostics', 'ui-contract', 'approval-chat', 'approval-guidance', 'approval-receipts', 'approval-reference', 'approval-semantic-model', 'onboarding-install', 'three-party-rules', 'task-interventions', 'task-interventions-ui', 'workbench-decisions', 'workbench-interaction-runtime', 'approval-local-relay', 'approval-local-gateway', 'notification-defaults', 'notification-discovery', 'notification-feishu', 'notification-version', 'task-notifications', 'intervention-actions', 'intervention-client', 'task-worker', 'worker-budget', 'worker-output-diagnostics', 'artifact-download', 'artifact-download-client', 'artifact-download-ui', 'task-results', 'onboarding-maintenance', 'approval-credential-reference', 'market-bundle', 'market-current']
 if __name__ == '__main__':
     # Do not read daily DSH locations. Mode-specific filesystem fixtures require
     # umask 022; their parent remains private, including on a 077 login shell.

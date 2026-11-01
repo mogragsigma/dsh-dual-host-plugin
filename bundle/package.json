@@ -1,6 +1,6 @@
 {
   "name": "@mogragsigma/dsh-dual-host-plugin",
-  "version": "0.33.2",
+  "version": "0.33.3",
   "type": "module",
   "exports": {
     ".": "./native-entry.js",
@@ -51,25 +51,47 @@
     }
   },
   "dependencies": {
-    "@deepseek-ai/dsh-credentials": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-http-proxy": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-web-fetch-http": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-web-search-deepseek": "0.2.1-rc.2",
     "@js-temporal/polyfill": "0.5.1",
     "acorn": "8.15.0",
     "koffi": "3.1.1"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-llm": "0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5",
-    "@deepseek-ai/dsh-llm-deepseek": "0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5",
-    "@deepseek-ai/dsh-llm-pi-ai": "0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5",
-    "@earendil-works/pi-ai": "1.3.0"
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-llm-deepseek": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-llm-pi-ai": "0.2.1-rc.5",
+    "@earendil-works/pi-ai": "1.3.0",
+    "@deepseek-ai/dsh-agent": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-credentials": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-http-proxy": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-web-fetch-http": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-web-search-deepseek": "0.2.1-rc.5"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/dsh-llm-pi-ai": {
       "optional": true
     },
     "@earendil-works/pi-ai": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-http-proxy": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-llm": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-web-search-deepseek": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-agent": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-web-fetch-http": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-credentials": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-llm-deepseek": {
       "optional": true
     }
   },
