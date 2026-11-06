@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 TESTS = sorted(set(
     runpy.run_path(str(ROOT / 'scripts/run-market-regression.py'))['TESTS']
     + runpy.run_path(str(ROOT / 'scripts/run-onboarding-regression.py'))['TESTS']
-    + ['release-current', 'onboarding-optional-im', 'cloud-control',
+    + ['host-compatibility-current', 'release-current', 'onboarding-optional-im', 'cloud-control',
        'cloud-operation', 'cloud-runtime', 'onboarding-runtime-version',
        'onboarding-self-stop', 'self-stop-flow', 'self-lifecycle-flow-contract']
 ))

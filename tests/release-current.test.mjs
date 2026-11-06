@@ -10,7 +10,7 @@ const identity = '@mogragsigma/dsh-dual-host-plugin';
 test('current root and archive manifests have one release identity and dependency contract', async () => {
   const root = await read('package.json'), bundle = await read('bundle/package.json');
   assert.equal(root.name, identity);
-  assert.equal(root.version, '0.33.3');
+  assert.equal(root.version, '0.33.4');
   assert.equal(VERSION, root.version);
   for (const key of ['name', 'version', 'dependencies', 'peerDependencies', 'peerDependenciesMeta',
     'engines', 'dsh', 'author', 'license', 'publishConfig']) assert.deepEqual(bundle[key], root[key], key);
@@ -37,7 +37,7 @@ test('Host-owned packages are optional peers, never installed as private stale c
     for (const name of ['agent', 'credentials', 'http-proxy', 'web-fetch-http',
       'web-search-deepseek', 'llm', 'llm-deepseek', 'llm-pi-ai']) {
       const key = '@deepseek-ai/dsh-' + name;
-      assert.equal(p.peerDependencies[key], hostVersion);
+      assert.equal(p.peerDependencies[key], p.engines.dsh);
       assert.deepEqual(p.peerDependenciesMeta[key], {optional: true});
     }
   }

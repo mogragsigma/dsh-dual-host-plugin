@@ -1,6 +1,6 @@
 {
   "name": "@mogragsigma/dsh-dual-host-plugin",
-  "version": "0.33.3",
+  "version": "0.33.4",
   "description": "Local and cloud DSH coordination with protected onboarding, task approval and controlled artifacts",
   "type": "module",
   "private": false,
@@ -39,15 +39,15 @@
     "koffi": "3.1.1"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-llm": "0.2.1-rc.5",
-    "@deepseek-ai/dsh-llm-deepseek": "0.2.1-rc.5",
-    "@deepseek-ai/dsh-llm-pi-ai": "0.2.1-rc.5",
-    "@earendil-works/pi-ai": "1.3.0",
-    "@deepseek-ai/dsh-agent": "0.2.1-rc.5",
-    "@deepseek-ai/dsh-credentials": "0.2.1-rc.5",
-    "@deepseek-ai/dsh-http-proxy": "0.2.1-rc.5",
-    "@deepseek-ai/dsh-web-fetch-http": "0.2.1-rc.5",
-    "@deepseek-ai/dsh-web-search-deepseek": "0.2.1-rc.5"
+    "@deepseek-ai/dsh-llm": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0",
+    "@deepseek-ai/dsh-llm-deepseek": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0",
+    "@deepseek-ai/dsh-llm-pi-ai": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0",
+    "@earendil-works/pi-ai": ">=1.3.0 <1.6.0",
+    "@deepseek-ai/dsh-agent": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0",
+    "@deepseek-ai/dsh-credentials": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0",
+    "@deepseek-ai/dsh-http-proxy": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0",
+    "@deepseek-ai/dsh-web-fetch-http": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0",
+    "@deepseek-ai/dsh-web-search-deepseek": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/dsh-llm-pi-ai": {
@@ -98,6 +98,6 @@
     "task-approval"
   ],
   "engines": {
-    "dsh": "0.2.1-rc.5"
+    "dsh": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0"
   }
 }

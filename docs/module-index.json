@@ -1,5 +1,5 @@
 {
-  "version": "0.33.3",
+  "version": "0.33.4",
   "scope": "Static imports/exports and literal test references; dynamic injection and transitive coverage require manual review.",
   "modules": {
     "bundle/a2a-dispatches.js": {

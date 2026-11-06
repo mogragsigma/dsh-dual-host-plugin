@@ -1,4 +1,4 @@
-# 当前维护入口（0.33.3 R0）
+# 当前维护入口（0.33.4 R1-P0 兼容修复）
 
 - 当前身份、版本和兼容范围以根 package.json、bundle/package.json 与 compatibility.json 为准。
 - 当前验收：scripts/run-release-regression.py；历史冻结验收不可改写为当前通过证据。

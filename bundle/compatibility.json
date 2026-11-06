@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "plugin": "@mogragsigma/dsh-dual-host-plugin",
-  "version": "0.33.3",
+  "version": "0.33.4",
   "publicEntry": "native-entry.js",
   "hostBaseline": "0.2.1-rc.5",
   "imOptional": {
@@ -976,5 +976,11 @@
     "restart": "claimed operations need review; no replay",
     "productionDeployed": false,
     "realPlatformTest": "local isolated official Web roles + real test Feishu; not production ECS/Desktop"
+  },
+  "hostCompatibilityPolicy": {
+    "declaredRange": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0",
+    "standalonePinnedHost": "0.2.1-rc.5",
+    "targetHost": "0.2.2-rc.1",
+    "scope": "R1-P0 Host compatibility only; range admission is not per-version runtime acceptance. No R1 reception core or production rollout."
   }
 }
