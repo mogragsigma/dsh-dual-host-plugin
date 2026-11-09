@@ -1,5 +1,5 @@
 {
-  "version": "0.33.4",
+  "version": "2.0.0",
   "scope": "Static imports/exports and literal test references; dynamic injection and transitive coverage require manual review.",
   "modules": {
     "bundle/a2a-dispatches.js": {
@@ -101,11 +101,12 @@
         "tests/development-workspace.test.mjs",
         "tests/development.test.mjs",
         "tests/repository.test.mjs",
+        "tests/task-native-decisions.test.mjs",
         "tests/workspace-fixture.mjs"
       ]
     },
     "bundle/approval-feishu.js": {
-      "lines": 52,
+      "lines": 55,
       "imports": [],
       "exports": [
         "FeishuApprovalSource",
@@ -141,10 +142,11 @@
       ]
     },
     "bundle/approval-ledger.js": {
-      "lines": 142,
+      "lines": 159,
       "imports": [
         "./delivery-contract.js",
         "./development-contract.js",
+        "./managed-execution.js",
         "./task-context.js",
         "./task-envelope.js",
         "node:crypto"
@@ -271,7 +273,7 @@
       "referencedByTests": []
     },
     "bundle/approval-workbench.js": {
-      "lines": 45,
+      "lines": 47,
       "imports": [
         "./approval-ledger.js"
       ],
@@ -676,10 +678,11 @@
       ]
     },
     "bundle/delivery-state.js": {
-      "lines": 106,
+      "lines": 108,
       "imports": [
         "./approval-ledger.js",
-        "./delivery-push-plan.js"
+        "./delivery-push-plan.js",
+        "./managed-development-contract.js"
       ],
       "exports": [
         "deliveryAction",
@@ -789,12 +792,13 @@
       ]
     },
     "bundle/development-gate.js": {
-      "lines": 236,
+      "lines": 238,
       "imports": [
         "./approval-ledger.js",
         "./development-contract.js",
         "./development-files.js",
         "./development-workspace.js",
+        "./managed-development-contract.js",
         "node:crypto"
       ],
       "exports": [
@@ -1052,7 +1056,7 @@
       ]
     },
     "bundle/gateway-maintenance.js": {
-      "lines": 55,
+      "lines": 56,
       "imports": [
         "node:crypto"
       ],
@@ -1081,7 +1085,7 @@
       ]
     },
     "bundle/index.js": {
-      "lines": 445,
+      "lines": 555,
       "imports": [
         "./a2a-endpoint.js",
         "./approval-chat.js",
@@ -1101,6 +1105,10 @@
         "./intervention-actions.js",
         "./legacy-feishu-adapter.js",
         "./link-contract.js",
+        "./managed-cloud-policy.js",
+        "./managed-endpoint.js",
+        "./managed-execution.js",
+        "./managed-runtime.js",
         "./model-selection.js",
         "./notification-feishu.js",
         "./onboarding-existing-setup.js",
@@ -1111,14 +1119,20 @@
         "./repository-gitee.js",
         "./repository-managed.js",
         "./repository-writer.js",
+        "./search-contract.js",
+        "./source-gitee.js",
+        "./source-intake.js",
+        "./source-routing.js",
         "./ssh-connector.js",
         "./store.js",
         "./task-a2a.js",
         "./task-artifacts.js",
         "./task-catalog.js",
         "./task-context.js",
+        "./task-continuity.js",
         "./task-envelope.js",
         "./task-notifications.js",
+        "./task-observer.js",
         "./task-results.js",
         "./task-scheduler.js",
         "./task-sources.js",
@@ -1140,27 +1154,35 @@
         "tests/approval-reference.test.mjs",
         "tests/approval-workbench.test.mjs",
         "tests/approval.test.mjs",
+        "tests/cloud-autonomy-rpc.test.mjs",
         "tests/delivery-gateway.test.mjs",
         "tests/delivery-preview.test.mjs",
         "tests/development-workspace-peer.test.mjs",
         "tests/development.test.mjs",
         "tests/direct-peer.test.mjs",
         "tests/entry-controls.test.mjs",
+        "tests/files-large.test.mjs",
         "tests/files.test.mjs",
+        "tests/full-acceptance-coexist.test.mjs",
         "tests/gateway-maintenance.test.mjs",
         "tests/gateway.test.mjs",
         "tests/handoff-remote.test.mjs",
+        "tests/integration-transition.test.mjs",
         "tests/link-diagnostics.test.mjs",
+        "tests/managed-rpc.test.mjs",
+        "tests/managed-triggers.test.mjs",
         "tests/model-selection.test.mjs",
         "tests/native-entry-lifetime.test.mjs",
         "tests/native-file-message.test.mjs",
         "tests/native-file-reference.test.mjs",
         "tests/native-file-scope.test.mjs",
+        "tests/native-managed-entry.test.mjs",
         "tests/native-schedule-budget.test.mjs",
         "tests/notification-defaults.test.mjs",
         "tests/notification-discovery.test.mjs",
         "tests/notification-media-fixture.mjs",
         "tests/notification-media.test.mjs",
+        "tests/offline-artifact-restore.test.mjs",
         "tests/onboarding-cloud-file-review.test.mjs",
         "tests/onboarding-cloud-files.test.mjs",
         "tests/onboarding-existing-host.test.mjs",
@@ -1172,8 +1194,11 @@
         "tests/peer-process.test.mjs",
         "tests/recovery.test.mjs",
         "tests/scheduler-gateway.test.mjs",
+        "tests/source-intake-lifecycle.test.mjs",
         "tests/task-a2a.test.mjs",
         "tests/task-catalog.test.mjs",
+        "tests/task-continuity-rpc.test.mjs",
+        "tests/task-continuity.test.mjs",
         "tests/task-envelope.test.mjs",
         "tests/task-notifications.test.mjs",
         "tests/trigger-entry.test.mjs",
@@ -1248,7 +1273,7 @@
       "referencedByTests": []
     },
     "bundle/link-contract.js": {
-      "lines": 80,
+      "lines": 85,
       "imports": [],
       "exports": [
         "CAPABILITIES",
@@ -1275,8 +1300,11 @@
         "tests/development-workspace-peer.test.mjs",
         "tests/development-workspace.test.mjs",
         "tests/gateway-maintenance.test.mjs",
+        "tests/integration-transition.test.mjs",
         "tests/intervention-client.test.mjs",
         "tests/link-diagnostics.test.mjs",
+        "tests/managed-artifacts.test.mjs",
+        "tests/managed-triggers.test.mjs",
         "tests/model-selection.test.mjs",
         "tests/native-schedule-budget.test.mjs",
         "tests/notification-media.test.mjs",
@@ -1287,7 +1315,9 @@
         "tests/onboarding.test.mjs",
         "tests/release-current.test.mjs",
         "tests/search-contract.test.mjs",
+        "tests/source-intake-lifecycle.test.mjs",
         "tests/task-board.test.mjs",
+        "tests/task-continuity.test.mjs",
         "tests/task-interventions.test.mjs",
         "tests/task-workflows.test.mjs",
         "tests/ui-contract.test.mjs",
@@ -1313,6 +1343,233 @@
         "tests/maintenance-process-identity.test.mjs"
       ]
     },
+    "bundle/managed-closeout.js": {
+      "lines": 45,
+      "imports": [
+        "./managed-development.js"
+      ],
+      "exports": [
+        "ManagedCloseout"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/managed-cloud-policy.js": {
+      "lines": 19,
+      "imports": [],
+      "exports": [
+        "CLOUD_TASK_POLICY",
+        "TASK_CONTEXT_MAX",
+        "autonomous",
+        "taskChannel",
+        "validateTaskChannel"
+      ],
+      "referencedByTests": [
+        "tests/cloud-autonomy-rpc.test.mjs",
+        "tests/cloud-autonomy.test.mjs",
+        "tests/full-acceptance-coexist.test.mjs",
+        "tests/gray-repair.test.mjs",
+        "tests/managed-triggers.test.mjs",
+        "tests/v2-ui-policy.test.mjs"
+      ]
+    },
+    "bundle/managed-command.js": {
+      "lines": 71,
+      "imports": [
+        "node:child_process",
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "ManagedCommands",
+        "macCommandPlan",
+        "runMacCommand",
+        "validateManagedCommands"
+      ],
+      "referencedByTests": [
+        "tests/managed-command.test.mjs"
+      ]
+    },
+    "bundle/managed-development-contract.js": {
+      "lines": 43,
+      "imports": [],
+      "exports": [
+        "assertCliDestination",
+        "branchName",
+        "canonicalRemote",
+        "developmentContract",
+        "developmentSchema",
+        "legacyResourceBusy",
+        "managedResourceBusy",
+        "relativeFile"
+      ],
+      "referencedByTests": [
+        "tests/managed-development.test.mjs"
+      ]
+    },
+    "bundle/managed-development.js": {
+      "lines": 86,
+      "imports": [
+        "./delivery-preview.js",
+        "./managed-cloud-policy.js",
+        "./managed-development-contract.js",
+        "node:child_process",
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "ManagedDevelopment",
+        "changedFiles",
+        "gitRead",
+        "repositoryFacts",
+        "repositoryResources",
+        "snapshotFile",
+        "treeSnapshot"
+      ],
+      "referencedByTests": [
+        "tests/managed-check-receipts.test.mjs",
+        "tests/managed-development.test.mjs"
+      ]
+    },
+    "bundle/managed-endpoint.js": {
+      "lines": 282,
+      "imports": [
+        "./managed-closeout.js",
+        "./managed-cloud-policy.js",
+        "./managed-command.js",
+        "./managed-development.js",
+        "./managed-policy.js",
+        "./managed-runtime.js",
+        "./managed-search.js",
+        "node:crypto",
+        "node:fs",
+        "node:net",
+        "node:path"
+      ],
+      "exports": [
+        "ManagedEndpoint",
+        "executionBinding",
+        "validateManagedConfig"
+      ],
+      "referencedByTests": [
+        "tests/cloud-autonomy.test.mjs",
+        "tests/managed-development.test.mjs",
+        "tests/managed-endpoint.test.mjs",
+        "tests/managed-policy.test.mjs",
+        "tests/release-v2-setup.test.mjs"
+      ]
+    },
+    "bundle/managed-execution.js": {
+      "lines": 207,
+      "imports": [
+        "./managed-cloud-policy.js",
+        "./managed-development-contract.js",
+        "./managed-development.js",
+        "./managed-runtime.js",
+        "./managed-triggers.js",
+        "./recovery.js",
+        "./task-envelope.js",
+        "node:path"
+      ],
+      "exports": [
+        "ManagedExecution",
+        "executionSpec"
+      ],
+      "referencedByTests": [
+        "tests/managed-search.test.mjs"
+      ]
+    },
+    "bundle/managed-policy.js": {
+      "lines": 20,
+      "imports": [
+        "node:fs",
+        "node:os",
+        "node:path"
+      ],
+      "exports": [
+        "assertExplicitRisk",
+        "under"
+      ],
+      "referencedByTests": [
+        "tests/managed-development.test.mjs",
+        "tests/managed-policy.test.mjs"
+      ]
+    },
+    "bundle/managed-runtime.js": {
+      "lines": 186,
+      "imports": [
+        "./managed-cloud-policy.js",
+        "node:crypto",
+        "node:path"
+      ],
+      "exports": [
+        "ARCHIVE_IDLE_MS",
+        "ManagedBudget",
+        "ManagedSessions",
+        "ManagedSlots",
+        "resolveManagedModel",
+        "selectManagedModel"
+      ],
+      "referencedByTests": [
+        "tests/managed-development.test.mjs",
+        "tests/managed-model-compat.test.mjs",
+        "tests/managed-runtime.test.mjs",
+        "tests/managed-search.test.mjs"
+      ]
+    },
+    "bundle/managed-search.js": {
+      "lines": 57,
+      "imports": [
+        "./search-contract.js",
+        "./source-search.js",
+        "./source-web.js",
+        "node:crypto",
+        "node:util"
+      ],
+      "exports": [
+        "ManagedSearch",
+        "validateManagedSearch"
+      ],
+      "referencedByTests": [
+        "tests/managed-search.test.mjs"
+      ]
+    },
+    "bundle/managed-tools.js": {
+      "lines": 17,
+      "imports": [
+        "./managed-development-contract.js",
+        "./managed-triggers.js",
+        "./native-model-choice.js",
+        "./store.js",
+        "./task-envelope.js"
+      ],
+      "exports": [
+        "registerManagedTools"
+      ],
+      "referencedByTests": [
+        "tests/gray-closeout.test.mjs"
+      ]
+    },
+    "bundle/managed-triggers.js": {
+      "lines": 85,
+      "imports": [
+        "./managed-cloud-policy.js",
+        "./recovery.js",
+        "./schedule-ledger.js",
+        "./task-envelope.js",
+        "./task-jobs.js",
+        "./task-trigger-time.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "ManagedTriggers",
+        "managedScheduleSchema"
+      ],
+      "referencedByTests": [
+        "tests/managed-triggers.test.mjs"
+      ]
+    },
     "bundle/model-selection.js": {
       "lines": 71,
       "imports": [
@@ -1327,7 +1584,7 @@
       ]
     },
     "bundle/native-context.js": {
-      "lines": 14,
+      "lines": 16,
       "imports": [
         "./task-envelope.js",
         "node:fs"
@@ -1336,7 +1593,8 @@
         "installNativeContext"
       ],
       "referencedByTests": [
-        "tests/im-delivery.test.mjs"
+        "tests/im-delivery.test.mjs",
+        "tests/model-selection.test.mjs"
       ]
     },
     "bundle/native-entry-admission.js": {
@@ -1348,7 +1606,7 @@
       "referencedByTests": []
     },
     "bundle/native-entry.js": {
-      "lines": 58,
+      "lines": 62,
       "imports": [
         "./index.js",
         "./onboarding-host.js",
@@ -1372,7 +1630,8 @@
         "tests/native-entry-lifetime.test.mjs",
         "tests/onboarding-identity.test.mjs",
         "tests/onboarding-repositories.test.mjs",
-        "tests/onboarding.test.mjs"
+        "tests/onboarding.test.mjs",
+        "tests/source-intake-lifecycle.test.mjs"
       ]
     },
     "bundle/native-file-reference.js": {
@@ -1388,6 +1647,26 @@
         "tests/native-file-message.test.mjs"
       ]
     },
+    "bundle/native-human-context.js": {
+      "lines": 29,
+      "imports": [],
+      "exports": [
+        "humanMessages"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/native-model-choice.js": {
+      "lines": 12,
+      "imports": [
+        "./task-envelope.js"
+      ],
+      "exports": [
+        "nativeModelChoice"
+      ],
+      "referencedByTests": [
+        "tests/gray-repair.test.mjs"
+      ]
+    },
     "bundle/native-owner-origin.js": {
       "lines": 12,
       "imports": [],
@@ -1398,14 +1677,20 @@
       "referencedByTests": []
     },
     "bundle/native-tools.js": {
-      "lines": 108,
+      "lines": 141,
       "imports": [
         "./delivery-contract.js",
         "./development-plan.js",
         "./diagnostics.js",
+        "./managed-cloud-policy.js",
+        "./managed-tools.js",
         "./native-context.js",
         "./native-file-reference.js",
+        "./native-human-context.js",
+        "./native-model-choice.js",
+        "./source-routing-tools.js",
         "./store.js",
+        "./task-continuity-tools.js",
         "./task-envelope.js"
       ],
       "exports": [
@@ -1419,24 +1704,28 @@
         "tests/artifacts.test.mjs",
         "tests/delivery-preview.test.mjs",
         "tests/direct-peer.test.mjs",
+        "tests/files-large.test.mjs",
         "tests/files.test.mjs",
         "tests/model-selection.test.mjs",
         "tests/native-entry-baseline.test.mjs",
         "tests/native-file-message.test.mjs",
         "tests/native-file-reference.test.mjs",
         "tests/native-file-scope.test.mjs",
+        "tests/native-managed-entry.test.mjs",
         "tests/native-schedule-budget.test.mjs",
         "tests/task-a2a.test.mjs",
         "tests/task-catalog.test.mjs",
+        "tests/task-continuity.test.mjs",
         "tests/task-envelope.test.mjs",
         "tests/task-notifications.test.mjs",
         "tests/task-results.test.mjs",
+        "tests/three-party-rules.test.mjs",
         "tests/trigger-entry.test.mjs",
         "tests/ui-contract.test.mjs"
       ]
     },
     "bundle/notification-artifacts.js": {
-      "lines": 70,
+      "lines": 86,
       "imports": [
         "./artifact-media.js",
         "./notification-contract.js",
@@ -1528,13 +1817,14 @@
       ],
       "referencedByTests": [
         "tests/approval-local-relay.test.mjs",
+        "tests/gray-closeout.test.mjs",
         "tests/notification-feishu.test.mjs",
         "tests/notification-media-fixture.mjs",
         "tests/task-notifications.test.mjs"
       ]
     },
     "bundle/notification-media-endpoint.js": {
-      "lines": 94,
+      "lines": 95,
       "imports": [
         "./artifact-media.js",
         "./notification-contract.js",
@@ -1547,6 +1837,18 @@
         "tests/delivery-artifacts.test.mjs",
         "tests/notification-media.test.mjs"
       ]
+    },
+    "bundle/notification-observations.js": {
+      "lines": 45,
+      "imports": [
+        "./recovery.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "observationGrant",
+        "observeNotices"
+      ],
+      "referencedByTests": []
     },
     "bundle/notification-review.js": {
       "lines": 27,
@@ -1923,9 +2225,10 @@
       ]
     },
     "bundle/onboarding-file-contract.js": {
-      "lines": 31,
+      "lines": 32,
       "imports": [
         "./onboarding-ssh.js",
+        "./peer-files.js",
         "node:path"
       ],
       "exports": [
@@ -3235,6 +3538,7 @@
         "sourceFile"
       ],
       "referencedByTests": [
+        "tests/files-large.test.mjs",
         "tests/files.test.mjs",
         "tests/gateway-maintenance.test.mjs",
         "tests/native-file-reference.test.mjs",
@@ -3277,7 +3581,7 @@
       "referencedByTests": []
     },
     "bundle/peer-files.js": {
-      "lines": 157,
+      "lines": 161,
       "imports": [
         ",",
         "./peer-file-fs.js",
@@ -3290,6 +3594,7 @@
         "fileMetadata"
       ],
       "referencedByTests": [
+        "tests/files-large.test.mjs",
         "tests/files.test.mjs"
       ]
     },
@@ -3365,7 +3670,7 @@
       ]
     },
     "bundle/repository-gitee.js": {
-      "lines": 76,
+      "lines": 88,
       "imports": [
         "node:crypto",
         "node:fs"
@@ -3381,11 +3686,12 @@
         "tests/delivery-artifacts.test.mjs",
         "tests/delivery-ssh.test.mjs",
         "tests/onboarding-repositories.test.mjs",
-        "tests/repository.test.mjs"
+        "tests/repository.test.mjs",
+        "tests/source-gitee.test.mjs"
       ]
     },
     "bundle/repository-managed.js": {
-      "lines": 46,
+      "lines": 47,
       "imports": [
         "./onboarding-repositories.js",
         "./repository-gitee.js"
@@ -3412,6 +3718,17 @@
         "tests/gateway.test.mjs"
       ]
     },
+    "bundle/schedule-ledger.js": {
+      "lines": 35,
+      "imports": [
+        "./search-contract.js",
+        "./task-jobs.js"
+      ],
+      "exports": [
+        "ScheduleLedger"
+      ],
+      "referencedByTests": []
+    },
     "bundle/scheduler-migration.js": {
       "lines": 45,
       "imports": [
@@ -3431,20 +3748,117 @@
       ]
     },
     "bundle/search-contract.js": {
-      "lines": 19,
-      "imports": [],
+      "lines": 29,
+      "imports": [
+        "./task-context.js"
+      ],
       "exports": [
         "activeSchedule",
         "preparedState",
         "searchActive",
         "searchExecutor",
         "taskExecutor",
+        "validateAutonomousSearch",
         "validateSearch"
       ],
       "referencedByTests": []
     },
+    "bundle/source-assessment.js": {
+      "lines": 38,
+      "imports": [
+        "./managed-runtime.js"
+      ],
+      "exports": [
+        "SOURCE_RULES",
+        "sourceAssessor",
+        "validateAssessment"
+      ],
+      "referencedByTests": [
+        "tests/source-assessment.test.mjs",
+        "tests/source-routing.test.mjs"
+      ]
+    },
+    "bundle/source-gitee.js": {
+      "lines": 52,
+      "imports": [
+        "./repository-gitee.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "GiteeIssueSources"
+      ],
+      "referencedByTests": [
+        "tests/source-gitee.test.mjs"
+      ]
+    },
+    "bundle/source-intake.js": {
+      "lines": 137,
+      "imports": [
+        "./recovery.js",
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "exports": [
+        "SOURCE_INTAKE_LIMITS",
+        "SourceIntake",
+        "assertSourceDatabasePath"
+      ],
+      "referencedByTests": [
+        "tests/source-intake-lifecycle.test.mjs",
+        "tests/source-intake-process.test.mjs",
+        "tests/source-intake.test.mjs"
+      ]
+    },
+    "bundle/source-policy-envelope.js": {
+      "lines": 29,
+      "imports": [
+        "./managed-cloud-policy.js",
+        "./task-context.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "makePolicyEnvelope",
+        "parsePolicyEnvelope",
+        "policyEnvelopeVersion"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/source-routing-tools.js": {
+      "lines": 12,
+      "imports": [
+        "./task-continuity.js",
+        "./task-envelope.js"
+      ],
+      "exports": [
+        "registerSourceTools"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/source-routing.js": {
+      "lines": 218,
+      "imports": [
+        "./managed-cloud-policy.js",
+        "./managed-execution.js",
+        "./managed-runtime.js",
+        "./source-assessment.js",
+        "./source-policy-envelope.js",
+        "./task-context.js",
+        "node:crypto",
+        "node:fs"
+      ],
+      "exports": [
+        "SourceRouting",
+        "boundedAssessment",
+        "sourceThread"
+      ],
+      "referencedByTests": [
+        "tests/source-assessment.test.mjs",
+        "tests/source-routing.test.mjs"
+      ]
+    },
     "bundle/source-search.js": {
-      "lines": 89,
+      "lines": 90,
       "imports": [
         "./job-version.js",
         "./source-web.js",
@@ -3456,6 +3870,7 @@
         "createTaskSearchReader"
       ],
       "referencedByTests": [
+        "tests/source-search-proxy.test.mjs",
         "tests/source-search.test.mjs"
       ]
     },
@@ -3467,6 +3882,7 @@
         "sourceUrl"
       ],
       "referencedByTests": [
+        "tests/source-intake-lifecycle.test.mjs",
         "tests/source-web.test.mjs"
       ]
     },
@@ -3483,7 +3899,7 @@
       ]
     },
     "bundle/store.js": {
-      "lines": 102,
+      "lines": 103,
       "imports": [
         "./task-envelope.js",
         "node:crypto",
@@ -3501,17 +3917,23 @@
         "tests/approval-process-child.mjs",
         "tests/approval-reference.test.mjs",
         "tests/approval.test.mjs",
+        "tests/cloud-autonomy-rpc.test.mjs",
         "tests/delivery-approval-reopen.mjs",
         "tests/delivery-commit-fixture.mjs",
         "tests/delivery-journal-crash-child.mjs",
         "tests/delivery-journal.test.mjs",
         "tests/delivery-push.test.mjs",
         "tests/delivery-receipt-crash-child.mjs",
+        "tests/full-acceptance-coexist.test.mjs",
         "tests/gateway.test.mjs",
         "tests/handoff-process.test.mjs",
+        "tests/integration-transition.test.mjs",
         "tests/legacy-store.test.mjs",
+        "tests/managed-rpc.test.mjs",
         "tests/repository.test.mjs",
         "tests/task-catalog.test.mjs",
+        "tests/task-continuity-rpc.test.mjs",
+        "tests/task-continuity.test.mjs",
         "tests/task-interventions.test.mjs"
       ]
     },
@@ -3532,7 +3954,7 @@
       ]
     },
     "bundle/task-artifacts.js": {
-      "lines": 179,
+      "lines": 218,
       "imports": [
         "./approval-ledger.js",
         "./artifact-media.js",
@@ -3546,6 +3968,7 @@
         "node:path"
       ],
       "exports": [
+        "NATIVE_ARTIFACT_MAX",
         "TaskArtifacts",
         "artifactName",
         "installArtifactAccess"
@@ -3607,7 +4030,7 @@
       ]
     },
     "bundle/task-board.js": {
-      "lines": 132,
+      "lines": 136,
       "imports": [
         "./delivery-preview.js",
         "./delivery-state.js",
@@ -3629,9 +4052,12 @@
       "referencedByTests": [
         "tests/delivery-gateway.test.mjs",
         "tests/development.test.mjs",
+        "tests/full-acceptance-coexist.test.mjs",
+        "tests/managed-execution.test.mjs",
         "tests/task-board.test.mjs",
         "tests/task-interventions.test.mjs",
         "tests/task-results.test.mjs",
+        "tests/v2-ui-policy.test.mjs",
         "tests/worker-output-diagnostics.test.mjs"
       ]
     },
@@ -3646,8 +4072,9 @@
       ]
     },
     "bundle/task-catalog.js": {
-      "lines": 77,
+      "lines": 78,
       "imports": [
+        "./managed-cloud-policy.js",
         "./search-contract.js",
         "./task-context.js",
         "./task-envelope.js",
@@ -3681,10 +4108,42 @@
       ],
       "referencedByTests": []
     },
-    "bundle/task-envelope.js": {
-      "lines": 96,
+    "bundle/task-continuity-tools.js": {
+      "lines": 14,
       "imports": [
+        "./task-continuity.js",
+        "./task-envelope.js"
+      ],
+      "exports": [
+        "registerContinuityTools"
+      ],
+      "referencedByTests": [
+        "tests/native-managed-entry.test.mjs"
+      ]
+    },
+    "bundle/task-continuity.js": {
+      "lines": 248,
+      "imports": [
+        "./approval-ledger.js",
+        "./approval-semantics.js",
+        "./link-contract.js",
+        "./store.js",
+        "./task-envelope.js"
+      ],
+      "exports": [
+        "ContinuityOutbox",
+        "TaskContinuity",
+        "nativeInput"
+      ],
+      "referencedByTests": []
+    },
+    "bundle/task-envelope.js": {
+      "lines": 107,
+      "imports": [
+        "./managed-cloud-policy.js",
+        "./native-human-context.js",
         "./search-contract.js",
+        "./source-policy-envelope.js",
         "./task-context.js",
         "node:crypto"
       ],
@@ -3692,6 +4151,7 @@
         "assertScheduleEnvelope",
         "currentHumanRequest",
         "envelopeVersion",
+        "humanRequest",
         "identity",
         "makeEnvelope",
         "parseEnvelope",
@@ -3707,8 +4167,15 @@
         "tests/approval-reference.test.mjs",
         "tests/approval-workbench.test.mjs",
         "tests/approval.test.mjs",
+        "tests/cloud-autonomy-rpc.test.mjs",
+        "tests/cloud-autonomy.test.mjs",
         "tests/development.test.mjs",
+        "tests/full-acceptance-coexist.test.mjs",
+        "tests/gray-repair.test.mjs",
+        "tests/integration-transition.test.mjs",
         "tests/intervention-actions.test.mjs",
+        "tests/managed-rpc.test.mjs",
+        "tests/managed-triggers.test.mjs",
         "tests/native-file-message.test.mjs",
         "tests/notification-defaults.test.mjs",
         "tests/notification-media-fixture.mjs",
@@ -3716,18 +4183,22 @@
         "tests/onboarding-repositories.test.mjs",
         "tests/repository.test.mjs",
         "tests/search-contract.test.mjs",
+        "tests/source-routing.test.mjs",
         "tests/source-search.test.mjs",
         "tests/source-version.test.mjs",
         "tests/source-web.test.mjs",
         "tests/task-a2a.test.mjs",
         "tests/task-board.test.mjs",
         "tests/task-catalog.test.mjs",
+        "tests/task-continuity-rpc.test.mjs",
+        "tests/task-continuity.test.mjs",
         "tests/task-envelope.test.mjs",
         "tests/task-notifications.test.mjs",
         "tests/task-sources.test.mjs",
         "tests/task-triggers.test.mjs",
         "tests/task-workflows.test.mjs",
         "tests/trigger-process.test.mjs",
+        "tests/v2-ui-policy.test.mjs",
         "tests/workbench-interaction-runtime.test.mjs",
         "tests/worker-budget.test.mjs",
         "tests/workflow-process.test.mjs"
@@ -3790,13 +4261,14 @@
       ]
     },
     "bundle/task-notifications.js": {
-      "lines": 132,
+      "lines": 136,
       "imports": [
         "./notification-artifacts.js",
         "./notification-contract.js",
         "./notification-defaults.js",
         "./notification-discovery.js",
         "./notification-endpoint.js",
+        "./notification-observations.js",
         "./notification-review.js",
         "./notification-targets.js",
         "./recovery.js",
@@ -3813,6 +4285,35 @@
         "tests/worker-output-diagnostics.test.mjs"
       ]
     },
+    "bundle/task-observer-model.js": {
+      "lines": 25,
+      "imports": [
+        "node:crypto"
+      ],
+      "exports": [
+        "observationModel"
+      ],
+      "referencedByTests": [
+        "tests/task-observer-model.test.mjs"
+      ]
+    },
+    "bundle/task-observer.js": {
+      "lines": 120,
+      "imports": [
+        "./managed-runtime.js",
+        "./task-observer-model.js",
+        "node:crypto"
+      ],
+      "exports": [
+        "TaskObserver",
+        "validateObserver"
+      ],
+      "referencedByTests": [
+        "tests/managed-triggers.test.mjs",
+        "tests/task-observer-model.test.mjs",
+        "tests/task-observer.test.mjs"
+      ]
+    },
     "bundle/task-results.js": {
       "lines": 16,
       "imports": [],
@@ -3820,6 +4321,7 @@
         "taskResults"
       ],
       "referencedByTests": [
+        "tests/managed-execution.test.mjs",
         "tests/task-results.test.mjs"
       ]
     },
@@ -3867,7 +4369,7 @@
       ]
     },
     "bundle/task-trigger-time.js": {
-      "lines": 46,
+      "lines": 51,
       "imports": [
         "@js-temporal/polyfill"
       ],
@@ -3877,12 +4379,14 @@
         "validateTiming"
       ],
       "referencedByTests": [
+        "tests/managed-triggers.test.mjs",
         "tests/task-triggers.test.mjs"
       ]
     },
     "bundle/task-triggers.js": {
-      "lines": 157,
+      "lines": 132,
       "imports": [
+        "./schedule-ledger.js",
         "./search-contract.js",
         "./task-context.js",
         "./task-envelope.js",
@@ -3903,7 +4407,7 @@
       ]
     },
     "bundle/task-worker.js": {
-      "lines": 73,
+      "lines": 81,
       "imports": [
         "./task-envelope.js",
         "node:crypto"
@@ -3916,7 +4420,7 @@
       ]
     },
     "bundle/task-workflows.js": {
-      "lines": 117,
+      "lines": 118,
       "imports": [
         "./job-version.js",
         "./search-contract.js",
@@ -3951,7 +4455,7 @@
       ]
     },
     "bundle/workbench-decisions.js": {
-      "lines": 48,
+      "lines": 65,
       "imports": [
         "./approval-ledger.js",
         "./approval-semantics.js",
@@ -3964,6 +4468,7 @@
       "referencedByTests": [
         "tests/approval-local-relay.test.mjs",
         "tests/intervention-actions.test.mjs",
+        "tests/task-native-decisions.test.mjs",
         "tests/workbench-decisions.test.mjs"
       ]
     },
@@ -4021,7 +4526,7 @@
       ]
     },
     "bundle/worker-tools.js": {
-      "lines": 13,
+      "lines": 20,
       "imports": [
         "node:fs"
       ],
@@ -4046,14 +4551,16 @@
       ]
     },
     "ui-source/artifact-download-client.mjs": {
-      "lines": 19,
+      "lines": 37,
       "imports": [],
       "exports": [
         "decodeArtifactDownload",
+        "fetchArtifactDownload",
         "saveArtifactDownload"
       ],
       "referencedByTests": [
-        "tests/artifact-download-client.test.mjs"
+        "tests/artifact-download-client.test.mjs",
+        "tests/managed-artifacts.test.mjs"
       ]
     },
     "ui-source/bundle-shim.js": {
@@ -4767,7 +5274,7 @@
       ]
     },
     "ui-source/task-focus-view.js": {
-      "lines": 80,
+      "lines": 102,
       "imports": [],
       "exports": [],
       "referencedByTests": [
@@ -4785,8 +5292,106 @@
         "tests/task-focus.test.mjs"
       ]
     },
+    "ui-source/v2/deck.jsx": {
+      "lines": 42,
+      "imports": [
+        "../onboarding/components",
+        "react"
+      ],
+      "exports": [
+        "Deck",
+        "Guide"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/v2/host-clearance.mjs": {
+      "lines": 53,
+      "imports": [],
+      "exports": [
+        "observeHostClearance",
+        "widgetClearance"
+      ],
+      "referencedByTests": [
+        "tests/v2-host-clearance.test.mjs"
+      ]
+    },
+    "ui-source/v2/presentation.mjs": {
+      "lines": 15,
+      "imports": [],
+      "exports": [
+        "currentTask",
+        "lifecycleActions",
+        "needsDecision",
+        "scheduleLabel",
+        "sections",
+        "selectedTask",
+        "settings",
+        "signalDraft",
+        "stateNames",
+        "statusLabel",
+        "taskDraft",
+        "taskState",
+        "usageLabel"
+      ],
+      "referencedByTests": [
+        "tests/v2-ui-policy.test.mjs"
+      ]
+    },
+    "ui-source/v2/settings.jsx": {
+      "lines": 43,
+      "imports": [
+        "../onboarding/cloud-installation",
+        "../onboarding/components",
+        "../onboarding/credentials",
+        "../onboarding/existing-pair",
+        "../onboarding/file-transfer",
+        "../onboarding/handoff",
+        "../onboarding/im",
+        "../onboarding/installation",
+        "../onboarding/local-pair",
+        "../onboarding/maintenance",
+        "../onboarding/maintenance-session",
+        "../onboarding/models",
+        "../onboarding/notification-defaults",
+        "../onboarding/registry",
+        "../onboarding/repository",
+        "../onboarding/self-lifecycle",
+        "./source-policy",
+        "react"
+      ],
+      "exports": [
+        "ConfigPage"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/v2/source-policy.jsx": {
+      "lines": 38,
+      "imports": [
+        "../onboarding/components",
+        "react"
+      ],
+      "exports": [
+        "SourcePolicy"
+      ],
+      "referencedByTests": []
+    },
+    "ui-source/v2/workbench.jsx": {
+      "lines": 64,
+      "imports": [
+        "../onboarding/components",
+        "./deck",
+        "./host-clearance.mjs",
+        "./presentation.mjs",
+        "./settings",
+        "react"
+      ],
+      "exports": [
+        "Workbench"
+      ],
+      "referencedByTests": []
+    },
     "ui-source/workbench-client.js": {
-      "lines": 491,
+      "lines": 496,
       "imports": [],
       "exports": [],
       "referencedByTests": [
@@ -4810,6 +5415,12 @@
         "tests/task-interventions-ui.test.mjs",
         "tests/ui-contract.test.mjs"
       ]
+    },
+    "ui-source/workbench-v2.generated.js": {
+      "lines": 90,
+      "imports": [],
+      "exports": [],
+      "referencedByTests": []
     }
   }
 }

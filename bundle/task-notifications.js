@@ -1,3 +1,4 @@
+import {observeNotices,observationGrant} from './notification-observations.js';
 import {NotificationDefaults} from './notification-defaults.js';
 import {NotificationArtifacts} from './notification-artifacts.js';
 import {parseEnvelope} from './task-envelope.js';
@@ -16,6 +17,7 @@ export class TaskNotifications {
  constructor(g,config=[]){
   this.g=g;this.db=g.db;this.config=new Map(targets(config).map(t=>[t.key,t]));this.endpoint=new NotificationEndpoint(g,config);this.lastError=null;
   this.discovery=new NotificationDiscovery(g,()=>this.endpoint.service());this.registry=new NotificationTargets(this);this.defaults=new NotificationDefaults(this);
+  this.observationGroups=!!this.db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='notification_observation_members'").get();
   if(!g.store)return;this.review=new NotificationReview(g);
   this.db.exec(`CREATE TABLE IF NOT EXISTS notification_tasks(task_id TEXT PRIMARY KEY,start_seq INTEGER NOT NULL,created INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS notification_bindings(task_id TEXT PRIMARY KEY,revision INTEGER NOT NULL,task_revision INTEGER NOT NULL,target_key TEXT,route_hash TEXT,policy TEXT,state TEXT NOT NULL,source TEXT NOT NULL,created INTEGER NOT NULL,start_seq INTEGER NOT NULL);
@@ -36,6 +38,7 @@ export class TaskNotifications {
  }
  inventory(){return {items:[...this.config.values()].map(t=>({key:t.key,label:t.label,host:t.host,route_hash:t.route_hash,configured:true,publication:this.registry.publication(t.key),receipt_mode:t.route.receipt_mode,capability:t.host===this.g.c.role?this.endpoint.capabilities(t):{text_checked:'requires_peer_validation',files:false,images:false},consent:false})),historical_delivery:'unchanged unless explicitly adopted',no_default_recipient:!this.defaults.current()?.enabled,default_policy:this.defaults.view()};}
  valid(b){
+  try{if(b)this.g.sourceRouting?.assertTask(b.task_id);}catch{return false;}
   const t=b&&this.config.get(b.target_key);return !!b&&b.state==='enabled'&&this.defaults.valid(b)&&t?.route_hash===b.route_hash&&this.g.catalog.head(b.task_id).spec_revision===b.task_revision;
  }
  bind(node,a){
@@ -80,11 +83,12 @@ export class TaskNotifications {
    });
   }
  }
+ observe(events){return observeNotices(this,events);}
  lease(node){
   if(!['local','cloud'].includes(node))throw Error('NOTIFICATION_ROLE_DENIED');
   return tx(this.db,()=>{
    const items=[];for(const r of this.db.prepare("SELECT * FROM task_notifications WHERE host=? AND state IN ('queued','leased','dispatching') AND due<=? ORDER BY rowid LIMIT 10").all(node,this.g.now())){
-    const b=current(this.db,r.task_id);if(r.state!=='dispatching'&&(!this.valid(b)||b.revision!==r.binding_revision)){this.db.prepare("UPDATE task_notifications SET state='cancelled',error='NOTIFICATION_AUTHORIZATION_ENDED' WHERE id=?").run(r.id);continue;}
+    const b=current(this.db,r.task_id);if(r.state!=='dispatching'&&(!this.valid(b)||b.revision!==r.binding_revision||!observationGrant(this,r.id))){this.db.prepare("UPDATE task_notifications SET state='cancelled',error='NOTIFICATION_AUTHORIZATION_ENDED' WHERE id=?").run(r.id);continue;}
     if(r.category==='progress'&&r.state!=='dispatching'){
      const last=this.db.prepare("SELECT max(dispatched_at) n FROM task_notifications WHERE task_id=? AND binding_revision=? AND category='progress' AND state IN ('accepted','dispatching') AND id<>?").get(r.task_id,r.binding_revision,r.id).n;
      if(last!=null){const due=Math.max(r.due,last+JSON.parse(b.policy).progress_interval_seconds*1000);if(due>this.g.now()){this.db.prepare('UPDATE task_notifications SET due=? WHERE id=?').run(due,r.id);continue;}}
@@ -96,7 +100,7 @@ export class TaskNotifications {
  }
  row(node,a){const r=this.db.prepare('SELECT * FROM task_notifications WHERE id=?').get(a.id);if(!r||r.host!==node||r.lease!==a.lease||!r.lease)throw Error('NOTIFICATION_LEASE_MISMATCH');return r;}
  authorize(node,a){
-  return tx(this.db,()=>{const r=this.row(node,a),b=current(this.db,r.task_id);if(!['leased','dispatching'].includes(r.state)||!this.valid(b)||b.revision!==r.binding_revision)return {allowed:false};this.db.prepare("UPDATE task_notifications SET state='dispatching',dispatched_at=coalesce(dispatched_at,?) WHERE id=?").run(this.g.now(),r.id);return {allowed:true,meaning:'dispatch boundary; later revocation cannot recall an external send'};});
+  return tx(this.db,()=>{const r=this.row(node,a),b=current(this.db,r.task_id);if(!['leased','dispatching'].includes(r.state)||!this.valid(b)||b.revision!==r.binding_revision||!observationGrant(this,r.id))return {allowed:false};this.db.prepare("UPDATE task_notifications SET state='dispatching',dispatched_at=coalesce(dispatched_at,?) WHERE id=?").run(this.g.now(),r.id);return {allowed:true,meaning:'dispatch boundary; later revocation cannot recall an external send'};});
  }
  waiting(node,a,media=false){
   if(!/^NOTIFICATION_[A-Z_]{1,80}$/.test(a.reason??'')||!Number.isSafeInteger(a.retry_after_ms)||a.retry_after_ms<1000||a.retry_after_ms>300000||typeof a.safe_before_send!=='boolean')throw Error('NOTIFICATION_RECEIPT_INVALID');

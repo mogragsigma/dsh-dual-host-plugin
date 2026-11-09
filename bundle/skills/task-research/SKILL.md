@@ -1,11 +1,26 @@
 ---
 name: task-research
-description: 为 DSH 受管只读任务声明明确的联网搜索范围、阶段模型与次数，使用搜索证据和有界页面读取生成可追溯报告；不用于普通入口浏览、私聊外传或开发授权。
+description: 云端持续任务复用已配置的辅助搜索，不设调用次数子预算；历史只读任务保留原契约，使用搜索证据和有界页面读取生成可追溯报告；不用于普通入口浏览、私聊外传或开发授权。
 ---
 
 # 任务搜索与来源
 
-## 入口受理
+## 当前云端持续任务（优先）
+- 所有文件成果（含报告/资料/JSONL）均在 task_execute.development 声明 artifacts、checks、delivery；无需 Git 用 workspace。仅无文件交付可显式 null，不能省略或把文件存在当已登记。
+- 资料核实复用原生 web_fetch 读取官方正文；保留来源 URL、短摘录/位置和未核实项。搜索摘要不等于正文，读取失败/截断须标注未核实，不绕过网络守卫。
+
+
+execution_policy=cloud-autonomous-v1时，只用本节；下方是旧只读批次契约，不得混用。
+
+- task_source_capabilities返回当前云端原生文件能力、默认模型及辅助搜索配置，不是旧只读目录清单。
+- task_submit／task_execute的search仅填写scope；辅助模型取已配置路由，不要求用户再说provider或模型全名。
+- 无max_requests、两次搜索子预算或六次共享上限。不偷偷换服务、不为证明无限而重复检索。
+- 云端worker用managed_search。查询不携带凭据或无关私聊；真实来源链接、摘要与未知项如实保存。
+- 未配置、不可用或未知响应如实说明；不能把search=null后继续当已搜索，不循环重试未知派发。
+- 执行前不必列举所有将创建的成果文件为references；references只用于用户给出的资料指针。
+
+## 历史只读批次的入口受理
+
 
 先 task_source_capabilities，核对云端搜索能力，而不是假定入口能搜索就代表 worker 也可以。
 用户自然语言表达搜索目的即可；由入口整理 search 契约，无需用户输入命令或内部编号。

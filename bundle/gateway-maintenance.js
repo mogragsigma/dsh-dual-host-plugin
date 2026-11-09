@@ -17,6 +17,7 @@ export function createGatewayMaintenance(g,{now=Date.now}={}){
    deliveryPreparation:g.deliveryRuntime?.preparations.size??0,
    development:g.development?.gate.inflight.size??0,developmentPeer:g.developmentPeer?.pending.size??0,
    a2a:+!!g.a2aEndpoint?.pending+ +!!g.a2aEndpoint?.active+ +!!g.a2aEndpoint?.undrained,
+   managedExecution:g.execution?.slots.list().length??0,managedEndpoint:(g.executionEndpoint?.active.size??0)+ +!!g.executionEndpoint?.pending,
    approvals:+!!g.chatApproval?.running,artifacts:g.artifacts?.pending.size??0};
  }
  function status(a={}){if(!exact(a,[]))fail('ARGUMENTS');ready();const c=counts(),busy=Object.values(c).some(n=>n!==0);

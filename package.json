@@ -1,7 +1,7 @@
 {
   "name": "@mogragsigma/dsh-dual-host-plugin",
-  "version": "0.33.4",
-  "description": "Local and cloud DSH coordination with protected onboarding, task approval and controlled artifacts",
+  "version": "2.0.0",
+  "description": "Single-owner native cloud tasks for DeepSeek Harness, with local and IM entry, continuous follow-up and verifiable artifacts",
   "type": "module",
   "private": false,
   "exports": {
@@ -95,7 +95,7 @@
     "dsh-plugin",
     "deepseek-harness",
     "dual-host",
-    "task-approval"
+    "cloud-tasks"
   ],
   "engines": {
     "dsh": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0"

@@ -37,7 +37,7 @@ export function interventionFacts(item,now){
  const active=out.some(x=>x.lifecycle==='open'&&!x.historical);
  // Aggregate fallback cannot hide an unsupported state behind an empty list.
  const info=guidance('task',item.display_state,'',false);
- if(info&&!active)add('task',{id:'state',spec_revision:revision},item.display_state);
+ if(info&&!active&&!item.task_observation)add('task',{id:'state',spec_revision:revision},item.display_state);
  else add('task',{id:'state',spec_revision:revision},'inactive');
  return out;
 }

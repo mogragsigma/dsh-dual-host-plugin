@@ -15,7 +15,7 @@ export function apply(ctx,c){
   try{
    const roster=await ctx.agentPresets.list(),compat=JSON.parse(await fs.readFile(new URL('./compatibility.json',import.meta.url)));
    const require=createRequire(import.meta.url),host=JSON.parse(await fs.readFile(require.resolve('@deepseek-ai/dsh/package.json')));
-   if(host.version!==compat.hostBaseline)throw Error('NATIVE_HOST_VERSION_REVIEW');
+   if(host.version!==(compat.hostCompatibilityPolicy?.standalonePinnedHost??compat.hostBaseline))throw Error('NATIVE_HOST_VERSION_REVIEW');
    for(const preset of ['standard','ptc','cordis','minimal']){
     if(!roster.some(x=>x.id===preset))throw Error('NATIVE_PRESET_MISSING');
     stage=preset+':create';const h=await ctx.agents.withoutInitiator(()=>ctx.agents.create({sessionId:'onboarding-check-'+c.nonce+'-'+preset,meta:{cwd:c.workspace,agentPreset:preset},agentOptions:ctx.agentDefaultModel.currentSelection(),setup:async ac=>{await ctx.agentPresets.mount(ac,preset);}}));

@@ -1,0 +1,15 @@
+{
+  "local": [
+    {"id":"dual-host-onboarding","config":{"role":"local","entryMode":"native","namespace":"__PAIR_NAMESPACE__","stateDir":"__STATE_DIR__","tokenFile":"__TOKEN_FILE__","port":33911,"coordinatorUrl":"http://127.0.0.1:33921","workbench":{"enabled":true},"continuity":{"enabled":true},"managedExecution":{"enabled":true}}},
+    {"insert":[{"id":"dual-host-native-tools","name":"@mogragsigma/dsh-dual-host-plugin/native-tools"}]}
+  ],
+  "cloud": [
+    {"id":"dual-host-onboarding","config":{"role":"cloud","entryMode":"native","namespace":"__PAIR_NAMESPACE__","stateDir":"__STATE_DIR__","tokenFile":"__TOKEN_FILE__","port":33921,"workbench":{"enabled":true},"continuity":{"enabled":true},"managedExecution":{"enabled":true,"endpoint":{"lockPort":33923}},"sourceIntake":{"enabled":false,"sources":[]}}},
+    {"insert":[{"id":"dual-host-native-tools","name":"@mogragsigma/dsh-dual-host-plugin/native-tools"}]}
+  ],
+  "selectedSource": {
+    "id":"selected-gitee-issues","adapterId":"gitee-issues-v1","namespace":"gitee-repository-42","revision":"1","enabled":false,
+    "scopes":["https://gitee.com/example/synthetic-repository"],
+    "gitee":{"url":"https://gitee.com/example/synthetic-repository","repository_id":42,"issues":["IEXAMPLE"]}
+  }
+}

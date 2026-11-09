@@ -1,10 +1,11 @@
  // Preview adapters only simulate. The live adapter prepares an intent, then requires
- // verified existing identity in a later step; the legacy step 01 adapter only reports readiness.
+ // an exact task decision. Only legacy tasks additionally require the existing IM identity.
  function TaskDecisionBox({item, entry, fresh, adapter, onRecorded}) {
   const draftKey=JSON.stringify([item.task_id,entry.id,item.spec_revision]);
   const [draft,setDraft]=React.useState(adapter?.drafts?.get(draftKey)||''),[busy,setBusy]=React.useState(false),[result,setResult]=React.useState(null),[error,setError]=React.useState('');
   const generation=React.useRef(0),alive=React.useRef(true),locked=React.useRef(false),review=React.useRef();
   const inputId=React.useId(),hintId=React.useId();
+  const nativeAuthority=entry.approval?.authorization_mode==='task-native';
   const identity={task_id:item.task_id,request_id:entry.id,expected_revision:item.spec_revision};
   function saveDraft(value){setDraft(value);adapter?.drafts?.set(draftKey,value);}
   React.useEffect(()=>{setDraft(adapter?.drafts?.get(draftKey)||'');},[draftKey]);
@@ -26,7 +27,7 @@
    h('div',{className:'decision-context'},text('当前方案 · 第 '+item.spec_revision+' 版','small'),text('有效至 '+time(entry.approval.expires),'small')),
    h('label',{htmlFor:inputId},adapter?.readinessOnly?'你的意见（尚未提交）':'你的决定或意见'),
    h('textarea',{id:inputId,'aria-describedby':hintId,value:draft,maxLength:2000,rows:3,disabled:busy||!!pending,placeholder:'例如：就按这个方案执行；或可以，但请把报告改成两段。',onChange:e=>{saveDraft(e.target.value);setResult(null);setError('');}}),
-   h('p',{id:hintId,className:'decision-hint'},!fresh&&!adapter?.serverValidated?(adapter?.readinessOnly?'历史快照：仍可查询最新处理方式；不会提交决定，已写意见仍保留。':'历史快照：刷新核对后才能提交，未提交意见仍保留。'):!available?'审批接线尚未启用：这里不会提交决定。':adapter.preview?'交互演示：只改变本页模拟数据，不产生真实批准。':adapter.readinessOnly?'工作台直接处理正在接线；可以先写下意见并查看当前处理方式，不会提交决定。':'核对意见与方案后保存；首次通过既有 IM 确认此窗口身份，10分钟内无需反复跳转。'),
+   h('p',{id:hintId,className:'decision-hint'},!fresh&&!adapter?.serverValidated?(adapter?.readinessOnly?'历史快照：仍可查询最新处理方式；不会提交决定，已写意见仍保留。':'历史快照：刷新核对后才能提交，未提交意见仍保留。'):!available?'审批接线尚未启用：这里不会提交决定。':adapter.preview?'交互演示：只改变本页模拟数据，不产生真实批准。':adapter.readinessOnly?'工作台直接处理正在接线；可以先写下意见并查看当前处理方式，不会提交决定。':nativeAuthority?'核对本任务的意见与方案后保存；无需 IM 身份确认。':'核对意见与方案后保存；首次通过既有 IM 确认此窗口身份，10分钟内无需反复跳转。'),
    draft.trim()&&!pending&&!adapter?.readinessOnly?text('已填写文字时，以完整文字为准；快捷按钮不会覆盖你的意见。','decision-hint'):null,
    !pending&&!adapter?.readinessOnly?h('div',{className:'decision-actions'},button(busy?'正在核验…':adapter?.confirm?'核对我的意见':'提交意见',()=>submit(null),!enabled||!draft.trim(),'primary','message'),button('同意原方案',()=>submit('approve'),!enabled,'','shield'),button('暂缓',()=>submit('hold'),!enabled),button('拒绝',()=>submit('reject'),!enabled,'decision-reject')):null,
    adapter?.readinessOnly?button(busy?'正在检查…':'查看当前处理方式',()=>perform(()=>adapter.readiness(identity)),!available||busy,'primary','help'):null,
@@ -38,8 +39,8 @@
      ...[['summary','方案'],['changes','拟变更'],['validation','验证'],['risks','风险'],['rollback','回滚']].map(([k,v])=>h('div',{key:k},h('strong',null,v),text(result.proposal?.[k]??'未提供'))),
      h('div',null,h('strong',null,'授权范围'),text((result.proposal?.scopes??[]).map(x=>({develop:'开发',commit:'提交',push:'推送',publish:'发布',deploy:'部署'}[x]??x)).join('、'))),
      h('div',null,h('strong',null,'任务模型'),text([result.proposal?.model_policy?.provider,result.proposal?.model_policy?.model,result.proposal?.model_policy?.reasoningEffort].filter(Boolean).join(' / '))),
-     h('details',null,h('summary',null,'查看仓库、限额与交付绑定'),h('pre',null,JSON.stringify({repository:result.proposal?.repository,development:result.proposal?.development,delivery:result.proposal?.delivery},null,2)))),
-    adapter?.identity?h('section',{className:'decision-identity','aria-label':'工作台身份'},
+     h('details',null,h('summary',null,'查看仓库、限额与交付绑定'),h('pre',null,JSON.stringify({execution:result.proposal?.execution,repository:result.proposal?.repository,development:result.proposal?.development,delivery:result.proposal?.delivery},null,2)))),
+    adapter?.identity&&!nativeAuthority&&result.identity?.required!==false?h('section',{className:'decision-identity','aria-label':'工作台身份'},
      h('strong',null,result.identity?.verified?'本窗口身份已核验':'先确认这个工作台窗口的身份'),
      text(result.identity?.verified?'10分钟内可逐项处理方案；这不是任何任务的批准。':result.identity?.host_role==='local'?'使用已绑定的本地机器人私聊；身份确认、方案和账本回执在同一对话，不依赖 DSH 会话。':'复用现有云端审批私聊；尚未配置本地统一入口，不新增账号。'),
      result.identity?.confirmation_code?text('窗口校验：'+result.identity.confirmation_code):null,
@@ -48,7 +49,7 @@
       !result.identity?.verified?button(['sending','sent','needs_review'].includes(result.identity?.state)?'已发起身份确认':'通过已绑定 IM 确认身份',()=>perform(async()=>({...result,identity:await adapter.identity('send')})),busy||['sending','sent','needs_review'].includes(result.identity?.state),'','shield'):null,
       button('我已回复，核对身份',()=>perform(async()=>({...result,identity:await adapter.identity('check')})),busy),
       result.identity?.verified?button('结束本窗口身份使用',()=>perform(async()=>({...result,identity:await adapter.identity('close')})),busy):null)):null,
-    h('div',{className:'decision-actions'},button('保存这次决定',()=>perform(()=>adapter.confirm(identity,result)),!enabled||result.uncertain||!!adapter?.identity&&!result.identity?.verified,'primary','shield'),button('返回修改',()=>{adapter.discard(identity);setResult(null);setError('');},busy||result.uncertain))):null,
+    h('div',{className:'decision-actions'},button('保存这次决定',()=>perform(()=>adapter.confirm(identity,result)),!enabled||result.uncertain||!!adapter?.identity&&!nativeAuthority&&result.identity?.required!==false&&!result.identity?.verified,'primary','shield'),button('返回修改',()=>{adapter.discard(identity);setResult(null);setError('');},busy||result.uncertain))):null,
    pending&&adapter?.status?h('div',{className:'decision-query'},button('查询本次处理结果',()=>perform(()=>adapter.status(identity)),busy,'','refresh'),text(result?.uncertain?'结果尚未确认，只查询原操作，不重复提交。':'离开此任务再返回时，可查询本次处理结果。')):null,
    result&&!reviewing&&(!onRecorded||!result.recorded)?h('div',{className:'decision-result',role:'status'},h('strong',null,(adapter?.preview?'模拟结果 · ':'')+(labels[result.state]??'尚待核对')),text(result.message??'决定与执行分开；不会因此自动启动任务。'),result.next_action?h('div',null,h('strong',null,result.next_action.label),text(result.next_action.message)):null,pending&&!result.recorded&&!result.uncertain&&result.operation_state!=='processing'?button('返回修改意见',()=>{adapter.discard(identity);setResult(null);setError('');},busy):null):null,
    error?h('p',{className:'warning',role:'alert'},error):null);
@@ -77,4 +78,25 @@
    text('以下是来源观测历史，不是新的批准或执行指令。'),ledger.has_more?text('当前仅显示前 '+ledger.display_limit+' 项；其他记录仍保留，未被当成已处理。'):null,
    ...rows.map(r=>h('details',{key:r.id},h('summary',null,(r.lifecycle==='open'?'待处理':r.lifecycle==='unverified'?'本次未核实':r.lifecycle==='expired'?'方案已过期':r.lifecycle==='superseded'?'旧方案已失效':'来源状态已更新')+' · '+r.title),
     text('最后读取：'+time(r.last_seen)),...(r.handling??[]).map(o=>h('div',{key:o.id,className:'intervention-event'},text(time(o.created)+' · '+({continue:'确认新建议',answer:'确认补充信息',end:'结束批次',hold:'稍后处理',maintenance:'维护请求'}[o.action]??'处理意见')),text(o.text||'未另填意见'),text(o.state==='recorded'?({queued:'新批次已排队',running:'新批次正在执行',completed:'新批次已完成',draining:'结束已请求，仍待排空',ended:'本批次已结束',notice_closed:'通知跟进已关闭，未重发',held:'意见已保留，稍后处理',maintenance_requested:'维护请求已登记，尚未修复'}[o.progress]??'处理已记账；不是整个任务完成'):o.state==='ready'?'建议尚未确认':o.state==='superseded'?'已被新建议替代，不能执行':'原操作仍待核对'))),...(r.events??[]).map(e=>h('div',{key:e.version,className:'intervention-event'},text(time(e.created)+' · '+({observed:'登记事项',source_updated:'来源内容更新',source_state_changed:'来源状态更新',source_not_observed:'本次未读取到原记录'}[e.event]??'观测记录')),e.user_opinion?h('div',null,h('strong',null,'已记账的意见'),text(e.user_opinion)):null,e.result?text(e.result.text):null)),r.events_total>(r.events??[]).length?text('显示最近 20 条；更早记录保留。'):null)));
+ }
+
+ function TaskObservation({observation:o}) {
+  if(!o)return null;
+  const labels={running:'处理中',ready:'成果就绪',waiting:'等待',blocked:'受阻',suspected:'需核对',checking:'核对中',unknown:'尚未核实'};
+  return h('section',{className:'task-observation','aria-label':'等待与受阻'},
+   h('div',{className:'observation-heading'},h('strong',null,o.title),h('span',{className:'pill',title:'只读核对已有记录，不暂停、重试或增加任务权限。'},labels[o.kind]??'尚未核实')),
+   o.detail?text(o.detail,'observation-detail'):null,
+   h('details',null,h('summary',null,'查看依据'),text(o.last_checked_at?'最后核对：'+time(o.last_checked_at):'尚未取得核对记录。'),o.evidence?.report_summary?text(o.evidence.report_summary):null,o.evidence?.error?text('记录中的错误：'+o.evidence.error):null,o.evidence?.activity_observed_at?text('最近原生活动：'+time(o.evidence.activity_observed_at)+'；活动不等于实质进展。'):null,
+    o.diagnosis?h('div',null,h('strong',null,'辅助判断（非执行结论）'),text(o.diagnosis.summary),text(o.diagnosis.missing_evidence),text(o.diagnosis.suggestion)):o.diagnostic_state==='unavailable'?text('辅助判断未取得结果，仍以现有记录为准。'):null));
+ }
+
+ function TaskDevelopment({evidence:e}){
+  if(!e)return null;const states={passed:'通过',failed:'失败',stale:'改动后待重验',not_run:'未运行',running:'运行中',unknown:'未核实',changed_during_check:'检查中发生改动'},delivery={not_checked:'尚未核验交付',workspace_ready:'成果就绪 · 未对外交付',commit_verified:'执行端提交已核验',remote_commit_verified:'远端提交已核验',pr_verified:'PR 已核验'};
+  return h('section',{className:'task-observation','aria-label':'研发与交付'},h('div',{className:'observation-heading'},h('strong',null,'研发与交付'),h('span',{className:'pill'},e.historical?'历史记录':delivery[e.delivery?.state]??'尚未核验')),
+   e.delivery?.state==='pr_verified'&&/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/pull\/\d+$/.test(e.delivery.url??'')?h('a',{className:'button plain',href:e.delivery.url,target:'_blank',rel:'noopener noreferrer',referrerPolicy:'no-referrer'},'查看 PR'):null,
+   text('记录于 '+time(e.at)+' · 非实时检查；不代表用户验收、合并或发布。','small'),
+   h('details',null,h('summary',null,'差异与验证'),e.preexisting_changes?text('开始前已有改动，未将其全部归为本次成果。'):null,
+    ...(e.checks??[]).map(c=>text(c.name+' · '+(states[c.state]??'未核实'))),e.no_checks_reason?text('未安排检查的原因：'+e.no_checks_reason):null,
+    ...(e.changes??[]).map(c=>text(({added:'新增',modified:'修改',deleted:'删除'}[c.kind]??'变更')+' · '+c.path)),e.truncated?text('差异仅显示摘要，不能视为完整审查。'):null,
+    e.git_diff_stat?h('pre',null,e.git_diff_stat):null,e.git_diff?h('details',null,h('summary',null,'查看 Git 差异摘录'),text('相对开始时提交，可能包含已有改动；截断时需在原生工具继续核对。'),h('pre',null,e.git_diff)):null,e.review?text('执行者自检（非独立审计）：'+e.review.summary):null));
  }

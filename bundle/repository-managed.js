@@ -43,4 +43,5 @@ export class ManagedGiteeReadOnly {
  identity(...a){return this.read('identity',a);}
  file(...a){return this.read('file',a);}
  commit(...a){return this.read('commit',a);}
+ issue(...a){return this.read('issue',a);}
 }

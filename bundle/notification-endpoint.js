@@ -3,7 +3,7 @@ import {NotificationMediaEndpoint} from './notification-media-endpoint.js';
 import {targets,delivery,digest,json,outcome} from './notification-contract.js';
 import {FeishuNotificationSender} from './notification-feishu.js';
 import {bounded} from './recovery.js';
-const known=new Set(['account-unverified','account-changed','target-changed','capability-unavailable','unknown-target','unknown-bot','bad-request']);
+const known=new Set(['feishu-permission-required','account-unverified','account-changed','target-changed','capability-unavailable','unknown-target','unknown-bot','bad-request']);
 const retryable=new Set(['account-unverified','capability-unavailable']);
 const safeCode=code=>'NOTIFICATION_'+code.replaceAll('-','_').toUpperCase();
 export class NotificationEndpoint {

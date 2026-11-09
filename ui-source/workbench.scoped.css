@@ -573,3 +573,5 @@
 .dtu .task-query-helper textarea{display:block;box-sizing:border-box;width:100%;min-height:88px;resize:vertical;max-height:200px;padding:12px 14px;margin:8px 0;font-family:inherit;font-size:13px;line-height:1.7;color:#243b54;background:#f8fbff;border:1px solid #c6daef;border-radius:14px;outline-offset:3px}
 .dtu .task-query-helper textarea:focus-visible{outline:2px solid #4f93e0;background:#fff}
 
+.dtu .task-observation{padding:12px 0;border-block:1px solid #dce7f4;overflow-wrap:anywhere}.dtu .observation-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.dtu .observation-detail{margin:6px 0;color:#526883}.dtu .task-observation details{font-size:13px;color:#526883}.dtu .task-observation summary{cursor:pointer;width:fit-content;padding:4px 0}.dtu .task-observation summary:focus-visible{outline:2px solid #086ddd;outline-offset:3px}
+

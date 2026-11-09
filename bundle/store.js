@@ -16,16 +16,17 @@ export class Coordinator {
       CREATE TABLE IF NOT EXISTS intents(seq INTEGER PRIMARY KEY AUTOINCREMENT,id TEXT UNIQUE,task_id TEXT,node TEXT,fingerprint TEXT,content TEXT,base_hash TEXT,status TEXT,epoch INTEGER,receipt TEXT);
       CREATE TABLE IF NOT EXISTS audit(seq INTEGER PRIMARY KEY AUTOINCREMENT,type TEXT,data TEXT);`);
   }
-  tx(fn){this.db.exec('BEGIN IMMEDIATE');try{const r=fn();this.db.exec('COMMIT');return r;}catch(e){this.db.exec('ROLLBACK');throw e;}}
+  tx(fn){this.db.exec('BEGIN IMMEDIATE');try{const r=fn();this.db.exec('COMMIT');return r;}catch(e){try{this.db.exec('ROLLBACK');}catch{}throw e;}}
   log(type,data){this.db.prepare('INSERT INTO audit(type,data) VALUES (?,?)').run(type,JSON.stringify(data));}
   task(id){const t=this.db.prepare('SELECT * FROM tasks WHERE id=?').get(id);if(!t)throw Error('TASK_NOT_FOUND');return t;}
   file(id){this.task(id);return join(this.root,'workspaces',id,'artifact.txt');}
   contents(id){if(this.writer)return this.writer.contents(id);try{return readFileSync(this.file(id),'utf8');}catch(e){if(e.code==='ENOENT')return '';throw e;}}
   status(id){const t=this.task(id);return {...t,fileHash:hash(this.contents(id)),intents:this.db.prepare('SELECT id,node,status,epoch FROM intents WHERE task_id=? ORDER BY seq').all(id)};}
-  accept(node,{task_key,ingress_id,source,goal=""}){
-    if(!["local","cloud"].includes(node)||typeof goal!=="string"||goal.length>12000||typeof source!=="string"||source.length>64)throw Error("INVALID_INGRESS");
+  accept(node,{task_key,ingress_id,source,goal=""},onAccept,{withinTransaction=false}={}){
+    if(!["local","cloud"].includes(node)||typeof goal!=="string"||goal.length>1048576||typeof source!=="string"||source.length>64)throw Error("INVALID_INGRESS");
     if(!/^[a-z0-9-]{1,64}$/.test(task_key)||typeof ingress_id!=='string'||ingress_id.length>256)throw Error('INVALID_INGRESS');
-    return this.tx(()=>{
+    const transact=withinTransaction?fn=>{if(!this.db.isTransaction)throw Error('COORDINATOR_TRANSACTION_REQUIRED');return fn();}:fn=>this.tx(fn);
+    return transact(()=>{
       let t=this.db.prepare('SELECT * FROM tasks WHERE task_key=?').get(task_key);
       const old=this.db.prepare('SELECT * FROM ingress WHERE id=?').get(ingress_id);
       if(old){if(!t||old.task_id!==t.id||old.source!==source||old.node!==node||old.goal!==goal)throw Error('INGRESS_ID_CONFLICT');return this.status(t.id);}
@@ -33,7 +34,7 @@ export class Coordinator {
         if(first&&!sameNativeTask(first.goal,goal))throw Error('TASK_CONTENT_CONFLICT');}
       if(!t){const id='task-'+randomUUID();this.db.prepare('INSERT INTO tasks(id,task_key,owner,epoch,busy,revision) VALUES (?,?,?,1,0,0)').run(id,task_key,'cloud');t=this.task(id);}
       this.db.prepare('INSERT INTO ingress VALUES (?,?,?,?,?)').run(ingress_id,t.id,source,node,goal);
-      this.log('accepted',{node,source,ingress_id,task_id:t.id});return this.status(t.id);
+      this.log('accepted',{node,source,ingress_id,task_id:t.id});onAccept?.(t);return this.status(t.id);
     });
   }
   fence(node,id,epoch){const t=this.task(id);if(t.owner!==node||t.epoch!==epoch)throw Error('STALE_FENCE');if(t.blocked)throw Error('NEEDS_REVIEW');return t;}

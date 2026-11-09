@@ -1,6 +1,6 @@
 {
   "name": "@mogragsigma/dsh-dual-host-plugin",
-  "version": "0.33.4",
+  "version": "2.0.0",
   "type": "module",
   "exports": {
     ".": "./native-entry.js",
@@ -8,7 +8,7 @@
     "./native-tools": "./native-tools.js",
     "./client": "./workbench-client.js"
   },
-  "description": "Local and cloud DSH coordination with protected onboarding, task approval and controlled artifacts",
+  "description": "Single-owner native cloud tasks for DeepSeek Harness, with local and IM entry, continuous follow-up and verifiable artifacts",
   "files": [
     "*.js",
     "cordis.patch.yml",
@@ -33,7 +33,9 @@
     "LICENSE",
     "LICENSE.en.md",
     "THIRD_PARTY_NOTICES.md",
-    "ASSET_NOTICE.md"
+    "ASSET_NOTICE.md",
+    "SETUP.md",
+    "configuration-v2.json"
   ],
   "dsh": {
     "bundle": {
@@ -113,7 +115,7 @@
     "dsh-plugin",
     "deepseek-harness",
     "dual-host",
-    "task-approval"
+    "cloud-tasks"
   ],
   "engines": {
     "dsh": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0"

@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os';
 import {ModelSelection} from '../bundle/model-selection.js';
 import {Gateway} from '../bundle/index.js';
 import {registerNativeTools} from '../bundle/native-tools.js';
-import {CAPABILITIES,validateHello} from '../bundle/link-contract.js';
+import {CAPABILITIES,validateHello,requireCapability} from '../bundle/link-contract.js';
 const route=(provider='deepseek-official',model='deepseek-flash',name='DeepSeek Flash')=>({provider,id:model,name});
 function fixture({routes=[route()],role='cloud',aliases=[],llm={}}={}){
  const calls={list:0,validate:[],inference:0};
@@ -62,7 +62,7 @@ test('cross-provider catalog entries cannot introduce a route',async()=>{
 });
 test('empty catalog is not permission to invent a provider',async()=>{assert.equal((await fixture({routes:[]}).selector.resolve({host:'cloud',query:'ds flash'})).status,'not_found');});
 test('candidate truncation never pretends unique',async()=>{const f=fixture({routes:Array.from({length:31},(_,i)=>route('provider-'+i))});const r=await f.selector.resolve({host:'cloud',query:'ds flash'});assert.equal(r.status,'ambiguous');assert.equal(r.candidate_count,31);assert.equal(r.candidates.length,30);assert.equal(r.truncated,true);});
-test('new protocol advertises optional resolver without removing old capabilities',()=>{assert.equal(CAPABILITIES.model_selection,1);assert.equal(CAPABILITIES.approval,1);assert.equal(Object.keys(CAPABILITIES).length,34);validateHello({schema:1,protocol:{min:1,max:1},plugin_version:'0.24.0-alpha.19',role:'cloud',namespace:'test',instance_id:'12345678-1234-1234-1234-123456789abc',capabilities:CAPABILITIES});});
+test('new protocol advertises optional resolver without removing old capabilities',()=>{assert.equal(CAPABILITIES.model_selection,1);assert.equal(CAPABILITIES.approval,1);for(const key of ['catalog','scheduler','triggers','continuity','managed_execution','cloud_autonomy'])assert(CAPABILITIES[key]>=1);const h={schema:1,protocol:{min:1,max:1},plugin_version:'0.34.0-alpha.2',role:'local',namespace:'test',instance_id:'12345678-1234-1234-1234-123456789abc',capabilities:CAPABILITIES};const peer={...h,role:'cloud',capabilities:{...CAPABILITIES,future_optional:1}};assert.doesNotThrow(()=>requireCapability('model_resolve',h,peer));assert.throws(()=>requireCapability('model_resolve',h,{...peer,capabilities:{...peer.capabilities,model_selection:2}}),/CAPABILITY_VERSION_INCOMPATIBLE/);assert.throws(()=>requireCapability('model_resolve',h,{...peer,capabilities:{catalog:1}}),/CAPABILITY_UNAVAILABLE/);validateHello({schema:1,protocol:{min:1,max:1},plugin_version:'0.24.0-alpha.19',role:'cloud',namespace:'test',instance_id:'12345678-1234-1234-1234-123456789abc',capabilities:CAPABILITIES});});
 async function gateways(t){
  const dir=mkdtempSync(tmpdir()+'/model-gateway-');writeFileSync(dir+'/tokens',JSON.stringify({localToken:'l'.repeat(32),cloudToken:'c'.repeat(32)}),{mode:0o600});
  const cloudF=fixture(),localF=fixture({role:'local',routes:[route('mac-only','mac-model','本地专用')]}),base={namespace:'model-test',entryMode:'native',peerEnabled:false,tokenFile:dir+'/tokens',port:0};
@@ -80,10 +80,16 @@ test('unreachable/old target refuses instead of local or cached fallback',async 
  const {local}=await gateways(t);await local.call('model_resolve',{host:'cloud',query:'ds flash'});local.link.transport=async()=>{throw Error('COORDINATOR_UNAVAILABLE');};await assert.rejects(local.call('model_resolve',{host:'cloud',query:'ds flash'}),/COORDINATOR_UNAVAILABLE/);
 });
 test('native resolver is additive and uses no callback or exact provider schema',async()=>{
- const tools=new Map(),calls=[];registerNativeTools({tools:{register:d=>tools.set(d.name,d)},taskGateway:{assertNativeAgent(){},call:(m,a)=>{calls.push({m,a});return {status:'ambiguous'};}}});const tool=tools.get('task_model_resolve');assert.deepEqual(tool.parameters.required,['host','query']);assert.equal(tool.parameters.properties.provider,undefined);await tool.execute({host:'cloud',query:'ds flash'},{agent:{},callId:'test'});assert.equal(calls[0].m,'model_resolve');assert(tools.has('task_approval_request'));
+ const tools=new Map(),calls=[];registerNativeTools({tools:{register:d=>tools.set(d.name,d)},taskGateway:{c:{role:'local'},assertNativeAgent(){},call:(m,a)=>{calls.push({m,a});return {status:'ambiguous'};}}});const tool=tools.get('task_model_resolve');assert.deepEqual(tool.parameters.required,['host','query']);assert.equal(tool.parameters.properties.provider,undefined);await tool.execute({host:'cloud',query:'ds flash'},{agent:{},callId:'test'});assert.equal(calls[0].m,'model_resolve');assert(tools.has('task_approval_request'));
 });
-test('owned rules cover ordinary text choices without weakening ledger approvals',()=>{
- for(const name of ['global-rules/AGENTS.md','native-rules/AGENTS.md','skills/task-direct-link/SKILL.md']){const s=readFileSync(new URL('../bundle/'+name,import.meta.url),'utf8');assert(s.includes('task_model_resolve'));assert(s.includes('普通文字'));assert(s.includes('ask_user_question'));assert(/不调用 ask_user_question|不以飞书卡片、精确拼写或 ask_user_question 作为必经入口/u.test(s));assert(/分别核验方案回复与账本|普通选择回复不是可信审批/u.test(s));}
+test('native context loads current autonomous rules without restoring universal approvals',async()=>{
+ const {installNativeContext}=await import('../bundle/native-context.js');let context;
+ const ctx={taskGateway:{c:{role:'local',managedExecution:{enabled:true}},assertNativeAgent(){}},inject:(_deps,fn)=>fn({systemPrompt:{context:x=>{context=x;}}})};
+ installNativeContext(ctx);const text=context.text({agent:{}});
+ assert.match(text,/不要要求 task_decide、approval_id 或 IM 批准/);assert.match(text,/省略 model_query/);assert.match(text,/model_query/);
+ const tools=readFileSync(new URL('../bundle/native-tools.js',import.meta.url),'utf8');assert.match(tools,/ambiguous asks ONE ordinary text question/);assert.match(tools,/never ask_user_question\/cards/);
+ ctx.taskGateway.c.managedExecution.enabled=false;
+ assert(context.text({agent:{}}).includes(readFileSync(new URL('../bundle/native-rules/AGENTS.md',import.meta.url),'utf8')));
 });
 
 test('official channel hint must not match unofficial substring',async()=>{const f=fixture({routes:[route('unofficial-proxy')]});const r=await f.selector.resolve({host:'cloud',query:'ds flash',provider_hint:'官方那个'});assert.equal(r.status,'not_found');assert.equal(r.model_policy,undefined);});

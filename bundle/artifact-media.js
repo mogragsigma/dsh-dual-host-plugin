@@ -25,10 +25,10 @@ export async function artifactSnapshot(g,task,id,mode){
   if(access.artifact.state!=='verified'||a.eligibility(r)!=='needs_verification'||access.artifact.sha256!==r.sha256)throw Error('NOTIFICATION_ARTIFACT_CHANGED');
   return {artifact_id:r.id,name:r.name,description:r.description,sha256:r.sha256,size:0,mode,spec_revision:r.spec_revision,mime:'text/uri-list',url:access.url};
  }
- const f=r.kind==='report'?a.readLocal(r):await g.repositories.provider.file(r.repository,r.path);a.assertOpen();
+ const f=['report','native_file'].includes(r.kind)?a.readLocal(r):await g.repositories.provider.file(r.repository,r.path);a.assertOpen();
  if(a.eligibility(r)!=='needs_verification'||f.bytes.length!==r.size||mediaHash(f.bytes)!==r.sha256||r.kind==='gitee'&&f.blob_sha!==r.blob_sha)throw Error('NOTIFICATION_ARTIFACT_CHANGED');
  if(mode==='page'&&r.kind!=='gitee')throw Error('NOTIFICATION_PAGE_UNAVAILABLE');
  const mime=mode==='image'?imageType(f.bytes):'application/octet-stream';
  if(mode==='image'&&!/\.(png|jpe?g)$/i.test(r.name))throw Error('ARTIFACT_INVALID_IMAGE');
- return {artifact_id:r.id,name:r.name,description:r.description??'暂无介绍',sha256:r.sha256,size:r.size,mode,spec_revision:r.spec_revision,mime,...(mode==='page'?{url:f.url}:{bytes:f.bytes})};
+ return {...(r.kind==='native_file'?{native_file:true}:{}),artifact_id:r.id,name:r.name,description:r.description??'暂无介绍',sha256:r.sha256,size:r.size,mode,spec_revision:r.spec_revision,mime,...(mode==='page'?{url:f.url}:{bytes:f.bytes})};
 }

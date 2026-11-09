@@ -6,7 +6,7 @@ import {makeEnvelope} from '../bundle/task-envelope.js';
 import {feishuNotificationTarget} from '../bundle/notification-feishu.js';
 export const hash=b=>createHash('sha256').update(b).digest('hex');
 export const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aP1kAAAAASUVORK5CYII=','base64');
-export async function fixture(t,{host='cloud'}={}){
+export async function fixture(t,{host='cloud',managed=false,autonomous=false,port=0}={}){
  const root=mkdtempSync(tmpdir()+'/notify-media-');writeFileSync(root+'/tokens.json',JSON.stringify({localToken:'l'.repeat(32),cloudToken:'c'.repeat(32)}),{mode:0o600});
  let now=Date.now(),seq=0,hook=()=>{};const calls=[],c={provider:'feishu',appId:'cli_test1234',botOpenId:'ou_bot1234',approverOpenId:'ou_user1234',chatId:'oc_chat1234',appSecretEnv:'TEST_MEDIA_SECRET',alias:'media'};
  const target=feishuNotificationTarget(c,{host,alias:c.alias,label:'媒体验收私聊'});
@@ -26,15 +26,16 @@ export async function fixture(t,{host='cloud'}={}){
   if(url.includes('/messages?'))return ok({data:{message_id:'om_fixture'+calls.length,chat_id:c.chatId}});
   throw Error('unexpected-url');
  }};
- const ctx={on(){},effect(){},agents:{list:()=>[],get(){}},agentPresets:{composedPreset:a=>a.preset},get(){return null;}};
- const config={role:'cloud',entryMode:'native',namespace:'media-test',stateDir:root+'/cloud',tokenFile:root+'/tokens.json',port:0,notificationTargets:[target],notificationFeishu:host==='cloud'?[c]:[],scheduler:{lockPort:0,intervalMs:60000},recovery:{sendTimeoutMs:50,maxAttempts:3,baseMs:10,maxMs:100}};
+ const ctx={llm:{resolveCallConfig:async p=>p},on(){},effect(){},agents:{list:()=>[],get(){}},agentPresets:{composedPreset:a=>a.preset},get(){return null;}};
+ const config={...(managed?{continuity:{enabled:true},managedExecution:{enabled:true}}:{}),role:'cloud',entryMode:'native',namespace:'media-test',stateDir:root+'/cloud',tokenFile:root+'/tokens.json',port,notificationTargets:[target],notificationFeishu:host==='cloud'?[c]:[],scheduler:{lockPort:0,intervalMs:60000},recovery:{sendTimeoutMs:50,maxAttempts:3,baseMs:10,maxMs:100}};
  const g=new Gateway(ctx,config,{now:()=>now,notificationFeishu:io,scheduler:{allowEphemeralLock:true,now:()=>now}});
  t.after(async()=>{await g.close();rmSync(root,{recursive:true,force:true});});
  const source=(text,role='cloud')=>[{role,session_id:'operator-fixture',message_id:'m'+(++seq),text,sha256:hash(text)}];
  const policy={provider:'fixture-only',model:'zero-model',reasoningEffort:'high'};
  const create=async()=>{
-  const agent={id:'entry',session:{deriveMessages:()=>[{id:'create'+(++seq),role:'user',source:{kind:'user'},content:[{type:'text',text:'运营方媒体夹具，不是模型结果'}]}]}};
-  return g.call('accept',{...makeEnvelope(agent,'cloud',{title:'媒体验收',notification_contract:1,goal:'零模型注册与交付',target:'cloud',intent:'plan',model_policy:policy}),source:'native-cloud'});
+  const messageId='create'+(++seq);
+  const agent={id:'entry',session:{deriveMessages:()=>[{id:messageId,role:'user',source:{kind:'user'},content:[{type:'text',text:'运营方媒体夹具，不是模型结果'}]}]}};
+  return g.call('accept',{...makeEnvelope(agent,'cloud',{title:'媒体验收',...(managed?{continuity:1}:{}),notification_contract:1,goal:'零模型注册与交付',target:'cloud',intent:'plan',model_policy:policy,...(autonomous?{execution_policy:'cloud-autonomous-v1',channel:'cloud-im',intent:'register'}:{})}),source:'native-cloud'});
  };
  const report=(task,format='markdown',bytes=Buffer.from('隔离成果正文\n'))=>{
   const job=g.scheduler.jobs.enqueue({task_id:task.id,trigger_id:'artifact'+(++seq),goal:g.catalog.head(task.id).goal,policy,max_runs:1}),claim=g.scheduler.jobs.claim(new Set(['plan']),new Set(['plan']));

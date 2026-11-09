@@ -1,3 +1,4 @@
+import {testPort} from './helpers/loopback-port.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createServer,request,Agent} from 'node:http';
@@ -15,8 +16,8 @@ async function fixture(t,handler){
  const calls=[],sockets=new Set(),gate=createGatewayMaintenance({instanceId:'proxy-fixture',closed:false});
  const server=createServer((req,res)=>{calls.push(req.url);if(handler)return handler(req,res);res.writeHead(200);res.end('original-response');});
  server.on('connection',s=>{sockets.add(s);s.on('close',()=>sockets.delete(s));s.on('error',()=>{});});
- await new Promise(r=>server.listen(0,'127.0.0.1',r));
- const proxy=new WorkbenchProxy({port:0,upstreamPort:server.address().port,admit:label=>gate.enter(label)});await proxy.start();
+ await new Promise(r=>server.listen(testPort(50),'127.0.0.1',r));
+ const proxy=new WorkbenchProxy({port:testPort(50),upstreamPort:server.address().port,admit:label=>gate.enter(label)});await proxy.start();
  t.after(async()=>{await proxy.close();for(const s of sockets)s.destroy();await new Promise(r=>server.close(r));});
  return {proxy,gate,server,calls,sockets};
 }
@@ -67,7 +68,7 @@ test('idle keepalive connection does not falsely prevent gateway maintenance',as
 });
 test('cloud onboarding carrier uses the same admission contract after its open RPC has returned',async t=>{
  const f=await fixture(t),gate=f.gate;let live=true;
- const web=createOnboardingCloudWeb({enabled:()=>true,admit:label=>gate.enter(label),remote:async()=>({target:{operationId:randomUUID(),installationId:randomUUID(),runtimeId:randomUUID(),manifestHash:'a'.repeat(64),root:'/owned/cloud',role:'cloud',hostVersion:'0.2.1-rc.2'},value:{port:f.server.address().port,token:'synthetic-onboarding-token',nativeNonce:randomUUID()},tunnel:{port:f.server.address().port,alive:()=>live,onClose:()=>()=>{},close:async()=>{live=false;}}})});t.after(()=>web.dispose());
+ const web=createOnboardingCloudWeb({enabled:()=>true,createProxy:o=>new WorkbenchProxy({...o,port:testPort(50)}),admit:label=>gate.enter(label),remote:async()=>({target:{operationId:randomUUID(),installationId:randomUUID(),runtimeId:randomUUID(),manifestHash:'a'.repeat(64),root:'/owned/cloud',role:'cloud',hostVersion:'0.2.1-rc.2'},value:{port:f.server.address().port,token:'synthetic-onboarding-token',nativeNonce:randomUUID()},tunnel:{port:f.server.address().port,alive:()=>live,onClose:()=>()=>{},close:async()=>{live=false;}}})});t.after(()=>web.dispose());
  const opened=await web.open({}),s=gate.apply(confirm(gate.preview({})));assert.equal((await get(opened.url)).status,503);assert.equal(f.calls.length,0);
  release(gate,s);assert.equal((await get(opened.url)).status,200);await until(()=>gate.status().counts.requests===0);
  await web.close({entryId:opened.entryId});assert(!live);

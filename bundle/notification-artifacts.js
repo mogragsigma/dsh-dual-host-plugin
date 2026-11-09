@@ -12,29 +12,39 @@ export class NotificationArtifacts {
  }
  load(id){const r=this.db.prepare('SELECT record FROM notification_artifact_requests WHERE notification_id=?').get(id);if(!r)throw Error('NOTIFICATION_ARTIFACT_REQUEST_NOT_FOUND');return JSON.parse(r.record);}
  binding(task){return this.db.prepare('SELECT * FROM notification_bindings WHERE task_id=?').get(task);}
- check(r){const b=this.binding(r.task_id);if(!this.owner.valid(b)||b.revision!==r.binding_revision||b.target_key!==r.target_key||b.route_hash!==r.route_hash)throw Error('NOTIFICATION_AUTHORIZATION_ENDED');return b;}
+ check(r){const request=r.task_approval?r:r.id?this.load(r.id):null;if(request?.task_approval)this.taskGrant(request.task_id,request.task_approval,request.target_key,request.binding_revision,request.artifact.artifact_id);const b=this.binding(r.task_id);if(!this.owner.valid(b)||b.revision!==r.binding_revision||b.target_key!==r.target_key||b.route_hash!==r.route_hash)throw Error('NOTIFICATION_AUTHORIZATION_ENDED');return b;}
  async snapshot(task,id,mode){
   if(this.reads>=4)throw Error('NOTIFICATION_MATERIALIZATION_BUSY');this.reads++;
   try{return await artifactSnapshot(this.g,task,id,mode);}finally{this.reads--;}
  }
- async enqueue(node,a){
+ taskGrant(task,id,target,revision,artifactId){
+  const current=this.g.execution?.get(task);if(current?.authority){
+   this.g.execution.authority(current);const d=JSON.parse(current.spec).development,artifact=this.g.artifacts.load(task,artifactId);
+   if(id!==this.g.execution.grantId(current)||d?.notification?.target_key!==target||d.notification.binding_revision!==revision||artifact.kind!=='native_file'||artifact.spec_revision!==current.revision||artifact.stage!=='candidate'||artifact.run_id!==current.claim&&current.claim!==null||!d.artifacts.includes(artifact.path))throw Error('NOTIFICATION_AUTHORIZATION_ENDED');return;
+  }
+  this.g.continuity.assertActive(task);const approval=this.g.approvals.view(id),d=approval.proposal.execution?.development,r=this.g.execution.get(task),artifact=this.g.artifacts.load(task,artifactId);
+  if(!r||r.approval_id!==id||approval.state!=='approved'||approval.task_id!==task||approval.spec_revision!==this.g.catalog.head(task).spec_revision||d?.notification?.target_key!==target||d.notification.binding_revision!==revision||artifact.kind!=='native_file'||artifact.spec_revision!==approval.spec_revision||artifact.stage!=='candidate'||!d.artifacts.includes(artifact.path))throw Error('NOTIFICATION_AUTHORIZATION_ENDED');
+ }
+ async enqueueTask(node,a,approval,target){this.taskGrant(a.task_id,approval,target,a.expected_binding_revision,a.artifact_id);return this.enqueueInner(node,{...a,authorization_quote:'按已批准任务约定交付成果',sources:[]},{approval,target});}
+ async enqueue(node,a){return this.enqueueInner(node,a,null);}
+ async enqueueInner(node,a,grant){
   if(!a||Object.keys(a).some(k=>!['task_id','artifact_id','mode','expected_revision','expected_binding_revision','authorization_quote','sources','event_id'].includes(k))||!['local','cloud'].includes(node)||!text(a.event_id)||!text(a.task_id)||!text(a.artifact_id)||!['page','file','image'].includes(a.mode)||!Number.isInteger(a.expected_revision)||!Number.isInteger(a.expected_binding_revision)||!text(a.authorization_quote,2000))throw Error('NOTIFICATION_ARTIFACT_INVALID');
-  const sources=validSources(a.sources);if(!sources.length||sources.some(s=>s.role!==node)||!sources.some(s=>s.text.includes(a.authorization_quote)))throw Error('NOTIFICATION_DIRECT_USER_REQUIRED');
-  const fp=digest({node,...a,sources}),old=this.db.prepare('SELECT * FROM notification_artifact_requests WHERE event_id=?').get(a.event_id);
+  const sources=grant?[]:validSources(a.sources);if(!grant&&(!sources.length||sources.some(s=>s.role!==node)||!sources.some(s=>s.text.includes(a.authorization_quote))))throw Error('NOTIFICATION_DIRECT_USER_REQUIRED');
+  const fp=digest({node,...a,sources,...(grant?{task_approval:grant.approval}:{})}),old=this.db.prepare('SELECT * FROM notification_artifact_requests WHERE event_id=?').get(a.event_id);
   if(old){if(old.fingerprint!==fp)throw Error('NOTIFICATION_EVENT_CONFLICT');return this.dto(old.notification_id);}
   const b=this.binding(a.task_id),target=b&&this.owner.config.get(b.target_key),artifact=this.g.artifacts.load(a.task_id,a.artifact_id);
   if(!this.owner.valid(b)||b.revision!==a.expected_binding_revision||b.task_revision!==a.expected_revision)throw Error('NOTIFICATION_REVISION_CONFLICT');
   if(target.route.transport!=='feishu-openapi')throw Error('NOTIFICATION_MEDIA_CAPABILITY_UNAVAILABLE');
-  if(!a.authorization_quote.includes(target.label)||!a.authorization_quote.includes(artifact.name))throw Error('NOTIFICATION_ARTIFACT_NOT_AUTHORIZED');
-  const r={task_id:a.task_id,binding_revision:b.revision,target_key:b.target_key,route_hash:b.route_hash,host:target.host};
+  if(!grant&&(!a.authorization_quote.includes(target.label)||!a.authorization_quote.includes(artifact.name)))throw Error('NOTIFICATION_ARTIFACT_NOT_AUTHORIZED');
+  const r={task_id:a.task_id,binding_revision:b.revision,target_key:b.target_key,route_hash:b.route_hash,host:target.host,...(grant?{task_approval:grant.approval,artifact:{artifact_id:a.artifact_id}}:{})};
   const snapshot=await this.snapshot(a.task_id,a.artifact_id,a.mode);this.check(r);
-  const dedupe=digest({...r,artifact_id:a.artifact_id,mode:a.mode,sha256:snapshot.sha256});
+  const dedupeBinding={...r};delete dedupeBinding.task_approval;delete dedupeBinding.artifact;const dedupe=digest({...dedupeBinding,artifact_id:a.artifact_id,mode:a.mode,sha256:snapshot.sha256});
   return tx(this.db,()=>{
    const concurrent=this.db.prepare('SELECT * FROM notification_artifact_requests WHERE event_id=?').get(a.event_id);if(concurrent){if(concurrent.fingerprint!==fp)throw Error('NOTIFICATION_EVENT_CONFLICT');return this.dto(concurrent.notification_id);}
    const duplicate=this.db.prepare('SELECT notification_id FROM notification_artifact_requests WHERE dedupe=?').get(dedupe);if(duplicate)return {...this.dto(duplicate.notification_id),already_requested:true};
    if(this.db.prepare("SELECT id,state FROM task_notifications WHERE task_id=? AND category='artifact' AND state IN ('media_queued','media_leased','media_dispatching','needs_review')").all(a.task_id).filter(r=>r.state!=='needs_review'||this.owner.review.latest(r.id)?.state!=='closed').length>=50)throw Error('NOTIFICATION_MEDIA_QUEUE_LIMIT');
    const id='notification-'+randomUUID(),created=this.g.now(),record={...r,artifact:metadata(snapshot),sources,authorization_quote:a.authorization_quote,created};
-   const intro=['【DSH 成果交付 · 非审批】','任务：'+JSON.stringify(this.g.catalog.head(a.task_id).title),'成果：'+JSON.stringify(snapshot.name),'介绍：'+snapshot.description,snapshot.mode==='page'?'在 Gitee 查看（需你自己的仓库权限）：'+snapshot.url:'你已单独授权把这份成果上传到本会话。手机可点图片查看或点文件下载/打开；不需要连接 Mac。','这是成果快照，不授予开发或发布权限。'].join('\n');
+   const intro=['【DSH 成果交付 · 非审批】','任务：'+JSON.stringify(this.g.catalog.head(a.task_id).title),'成果：'+JSON.stringify(snapshot.name),'介绍：'+snapshot.description,snapshot.mode==='page'?'在 Gitee 查看（需你自己的仓库权限）：'+snapshot.url:(grant?'按已批准任务约定交付至本会话；平台接受不等于已读。':'你已单独授权把这份成果上传到本会话。手机可点图片查看或点文件下载/打开；不需要连接 Mac。'),'这是成果快照，不授予开发或发布权限。'].join('\n');
    // Old consumers intentionally do not recognize media_* queue states, so rollback cannot emit a text substitute.
    this.db.prepare("INSERT INTO task_notifications(id,task_id,binding_revision,target_key,host,route_hash,category,text,state,due,created) VALUES (?,?,?,?,?,?,'artifact',?,'media_queued',?,?)").run(id,a.task_id,b.revision,b.target_key,target.host,b.route_hash,intro,created,created);
    this.db.prepare('INSERT INTO notification_artifact_requests VALUES (?,?,?,?,?)').run(id,a.event_id,fp,dedupe,json(record));return this.dto(id);
@@ -53,7 +63,13 @@ export class NotificationArtifacts {
   const snapshot=await this.snapshot(r.task_id,original.artifact_id,original.mode);this.check(r);
   const fresh=this.owner.row(node,a);if(!pending.includes(fresh.state)||digest(metadata(snapshot))!==digest(original))throw Error('NOTIFICATION_ARTIFACT_CHANGED');
   this.db.prepare("UPDATE task_notifications SET state='media_dispatching',dispatched_at=coalesce(dispatched_at,?) WHERE id=?").run(this.g.now(),r.id);
-  return validateOnly?{allowed:true}:{...metadata(snapshot),...(snapshot.bytes?{base64:snapshot.bytes.toString('base64')}:{})};
+  return validateOnly?{allowed:true}:{...metadata(snapshot),...(snapshot.native_file?{chunked:true}:snapshot.bytes?{base64:snapshot.bytes.toString('base64')}:{})};
+ }
+ chunk(node,a){
+  const row=this.owner.row(node,a);if(row.state!=='media_dispatching')throw Error('NOTIFICATION_MEDIA_NOT_PENDING');this.check(row);
+  const artifact=this.load(row.id).artifact;if(!artifact.native_file||!Number.isInteger(a.offset)||a.offset<0||a.offset>artifact.size)throw Error('NOTIFICATION_MEDIA_PAYLOAD_INVALID');
+  const r=this.g.artifacts.load(row.task_id,artifact.artifact_id);if(r.sha256!==artifact.sha256||r.size!==artifact.size)throw Error('NOTIFICATION_ARTIFACT_CHANGED');
+  const bytes=this.g.artifacts.readLocal(r,{offset:a.offset,length:49152}).bytes;return {offset:a.offset,next_offset:a.offset+bytes.length,complete:a.offset+bytes.length===r.size,base64:bytes.toString('base64')};
  }
  async access(a){
   if(!a||Object.keys(a).some(k=>!['task_id','notification_id'].includes(k)))throw Error('NOTIFICATION_ARTIFACT_INVALID');
@@ -66,5 +82,5 @@ export class NotificationArtifacts {
   if(digest(metadata(await this.snapshot(r.task_id,request.artifact.artifact_id,request.artifact.mode)))!==digest(request.artifact))throw Error('NOTIFICATION_ARTIFACT_CHANGED');
   return {...entry,kind:'feishu_attachment',target:this.owner.config.get(r.target_key)?.label??'原授权会话',name:snapshot.name,message_id:r.message_id,checked_at:this.g.now(),access:'在飞书原授权会话点击此图片/文件；手机端由飞书账户与会话权限控制。',cannot_recall_uploaded_copy:true};
  }
- call(method,a,node){if(method==='notification_artifact_send')return this.enqueue(node,a);if(method==='notification_media_pull')return this.pull(node);if(method==='notification_media_materialize')return this.materialize(node,a);if(method==='notification_media_validate')return this.materialize(node,a,true);if(method==='notification_artifact_access')return this.access(a);throw Error('METHOD_DENIED');}
+ call(method,a,node){if(method==='notification_media_chunk')return this.chunk(node,a);if(method==='notification_artifact_send')return this.enqueue(node,a);if(method==='notification_media_pull')return this.pull(node);if(method==='notification_media_materialize')return this.materialize(node,a);if(method==='notification_media_validate')return this.materialize(node,a,true);if(method==='notification_artifact_access')return this.access(a);throw Error('METHOD_DENIED');}
 }

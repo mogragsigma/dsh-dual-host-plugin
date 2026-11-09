@@ -32,6 +32,8 @@ description: 为 DSH 后台任务按自然语言设置命名通知目标、结�
 
 用 task_notification_bind 登记当前 task revision 和 binding revision，action=set，选择配置的 target_key。
 authorization_quote 必须来自当前直接用户消息并包含目标 label；Host 保全原文，但子串匹配不是语义批准。
+原样保留中文弯引号、空格和标点，不换成英文引号或字面量 \u 转义；NOTIFICATION_DIRECT_USER_REQUIRED 表示原文不匹配，不表示需要 IM 管理权限或工作台审批。用 task_context_page 查当前原文，不反复猜引句；不要用更早消息代替当前授权。
+已有文件取用只由入口查询、绑定、发送，不用 task_followup/task_execute 重新启动 worker，也不能跳过未建立的绑定直接发送。
 “不要发到某群”、疑问、转述都不能当同意。任务与目标、事件类型或范围不明确时先澄清。
 
 - result：批次完成或取消的状态快照，不等于全部长期目标完成。

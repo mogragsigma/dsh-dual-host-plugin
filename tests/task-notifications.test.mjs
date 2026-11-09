@@ -102,6 +102,10 @@ test('native notification tools capture direct user provenance and do not expose
  const f=await fixture(t),task=await f.create(),names=new Map(),quote='完成后发到云端通知群',agent={id:'native',ctx:{preset:'standard'},session:{deriveMessages:()=>[{id:'m',role:'user',source:{kind:'user'},content:[{type:'text',text:quote}]}]}};f.ctx.agents.get=id=>id===agent.id?agent:null;
  registerNativeTools({taskGateway:f.cloud,tools:{register:d=>names.set(d.name,d)}});assert(names.has('task_notification_bind'));assert(![...names.keys()].some(x=>/notification_(pull|ack|validate|retry)/.test(x)));
  const result=await names.get('task_notification_bind').execute({task_id:task.id,expected_revision:1,expected_binding_revision:0,action:'set',target_key:'cloud:cloud-notices',authorization_quote:quote,policy:{events:['result']}},{agent,callId:'one'});assert.equal(result.receipt_classification.kind,'notification');assert.equal(result.state,'enabled');
+ await assert.rejects(names.get('task_notification_bind').execute({task_id:task.id,expected_revision:1,expected_binding_revision:1,action:'set',target_key:'cloud:cloud-notices',authorization_quote:'改写过的引句',policy:{events:['result']}},{agent,callId:'bad-quote'}),e=>{
+  assert.match(e.message,/^NOTIFICATION_DIRECT_USER_REQUIRED:/);assert.match(e.message,/task_context_page/);assert.match(e.message,/两端直接用户均可授权/);return true;
+ });
+ assert.equal(f.status(task).binding.revision,1);assert.equal(f.calls.length,0);
 });
 
 test('progress cadence starts at actual dispatch, not a stale offline snapshot timestamp',async t=>{
@@ -168,4 +172,17 @@ test('explicit direct endpoint pins route, calls official send once, and persist
  const c={provider:'feishu',appId:'cli_test1234',botOpenId:'ou_bot1234',approverOpenId:'ou_user1234',chatId:'oc_chat1234',appSecretEnv:'TEST_FEISHU_SECRET',alias:'cloud-notices'},target=feishuNotificationTarget(c,{host:'cloud',alias:c.alias,label:'云端通知群'});let sends=0;
  const fetcher=async(url,args)=>{const data=url.endsWith('/internal')?{tenant_access_token:'test',expire:7200}:url.endsWith('/info')?{bot:{open_id:c.botOpenId}}:url.includes('/chats/')?{data:{chat_mode:'p2p'}}:(sends++,{data:{message_id:'om_test1234',chat_id:c.chatId}});return new Response(JSON.stringify({code:0,...data}));};
  const f=await fixture(t,{config:[target],direct:[c],directIo:{fetcher,env:{TEST_FEISHU_SECRET:'fixture'}}}),task=await f.create();await f.bind(task);f.finish(f.enqueue(task));await f.tick();await f.tick();assert.equal(sends,1);assert.equal(f.calls.length,0);assert.equal(f.status(task).deliveries[0].message_id,'om_test1234');assert.equal(f.status(task).deliveries[0].proof,'provider_message');
+});
+
+for(const role of ['local','cloud'])test(`native ${role} notification keeps original consent despite model quote rendering`,async t=>{
+ const f=await fixture(t),task=await f.create(),names=new Map(),original='我同意完成后发到“云端通知群”，不补发历史。';
+ const agent={id:'native-quotes',ctx:{preset:'standard'},session:{deriveMessages:()=>[{id:'quoted-m',role:'user',source:{kind:'user'},content:[{type:'text',text:original}]}]}};f.ctx.agents.get=id=>id===agent.id?agent:null;
+ const gateway={c:{role},assertNativeAgent:()=>f.cloud.assertNativeAgent(agent),call:(m,a)=>f.cloud.call(m,a,role)};
+ registerNativeTools({taskGateway:gateway,tools:{register:d=>names.set(d.name,d)}});
+ const bind=quote=>names.get('task_notification_bind').execute({task_id:task.id,expected_revision:1,expected_binding_revision:0,action:'set',target_key:'cloud:cloud-notices',authorization_quote:quote,policy:{events:['result']}},{agent,callId:'quote'});
+ await assert.rejects(bind('我不同意完成后发到"云端通知群"'),/NOTIFICATION_DIRECT_USER_REQUIRED/);
+ await assert.rejects(bind('我同意完成后发到"另一个目标"'),/NOTIFICATION_DIRECT_USER_REQUIRED/);
+ const result=await bind('我同意完成后发到\\"云端通知群\\"');assert.equal(result.state,'enabled');
+ const consent=JSON.parse(f.cloud.db.prepare('SELECT source FROM notification_bindings WHERE task_id=?').get(task.id).source);
+ assert.equal(consent.authorization_quote,'我同意完成后发到“云端通知群”');assert.equal(consent.sources[0].text,original);assert.equal(consent.node,role);assert.equal(f.calls.length,0);
 });

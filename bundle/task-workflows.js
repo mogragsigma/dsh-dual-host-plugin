@@ -59,7 +59,7 @@ export class TaskWorkflows {
   this.io.afterPrepared?.(this.get(id));return this.view(this.get(id));
  }
  materialize(n){
-  const w=this.get(n.workflow_id),j=this.jobs.enqueue({task_id:w.task_id,trigger_id:n.id,goal:w.goal,policy:JSON.parse(w.policy),due:w.created,max_runs:n.max_runs,version:'0.17.1'});
+  const w=this.get(n.workflow_id);if(this.io.canRun?.(w.task_id)===false)return;const j=this.jobs.enqueue({task_id:w.task_id,trigger_id:n.id,goal:w.goal,policy:JSON.parse(w.policy),due:w.created,max_runs:n.max_runs,version:'0.17.1'});
   this.io.afterEnqueued?.(n,j);
   this.jobs.tx(()=>{this.db.prepare("UPDATE workflow_nodes SET job_id=?,phase='linked' WHERE id=? AND phase IN ('prepared','prepared-search','prepared-notify')").run(j.id,n.id);this.audit(w.id,'linked',{child_id:n.id,job_id:j.id});});
  }
@@ -85,6 +85,7 @@ export class TaskWorkflows {
   for(const c of this.db.prepare("SELECT * FROM workflow_controls WHERE json_extract(result,'$.phase')='prepared'").all())this.settle(c);
   for(const n of this.db.prepare("SELECT * FROM workflow_nodes WHERE phase IN ('prepared','prepared-search','prepared-notify') ORDER BY rowid").all())this.materialize(n);
   for(const w of this.db.prepare('SELECT * FROM task_workflows').all()){
+   if(this.io.canRun?.(w.task_id)===false)continue;
    if(!activeSchedule(w.status)){if(w.status!=='completed')this.hold(w,w.status==='cancelled'?'cancel':'pause','workflow-reconcile:'+w.id);continue;}
    const children=this.nodes(w.id).map(n=>this.jobs.get(n.job_id));
    if(children.every(j=>j.status==='completed')){this.db.prepare("UPDATE task_workflows SET status='completed',reason=NULL WHERE id=?").run(w.id);this.audit(w.id,'completed');continue;}

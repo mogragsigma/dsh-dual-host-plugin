@@ -9,9 +9,12 @@ export class FeishuApprovalSource {
  constructor(c,{fetcher=fetch,env=process.env,now=Date.now,credentials}={}){this.binding=chatBinding(c);this.secretRef=c.appSecretEnv;this.credentials=credentials;this.secret=credentials?null:env[c.appSecretEnv];if(!credentials&&(typeof this.secret!=='string'||!this.secret))throw Error('CHAT_APPROVAL_CREDENTIAL_UNAVAILABLE');this.fetcher=fetcher;this.now=now;this.token=null;}
  async http(path,options={}){
   let r;try{r=await this.fetcher(BASE+path,{...options,redirect:'error',signal:AbortSignal.timeout(10000)});}catch{throw Error('CHAT_PROVIDER_UNAVAILABLE');}
-  if(!r.ok)throw Error('CHAT_PROVIDER_HTTP_'+r.status);
+  // Permission errors can use HTTP 400/403 as well as 200; inspect only bounded JSON.
+  if(!r.ok&&![400,403].includes(r.status))throw Error('CHAT_PROVIDER_HTTP_'+r.status);
   let raw='',bytes=0;const decoder=new TextDecoder();for await(const part of r.body){bytes+=part.byteLength;raw+=decoder.decode(part,{stream:true});if(bytes>1048576)throw Error('CHAT_PROVIDER_RESPONSE_TOO_LARGE');}
   raw+=decoder.decode();let d;try{d=JSON.parse(raw);}catch{throw Error('CHAT_PROVIDER_INVALID_RESPONSE');}
+  if(d.code===99991672)throw Error('CHAT_PROVIDER_CODE_99991672');
+  if(!r.ok)throw Error('CHAT_PROVIDER_HTTP_'+r.status);
   if(d.code!==0)throw Error('CHAT_PROVIDER_CODE_'+String(Number(d.code)));
   return d;
  }

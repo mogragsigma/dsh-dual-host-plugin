@@ -1,12 +1,12 @@
 {
   "name": "@mogragsigma/dsh-dual-host-plugin",
-  "version": "0.33.4",
+  "version": "2.0.0",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "@mogragsigma/dsh-dual-host-plugin",
-      "version": "0.33.4",
+      "version": "2.0.0",
       "license": "SEE LICENSE IN LICENSE",
       "dependencies": {
         "@js-temporal/polyfill": "0.5.1",

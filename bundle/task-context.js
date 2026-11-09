@@ -10,12 +10,12 @@ export function validPolicy(p){
 // Only new managed cloud revisions use this default; never apply on historical reads.
 export function newCloudPolicy(p){const policy=validPolicy(p);return {...policy,reasoningEffort:policy.reasoningEffort??'high'};}
 export function validSources(sources){
- if(!Array.isArray(sources)||sources.length>16)throw Error('CONTEXT_LIMIT');
+ if(!Array.isArray(sources)||sources.length>256)throw Error('CONTEXT_LIMIT');
  const seen=new Set();
  for(const s of sources){
   if(!s||!['local','cloud'].includes(s.role))throw Error('INVALID_CONTEXT_SOURCE');
   for(const k of ['message_id','session_id'])text(s[k],256,'INVALID_CONTEXT_SOURCE');
-  text(s.text,8000,'REQUEST_SIZE_UNSUPPORTED');
+  text(s.text,262144,'REQUEST_SIZE_UNSUPPORTED');
   if(s.sha256!==hash(s.text)||seen.has(s.role+':'+s.session_id+':'+s.message_id))throw Error('INVALID_CONTEXT_SOURCE');
   seen.add(s.role+':'+s.session_id+':'+s.message_id);
  }

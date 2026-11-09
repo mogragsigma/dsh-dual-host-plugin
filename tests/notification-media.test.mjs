@@ -1,3 +1,4 @@
+import {testPort} from './helpers/loopback-port.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {writeFileSync,chmodSync,unlinkSync} from 'node:fs';
@@ -71,7 +72,7 @@ test('role/lease mismatch and legacy wait cannot downgrade a media row into text
  assert.equal(f.row(e.id).state,'media_leased');assert.equal(f.g.notifications.lease('cloud').items.length,0);
 });
 test('authenticated dual Host delivery queues offline and lost ack is replayed without another upload/send',async t=>{
- const f=await fixture(t,{host:'local'});await f.g.start();await f.g.pending;clearTimeout(f.g.timer);clearInterval(f.g.scheduler.timer);
+ const f=await fixture(t,{host:'local',port:testPort(30)});await f.g.start();await f.g.pending;clearTimeout(f.g.timer);clearInterval(f.g.scheduler.timer);
  const local=new Gateway(f.ctx,{...f.config,role:'local',stateDir:f.root+'/local',notificationFeishu:[f.c],coordinatorUrl:'http://127.0.0.1:'+f.g.server.address().port},{notificationFeishu:f.io});t.after(()=>local.close());
  const {e}=await f.queued();const remote=local.remoteTransport.bind(local);let offline=true,lost=true;
  local.remoteTransport=async(m,...a)=>{if(offline)throw Error('COORDINATOR_UNAVAILABLE');if(m==='notification_ack'&&lost){lost=false;throw Error('COORDINATOR_UNAVAILABLE');}return remote(m,...a);};
@@ -129,7 +130,7 @@ test('real Feishu rekey/normalized post behavior is accepted only when immutable
  }
 });
 test('remote file bytes changed despite matching name/receipt cannot yield a link',async t=>{
- const f=await fixture(t),{task,e}=await f.queued();await f.g.notifications.tick();const fetcher=f.io.fetcher;f.io.fetcher=(u,a)=>u.includes('/resources/')?new Response('different bytes'):fetcher(u,a);
+ const f=await fixture(t),{task,e}=await f.queued();await f.g.notifications.tick();const sender=f.g.notifications.endpoint.direct.get('media');const fetcher=sender.io.fetcher;sender.io.fetcher=(u,a)=>u.includes('/resources/')?new Response('different bytes'):fetcher(u,a);
  await assert.rejects(f.g.call('notification_artifact_access',{task_id:task.id,notification_id:e.id}),/ARTIFACT_CHANGED/);assert.equal(f.posts().length,3);
 });
 test('missing endpoint durable inbox cannot replay coordinator dispatching intent after storage loss',async t=>{

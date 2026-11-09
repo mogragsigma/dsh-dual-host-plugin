@@ -1,13 +1,14 @@
 import {officialDesktopCarrier,authenticatedOwnerOrigin} from './native-owner-origin.js';
 import {decodeImage} from './artifact-media.js';
 import {deliveryArtifact,deliveryArtifactList} from './delivery-artifacts.js';
-import {mkdirSync,lstatSync,realpathSync,openSync,closeSync,readSync,writeFileSync,fsyncSync,fstatSync,constants} from 'node:fs';
+import {mkdirSync,lstatSync,realpathSync,openSync,closeSync,readSync,writeSync,writeFileSync,fsyncSync,fstatSync,constants} from 'node:fs';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {validSources} from './task-context.js';
 import {digest} from './approval-ledger.js';
 import {parseEnvelope} from './task-envelope.js';
 import {errorInfo} from './link-contract.js';
+export const NATIVE_ARTIFACT_MAX=64*1024*1024, NATIVE_ARTIFACT_CHUNK=48*1024;
 const sha=x=>createHash('sha256').update(x).digest('hex');
 const object=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
 const validText=(v,n)=>typeof v==='string'&&v.length>0&&v.length<=n;
@@ -25,7 +26,7 @@ export class TaskArtifacts {
   this.root=join(g.c.stateDir,'artifacts');mkdirSync(this.root,{recursive:true,mode:0o700});
   const s=lstatSync(this.root);if(!s.isDirectory()||!secure(s)||(s.mode&0o700)!==0o700)throw Error('ARTIFACT_DIRECTORY_UNSAFE');
   this.rootIdentity=identity(s);this.canonical=realpathSync(this.root);
-  this.db.exec(`CREATE TABLE IF NOT EXISTS task_artifacts(id TEXT PRIMARY KEY,task_id TEXT NOT NULL,event_id TEXT UNIQUE NOT NULL,fingerprint TEXT NOT NULL,record TEXT NOT NULL); CREATE INDEX IF NOT EXISTS artifacts_by_task ON task_artifacts(task_id);`);
+  this.db.exec(`CREATE TABLE IF NOT EXISTS native_artifact_uploads(id TEXT PRIMARY KEY,meta TEXT NOT NULL); CREATE TABLE IF NOT EXISTS task_artifacts(id TEXT PRIMARY KEY,task_id TEXT NOT NULL,event_id TEXT UNIQUE NOT NULL,fingerprint TEXT NOT NULL,record TEXT NOT NULL); CREATE INDEX IF NOT EXISTS artifacts_by_task ON task_artifacts(task_id);`);
  }
  assertOpen(){if(this.closed||this.g.closed)throw Error('ARTIFACT_CLOSED');}
  head(task){this.assertOpen();const r=this.db.prepare('SELECT * FROM task_catalog WHERE task_id=?').get(task);if(!r||r.legacy)throw Error('ARTIFACT_TASK_UNAVAILABLE');return r;}
@@ -37,6 +38,7 @@ export class TaskArtifacts {
  }
  load(task,id){this.assertOpen();if(!validText(task,128)||!validText(id,128))throw Error('ARTIFACT_NOT_FOUND');if(id.startsWith('artifact-delivery-')){const r=deliveryArtifact(this.g,task,id);if(!r)throw Error('ARTIFACT_DELIVERY_EVIDENCE_INVALID');return r;}const r=this.db.prepare('SELECT record FROM task_artifacts WHERE id=? AND task_id=?').get(id,task);if(!r)throw Error('ARTIFACT_NOT_FOUND');return JSON.parse(r.record);}
  eligibility(r){
+  if(r.kind==='native_file'){this.head(r.task_id);return 'needs_verification';} // Immutable draft/history remains readable, independent of sessions.
   if(this.head(r.task_id).spec_revision!==r.spec_revision)return 'stale_revision';
   if(r.kind==='gitee_delivery'){
    const current=deliveryArtifact(this.g,r.task_id,r.id);
@@ -52,7 +54,7 @@ export class TaskArtifacts {
   }else if(!this.g.repositories.matches(r.task_id,r.repository.binding_revision,r.repository))return 'repository_changed';
   return 'needs_verification';
  }
- dto(r){const delivered=r.kind==='gitee_delivery';return {id:r.id,task_id:r.task_id,name:r.name,description:r.description??null,description_source:delivered?'delivery_ledger':r.description?(r.kind==='gitee'?'direct_user':'worker'):'not_provided',kind:r.kind,size:r.size,sha256:r.sha256,created_at:r.created_at,spec_revision:r.spec_revision,run_id:r.run_id??null,source:delivered?'verified_delivery_journal':r.kind==='report'?'worker_report_file':'user_linked_gitee_file',repository:r.kind==='gitee'||delivered?{url:r.repository.url,commit:r.repository.base_sha,path:r.path??null,branch:r.repository.branch,binding_revision:r.repository.binding_revision}:null,state:this.eligibility(r),verified_at_registration:delivered?null:r.created_at,requires_live_check:true,...(delivered?{digest_kind:'delivery_ledger_evidence',registration:'durable_journal_projection',delivery:r.delivery}:{}),...(r.source_evidence?.length?{source_evidence:r.source_evidence}: {})};}
+ dto(r){const delivered=r.kind==='gitee_delivery';return {id:r.id,task_id:r.task_id,name:r.name,description:r.description??null,description_source:delivered?'delivery_ledger':r.description?(r.kind==='gitee'?'direct_user':'worker'):'not_provided',kind:r.kind,size:r.size,sha256:r.sha256,created_at:r.created_at,spec_revision:r.spec_revision,run_id:r.run_id??null,source:r.kind==='native_file'?'native_task_file':delivered?'verified_delivery_journal':r.kind==='report'?'worker_report_file':'user_linked_gitee_file',repository:r.kind==='gitee'||delivered?{url:r.repository.url,commit:r.repository.base_sha,path:r.path??null,branch:r.repository.branch,binding_revision:r.repository.binding_revision}:null,state:this.eligibility(r),verified_at_registration:delivered?null:r.created_at,requires_live_check:true,...(r.kind==='native_file'?{stage:r.stage,path:r.path,historical:this.head(r.task_id).spec_revision!==r.spec_revision,chunked_download:true}:{}),...(delivered?{digest_kind:'delivery_ledger_evidence',registration:'durable_journal_projection',delivery:r.delivery}:{}),...(r.source_evidence?.length?{source_evidence:r.source_evidence}: {})};}
  list(task){this.assertOpen();this.g.store.task(task);const delivery=deliveryArtifactList(this.g,task),stored=this.db.prepare('SELECT record FROM task_artifacts WHERE task_id=? ORDER BY rowid DESC LIMIT 100').all(task).map(r=>JSON.parse(r.record));
   const items=[...stored,...delivery.items].sort((a,b)=>b.created_at-a.created_at).slice(0,100).map(r=>this.dto(r)),invalid=Math.min(delivery.total,100)-delivery.items.length;
   return {state:items.length?'registered':delivery.error||invalid?'evidence_unavailable':'not_registered',items,downloadable:[],development_enabled:false,publish_enabled:false,
@@ -80,14 +82,49 @@ export class TaskArtifacts {
   const r={id,task_id:job.task_id,kind:'report',spec_revision:revision,run_id:job.run_id,claim:job.claim,name,description:intro,format:a.format,...evidence,size:bytes.length,sha256:sha(bytes),created_at:this.g.now()};
   const info=this.readLocal(r);r.file_identity=info.identity;worker.binding(agent);return this.insert(event,fp,r);
  }
- readLocal(r){
+ nativeChunk(run,a){
+  this.assertOpen();const name=artifactName(a.path.split('/').at(-1)),revision=run.revision;
+  if(!Number.isSafeInteger(a.size)||a.size<0||a.size>NATIVE_ARTIFACT_MAX||!Number.isInteger(a.offset)||a.offset<0||a.offset>a.size||!['draft','candidate'].includes(a.stage)||!/^([a-f0-9]{64})$/.test(a.sha256??'')||typeof a.content!=='string'||a.content.length>65536)throw Error('ARTIFACT_INVALID_ARGUMENT');
+  const bytes=Buffer.from(a.content,'base64');if(bytes.toString('base64')!==a.content||bytes.length>NATIVE_ARTIFACT_CHUNK||a.offset+bytes.length>a.size||!bytes.length&&a.size!==0)throw Error('ARTIFACT_CHUNK_INVALID');
+  const event='native:'+run.task_id+':'+revision+':'+(run.authority?run.runs+':'+run.input_cursor+':':'')+a.path+':'+a.stage+':'+a.sha256,id='artifact-'+sha(event).slice(0,40);
+  // Automatic closeout supplies no new description. Retain an already registered
+  // (or partially uploaded) description for this exact immutable event, including
+  // a lost reply. Explicit metadata changes still conflict; never rewrite history.
+  let retained;
+  if(run.authority&&a.description===undefined){
+   const saved=this.db.prepare('SELECT record FROM task_artifacts WHERE event_id=?').get(event);
+   const pending=this.db.prepare('SELECT meta FROM native_artifact_uploads WHERE id=?').get(id);
+   retained=saved?JSON.parse(saved.record).description:pending?JSON.parse(pending.meta).record.description:undefined;
+  }
+  const intro=description(a.description===undefined?(retained??undefined):a.description),fp=digest({name,size:a.size,stage:a.stage,description:intro}),old=this.existing(event,fp);
+  if(old)return {artifact:this.dto(old),complete:true,replayed:true};
+  const r={id,task_id:run.task_id,kind:'native_file',spec_revision:revision,run_id:run.claim,path:a.path,name,description:intro,stage:a.stage,size:a.size,sha256:a.sha256,created_at:this.g.now()};
+  const meta=JSON.stringify({event,fp,record:r}),upload=this.db.prepare('SELECT meta FROM native_artifact_uploads WHERE id=?').get(id);
+  if(upload){const u=JSON.parse(upload.meta);if(u.event!==event||u.fp!==fp)throw Error('ARTIFACT_EVENT_CONFLICT');Object.assign(r,u.record);}
+  else{
+   if(this.db.prepare('SELECT count(*) n FROM task_artifacts WHERE task_id=?').get(run.task_id).n>=100||this.db.prepare("SELECT count(*) n FROM native_artifact_uploads WHERE json_extract(meta,'$.record.task_id')=?").get(run.task_id).n>=32)throw Error('ARTIFACT_LIMIT');
+   const reserved=this.db.prepare("SELECT coalesce(sum(json_extract(meta,'$.record.size')),0) n FROM native_artifact_uploads WHERE json_extract(meta,'$.record.task_id')=?").get(run.task_id).n+this.db.prepare("SELECT coalesce(sum(json_extract(record,'$.size')),0) n FROM task_artifacts WHERE task_id=? AND json_extract(record,'$.kind')='native_file'").get(run.task_id).n;
+   if(reserved+a.size>256*1024*1024)throw Error('ARTIFACT_STORAGE_QUOTA');
+   this.db.prepare('INSERT INTO native_artifact_uploads VALUES (?,?)').run(id,meta);
+  }
+  this.rootCheck();let fd;try{
+   fd=openSync(join(this.root,id+'.bin'),constants.O_RDWR|constants.O_CREAT|constants.O_NOFOLLOW|constants.O_NONBLOCK,0o600);const stat=fstatSync(fd);
+   if(!stat.isFile()||!secure(stat)||stat.nlink!==1||stat.size>a.size)throw Error('ARTIFACT_FILE_PERMISSIONS');
+   if(a.offset>stat.size)throw Error('ARTIFACT_CHUNK_ORDER');
+   if(a.offset<stat.size){const seen=Buffer.alloc(bytes.length);if(readSync(fd,seen,0,seen.length,a.offset)!==seen.length||!seen.equals(bytes))throw Error('ARTIFACT_CHUNK_CONFLICT');}
+   else{let n=0;while(n<bytes.length)n+=writeSync(fd,bytes,n,bytes.length-n,a.offset+n);fsyncSync(fd);}
+   const size=fstatSync(fd).size;if(size!==a.size)return {complete:false,offset:size};
+  }finally{if(fd!==undefined)closeSync(fd);}
+  const info=this.readLocal(r);r.file_identity=info.identity;const artifact=this.insert(event,fp,r);this.db.prepare('DELETE FROM native_artifact_uploads WHERE id=?').run(id);return {complete:true,artifact};
+ }
+ readLocal(r,range){
   let fd;try{
    this.rootCheck();fd=openSync(join(this.root,r.id+'.bin'),constants.O_RDONLY|constants.O_NOFOLLOW|constants.O_NONBLOCK);const s=fstatSync(fd);
    if(!s.isFile()||!secure(s)||s.nlink!==1||!(s.mode&0o400))throw Error('ARTIFACT_FILE_PERMISSIONS');
    if(r.file_identity&&identity(s)!==r.file_identity)throw Error('ARTIFACT_FILE_REPLACED');
-   if(s.size!==r.size||s.size>262144)throw Error('ARTIFACT_FILE_CHANGED');
-   const buffer=Buffer.alloc(r.size+1);let offset=0,n;while(offset<buffer.length&&(n=readSync(fd,buffer,offset,buffer.length-offset,null)))offset+=n;const bytes=buffer.subarray(0,offset),after=fstatSync(fd);this.rootCheck();
-   if(!secure(after)||!(after.mode&0o400)||after.nlink!==1||identity(after)!==identity(s)||after.size!==s.size||after.mtimeMs!==s.mtimeMs||sha(bytes)!==r.sha256)throw Error('ARTIFACT_FILE_CHANGED');
+   if(s.size!==r.size||s.size>(r.kind==='native_file'?NATIVE_ARTIFACT_MAX:262144))throw Error('ARTIFACT_FILE_CHANGED');
+   const buffer=Buffer.alloc(range?Math.min(range.length,Math.max(0,r.size-range.offset)):r.size+1);let offset=0,n;while(offset<buffer.length&&(n=readSync(fd,buffer,offset,buffer.length-offset,range?range.offset+offset:null)))offset+=n;const bytes=buffer.subarray(0,offset),after=fstatSync(fd);this.rootCheck();
+   if(!secure(after)||!(after.mode&0o400)||after.nlink!==1||identity(after)!==identity(s)||after.size!==s.size||after.mtimeMs!==s.mtimeMs||!range&&sha(bytes)!==r.sha256)throw Error('ARTIFACT_FILE_CHANGED');
    return {bytes,identity:identity(s)};
   }catch(e){if(e.code==='ENOENT')throw Error('ARTIFACT_FILE_MISSING');if(['EACCES','EPERM','ELOOP'].includes(e.code))throw Error('ARTIFACT_FILE_PERMISSIONS');throw Error(/^ARTIFACT_/.test(e.message)?e.message:'ARTIFACT_STORE_UNAVAILABLE');}finally{if(fd!==undefined)closeSync(fd);}
  }
@@ -126,7 +163,7 @@ export class TaskArtifacts {
     const state=this.eligibility(r);if(state!=='needs_verification')return respond(state);
     return respond('verified',{...(a.action==='gitee'?{url:commit.url,browser_login:'independent; no service credential forwarded'}:{})});
    }
-   const file=r.kind==='report'?this.readLocal(r):await this.g.repositories.provider.file(r.repository,r.path);this.assertOpen();
+   const file=['report','native_file'].includes(r.kind)?this.readLocal(r):await this.g.repositories.provider.file(r.repository,r.path);this.assertOpen();
    const state=this.eligibility(r);if(state!=='needs_verification')return respond(state);
    if(sha(file.bytes)!==r.sha256||file.bytes.length!==r.size||r.kind==='gitee'&&file.blob_sha!==r.blob_sha)return respond('file_changed');
    if(a.action==='gitee'&&r.kind!=='gitee'||a.action==='session'&&r.kind!=='report')throw Error('ARTIFACT_ACTION_UNAVAILABLE');
@@ -140,15 +177,17 @@ export class TaskArtifacts {
   }catch(e){this.assertOpen();const code=errorInfo(e).code;return respond('unavailable',{error:code});}
  }
  download(a){
-  if(!object(a)||Object.keys(a).some(k=>!['task_id','artifact_id','expected_revision','expected_sha256'].includes(k))||!Number.isInteger(a.expected_revision)||a.expected_revision<1||!/^([a-f0-9]{64})$/.test(a.expected_sha256??''))throw Error('ARTIFACT_INVALID_ARGUMENT');
+  if(!object(a)||Object.keys(a).some(k=>!['task_id','artifact_id','expected_revision','expected_sha256','offset'].includes(k))||!Number.isInteger(a.expected_revision)||a.expected_revision<1||!/^([a-f0-9]{64})$/.test(a.expected_sha256??''))throw Error('ARTIFACT_INVALID_ARGUMENT');
   const r=this.load(a.task_id,a.artifact_id);
-  if(r.kind!=='report')throw Error('ARTIFACT_PAGE_ONLY');
+  if(!['report','native_file'].includes(r.kind))throw Error('ARTIFACT_PAGE_ONLY');
   if(r.id!==a.artifact_id||r.task_id!==a.task_id||!/^artifact-[a-f0-9]{40}$/.test(r.id))throw Error('ARTIFACT_NOT_FOUND');
   artifactName(r.name);
   if(this.eligibility(r)!=='needs_verification'||r.spec_revision!==a.expected_revision||r.sha256!==a.expected_sha256)throw Error('ARTIFACT_STALE_DOWNLOAD');
-  const {bytes}=this.readLocal(r);this.assertOpen();
+  const offset=a.offset??0;if(!Number.isInteger(offset)||offset<0||offset>r.size||r.kind!=='native_file'&&a.offset!==undefined)throw Error('ARTIFACT_INVALID_ARGUMENT');
+  const {bytes}=this.readLocal(r,r.kind==='native_file'?{offset,length:NATIVE_ARTIFACT_CHUNK}:undefined);this.assertOpen();
   if(this.eligibility(r)!=='needs_verification')throw Error('ARTIFACT_STALE_DOWNLOAD');
-  return {artifact:{...this.dto(r),state:'verified'},checked_at:this.g.now(),encoding:'base64',content:bytes.toString('base64'),mime:'application/octet-stream',disposition:'attachment',grants_execution:false};
+  const part=bytes;
+  return {...(r.kind==='native_file'?{offset,next_offset:offset+part.length,complete:offset+part.length===r.size}:{}),artifact:{...this.dto(r),state:'verified'},checked_at:this.g.now(),encoding:'base64',content:part.toString('base64'),mime:'application/octet-stream',disposition:'attachment',grants_execution:false};
  }
  call(method,args,node){
   this.assertOpen();if(this.pending.size>=8)throw Error('ARTIFACT_REQUEST_LIMIT');const p=Promise.resolve().then(()=>{this.assertOpen();if(method==='artifact_download')return this.download(args);if(method==='artifact_list')return this.list(args.task_id);if(method==='artifact_register_gitee')return this.registerGitee(node,args);if(method==='artifact_access')return this.access(args);throw Error('METHOD_DENIED');});

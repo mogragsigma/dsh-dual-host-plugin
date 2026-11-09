@@ -19,7 +19,7 @@ export class FeishuNotificationSender {
    const fetcher=this.io.fetcher??fetch,signal=options.signal;
    source=new FeishuApprovalSource(this.c,{...this.io,fetcher:(url,args)=>{signal?.throwIfAborted();return fetcher(url,{...args,signal:signal?AbortSignal.any([signal,args.signal]):args.signal});}});
    await source.verifyBot();signal?.throwIfAborted();
-  }catch(e){if(options.signal?.aborted)throw e;throw failure(e.message==='CHAT_BOT_CHANGED'||e.message==='CHAT_PRIVATE_ROUTE_REQUIRED'?'account-changed':'account-unverified');}
+  }catch(e){if(options.signal?.aborted)throw e;if(e.message==='CHAT_PROVIDER_CODE_99991672')throw Object.assign(Error('NOTIFICATION_FEISHU_PERMISSION_REQUIRED'),{code:'feishu-permission-required'});throw failure(e.message==='CHAT_BOT_CHANGED'||e.message==='CHAT_PRIVATE_ROUTE_REQUIRED'?'account-changed':'account-unverified');}
   return source;
  }
  async sendChecked(botId,targetId,text,options){
@@ -39,7 +39,7 @@ export class FeishuNotificationSender {
   // Feishu can replace upload keys with per-message resource keys. Verify bytes, not guessed key equivalence.
   const r=await source.fetcher('https://open.feishu.cn/open-apis/im/v1/messages/'+encodeURIComponent(message)+'/resources/'+encodeURIComponent(key)+'?type=file',{method:'GET',redirect:'error',headers:{Authorization:'Bearer '+await source.auth()},signal:AbortSignal.timeout(10000)});
   if(!r.ok||!r.body)throw Error('NOTIFICATION_MEDIA_MESSAGE_UNAVAILABLE');
-  const chunks=[];let size=0;for await(const x of r.body){size+=x.byteLength;if(size>1048576||size>artifact.size)throw Error('NOTIFICATION_ARTIFACT_CHANGED');chunks.push(x);}
+  const chunks=[];let size=0;for await(const x of r.body){size+=x.byteLength;if(size>(artifact.native_file===true?67108864:1048576)||size>artifact.size)throw Error('NOTIFICATION_ARTIFACT_CHANGED');chunks.push(x);}
   if(size!==artifact.size||mediaHash(Buffer.concat(chunks))!==artifact.sha256)throw Error('NOTIFICATION_ARTIFACT_CHANGED');
  }
  async sendMedia(source,media,key,intro,uuid){

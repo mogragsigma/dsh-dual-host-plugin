@@ -1,3 +1,4 @@
+import {managedResourceBusy} from './managed-development-contract.js';
 import {randomUUID} from 'node:crypto';
 import {canonical,digest} from './approval-ledger.js';
 import {approvedDevelopment} from './development-contract.js';
@@ -58,6 +59,7 @@ export class DevelopmentGate {
   if(this.unresolved(id)||this.inflight.has(id))return 'development_draining';
   if(r.state!=='queued')return null;
   if(t.busy||this.busy(r.task_id))return 'task_busy';
+ if(managedResourceBusy(this.db,r.resource))return 'managed_resource_busy';
   const owner=this.db.prepare("SELECT id,state FROM development_requests WHERE resource=? AND state IN ('active','needs_review')").get(r.resource);
   if(owner)return owner.state==='needs_review'?'development_resource_review':this.unresolved(owner.id)||this.inflight.has(owner.id)?'development_resource_draining':'development_resource_busy';
   // Optional journal shares the SAME database. Cutoff merges FIFO order across

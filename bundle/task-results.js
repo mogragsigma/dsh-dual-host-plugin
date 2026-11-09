@@ -1,6 +1,6 @@
 // Conversation entry projection: current cloud ledger only, never a scheduler command.
 const object=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
-const summary=i=>({task_id:i.task_id,title:i.title,spec_revision:i.spec_revision,state:i.display_state,requested_model:i.requested_model,jobs_total:i.jobs_total,repository:i.repository,approval:i.approval});
+const summary=i=>({task_id:i.task_id,title:i.title,spec_revision:i.spec_revision,state:i.display_state,requested_model:i.requested_model,...(i.managed_execution?{managed_execution:i.managed_execution}:{}),jobs_total:i.jobs_total,repository:i.repository,approval:i.approval});
 export async function taskResults(g,a){
  if(!object(a)||Object.keys(a).some(k=>!['query','after','limit','task_id'].includes(k))||a.task_id!==undefined&&(typeof a.task_id!=='string'||!a.task_id||a.task_id.length>128||Object.keys(a).length!==1))throw Error('INVALID_TASK_RESULTS_QUERY');
  if(!g.board)throw Error('CAPABILITY_UNAVAILABLE');

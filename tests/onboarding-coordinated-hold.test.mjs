@@ -72,14 +72,14 @@ test('invalid confirmation, expiry and wrong process reference cannot release or
  const f=fixture(),p=f.own.preview();assert.throws(()=>f.own.apply({...confirm(p),confirm:false}),/CONFIRMATION/);f.advance(300001);assert.throws(()=>f.own.apply(confirm(p)),/EXPIRED/);const s=f.own.apply(confirm(f.own.preview()));assert.throws(()=>f.own.release({operationId:s.operationId,instanceId:'wrong',confirm:true}),/INSTANCE_CHANGED/);assert.equal(f.own.status().state,'held');release(f.own,s);
 });
 test('public RPC jointly holds real gates and prevents individual release escaping session ownership',async()=>{
- const f=fixture(),svc=createOnboardingService({}, {},{activity:f.c.onboarding,gateway:{maintenance:f.c.gateway},agentHold:f.c.agents,home:'/isolated-empty-fixture',env:{PATH:''}});
+ const f=fixture(),svc=createOnboardingService({}, {},{activity:f.c.onboarding,gateway:{c:{role:'cloud'},maintenance:f.c.gateway},agentHold:f.c.agents,home:'/isolated-empty-fixture',env:{PATH:''}});
  assert.equal((await svc.call('describe',{})).capabilities.coordinatedMaintenanceHoldContract,1);
  const p=await svc.call('coordinated_hold_preview',{}),s=await svc.call('coordinated_hold_apply',confirm(p));assert.equal(s.state,'held');await assert.rejects(svc.call('detect',{}),/HELD/);
  for(const key of ['agent','gateway','onboarding'])await assert.rejects(svc.call(key+'_hold_release',{}),/SESSION_ACTIVE/);
  assert.equal((await svc.call('agent_hold_status',{})).state,'held');await svc.call('coordinated_hold_release',{operationId:s.operationId,instanceId:s.instanceId,confirm:true});assert.equal((await svc.call('detect',{})).checks.writes,0);await svc.dispose();
 });
 test('disposing own service releases captured native/Gateway leases without launching deferred initialization',async()=>{
- const f=fixture(),svc=createOnboardingService({}, {},{activity:f.c.onboarding,gateway:{maintenance:f.c.gateway},agentHold:f.c.agents});
+ const f=fixture(),svc=createOnboardingService({}, {},{activity:f.c.onboarding,gateway:{c:{role:'cloud'},maintenance:f.c.gateway},agentHold:f.c.agents});
  await svc.call('coordinated_hold_apply',confirm(await svc.call('coordinated_hold_preview',{})));let starts=0;f.c.onboarding.deferStartup('models',()=>starts++);await svc.dispose();assert.equal(starts,0);assert.equal(f.c.gateway.status().state,'open');assert.equal(f.c.agents.status().state,'open');assert.equal(f.c.onboarding.status().state,'closed');
 });
 test('actual installed RPC wiring defers credential/LLM rebind and drops disposed scopes',async t=>{

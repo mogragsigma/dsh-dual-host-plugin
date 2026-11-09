@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {credentialKey} from '@deepseek-ai/dsh-credentials';
-import {PeerFiles,FILE_MAX} from './peer-files.js';
+import {PeerFiles,FILE_MAX,FILE_CONFIG_MAX} from './peer-files.js';
 import {FileRoot} from './peer-file-fs.js';
 import {migrationSnapshot,migrateFileScope} from './peer-file-migration.js';
 import {fileQueueList,fileQueuePlan,fileQueueReceipt,fileQueueClosed,closeFileQueuePlan,applyFileQueuePlan} from './peer-file-review.js';
@@ -11,7 +11,7 @@ import {digest} from './onboarding-ssh.js';
 const owner='dsh-dual-host-file-transfer',exact=(v,ks)=>v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).sort().join()===ks.slice().sort().join();
 const uuid=v=>typeof v==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(v),hex=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
 const fail=c=>{throw Error('ONBOARDING_FILES_'+c);},within=(a,b)=>a===b||a.startsWith(b+path.sep);
-const limits={maxBytes:FILE_MAX,queueEntries:64,chunkBytes:48*1024,automaticDeletion:false};
+const limits={maxBytes:FILE_CONFIG_MAX,queueEntries:64,chunkBytes:48*1024,automaticDeletion:false};
 // The outbox contains user input, not executable runtime state. Recognize only our
 // exact private marker; callers must still validate the directory itself. Never
 // traverse, chmod or adopt its contents here: PeerFiles validates each send.
@@ -29,7 +29,7 @@ export function createOnboardingFileTransfer({g,root,credentials,protectedRoots=
  function inspectOwned(){base.check();if(!fs.existsSync(folder))return;owned(folder,true);owned(path.join(folder,'owner.json'),false);if(fs.readFileSync(path.join(folder,'owner.json'),'utf8')!==marker)fail('PATH_REVIEW');for(const p of [outbox,inbox])if(fs.existsSync(p))owned(p,true);}
  function makeOwned(){inspectOwned();if(!fs.existsSync(folder)){fs.mkdirSync(folder,{mode:0o700});fs.writeFileSync(path.join(folder,'owner.json'),marker,{flag:'wx',mode:0o600});}for(const p of [outbox,inbox]){try{fs.mkdirSync(p,{mode:0o700});}catch(e){if(e.code!=='EEXIST')throw e;}owned(p,true);}}
  function scope(roots,maxBytes){
-  ready();inspectOwned();if(!Array.isArray(roots)||roots.length>8||!Number.isSafeInteger(maxBytes)||maxBytes<1||maxBytes>FILE_MAX)fail('ARGUMENTS');
+  ready();inspectOwned();if(!Array.isArray(roots)||roots.length>8||!Number.isSafeInteger(maxBytes)||maxBytes<1||maxBytes>FILE_CONFIG_MAX)fail('ARGUMENTS');
   const selected=(roots.length?roots:[outbox]).map(p=>{
    if(typeof p!=='string'||p.length>4096||!path.isAbsolute(p)||path.resolve(p)!==p||/[\x00-\x1f\x7f]/u.test(p))fail('SOURCE_REVIEW');
    if(p===outbox)return {path:p,identity:'owned-outbox'};
@@ -39,7 +39,7 @@ export function createOnboardingFileTransfer({g,root,credentials,protectedRoots=
   if(new Set(selected.map(x=>x.path)).size!==selected.length||selected.some((a,i)=>selected.some((b,j)=>i!==j&&within(a.path,b.path))))fail('SOURCE_OVERLAP');
   return {runtimeId,role,namespace,root,rootIdentity:base.id,sendRoots:selected,receiveRoot:inbox,maxBytes};
  }
- function checkedScope(s){if(!exact(s,['runtimeId','role','namespace','root','rootIdentity','sendRoots','receiveRoot','maxBytes'])||s.runtimeId!==runtimeId||s.role!==role||s.namespace!==namespace||s.root!==root||s.rootIdentity!==base.id||s.receiveRoot!==inbox||!Array.isArray(s.sendRoots)||!s.sendRoots.length||s.sendRoots.length>8||s.sendRoots.some(x=>!exact(x,['path','identity'])||typeof x.path!=='string'||!path.isAbsolute(x.path)||path.resolve(x.path)!==x.path||typeof x.identity!=='string'||!(x.path===outbox?x.identity==='owned-outbox':/^\d+:\d+$/.test(x.identity)))||!Number.isSafeInteger(s.maxBytes)||s.maxBytes<1||s.maxBytes>FILE_MAX)fail('LEDGER_REVIEW');return s;}
+ function checkedScope(s){if(!exact(s,['runtimeId','role','namespace','root','rootIdentity','sendRoots','receiveRoot','maxBytes'])||s.runtimeId!==runtimeId||s.role!==role||s.namespace!==namespace||s.root!==root||s.rootIdentity!==base.id||s.receiveRoot!==inbox||!Array.isArray(s.sendRoots)||!s.sendRoots.length||s.sendRoots.length>8||s.sendRoots.some(x=>!exact(x,['path','identity'])||typeof x.path!=='string'||!path.isAbsolute(x.path)||path.resolve(x.path)!==x.path||typeof x.identity!=='string'||!(x.path===outbox?x.identity==='owned-outbox':/^\d+:\d+$/.test(x.identity)))||!Number.isSafeInteger(s.maxBytes)||s.maxBytes<1||s.maxBytes>FILE_CONFIG_MAX)fail('LEDGER_REVIEW');return s;}
  function record(r){if(!r)return null;const p=r.payload;
   if(r.kind!=='grant'||!exact(p,['owner','schema','revision','operation','planHash','enabled','scope','updatedAt',...(p?.schema===2?['transition']:[])])||p.owner!==owner||![1,2].includes(p.schema)||!Number.isSafeInteger(p.revision)||p.revision<1||p.revision>=Number.MAX_SAFE_INTEGER-1||!uuid(p.operation)||!hex(p.planHash)||typeof p.enabled!=='boolean'||!Number.isSafeInteger(p.updatedAt))fail('LEDGER_REVIEW');
   if(p.scope===null){if(p.enabled||p.schema===2)fail('LEDGER_REVIEW');return p;}checkedScope(p.scope);

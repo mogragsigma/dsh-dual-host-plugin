@@ -11,7 +11,8 @@ export async function createTaskSearchReader(ctx,config){
  const reference=credentialRef(config.credentialRef);
  return {async search(query,policy,signal,recordRequest){
   if(policy.provider!=='deepseek-official'||policy.reasoningEffort!=='disabled')throw Error('SOURCE_SEARCH_PROVIDER_UNSUPPORTED');
-  if(proxyRouteFor(new URL(base)).proxied||Object.entries(process.env).some(([k,v])=>/^(?:https?|all)_proxy$/i.test(k)&&v))throw Error('SOURCE_PROXY_UNSUPPORTED');
+  // Reuse the installed native transport; a declared but uninstalled/bypassed route must not fall back to direct.
+  if(!proxyRouteFor(new URL(base)).proxied&&Object.entries(process.env).some(([k,v])=>/^(?:https?|all)_proxy$/i.test(k)&&v))throw Error('SOURCE_PROXY_UNSUPPORTED');
   const credentials=ctx.get?.('credentials')??ctx.credentials;if(!credentials?.resolve)throw Error('SOURCE_SEARCH_CREDENTIAL_UNAVAILABLE');
   const provider=new DeepSeekSearchProvider(()=>({baseURL:base,model:policy.model,apiVersion:'2023-06-01',maxTokens:2048,maxUses:1,
    apiKeyEnv:reference,resolveApiKey:async()=>{signal.throwIfAborted();return (await credentials.resolve(reference))?.value;},recordRequest}));

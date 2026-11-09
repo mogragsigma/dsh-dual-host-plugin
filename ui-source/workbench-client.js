@@ -11,6 +11,9 @@ window.__ModuleLoader__.load({id:'@mogragsigma/dsh-dual-host-plugin',factory:req
  /*APPROVAL_WORKBENCH_CLIENT*/
  /*TASK_FOCUS*/
  /*TASK_FOCUS_VIEW*/
+ let v2View;function getV2View(){if(v2View)return v2View;
+ /*WORKBENCH_V2*/
+ return v2View=DSHWorkbenchV2.Workbench;}
  const time=x=>Number.isFinite(x)&&x>0?new Date(x).toLocaleString('zh-CN',{hour12:false}):'时间未记录';
  const paths={panels:'M3 4h18v16H3zM9 4v16M9 10h12',laptop:'M5 4h14v12H5zM3 16h18l1 4H2l1-4Z',cloud:'M6 18a5 5 0 1 1 1-10 6 6 0 0 1 11-1 5.5 5.5 0 0 1 0 11H6Z',link:'M9 8H7a4 4 0 0 0 0 8h2M15 8h2a4 4 0 0 1 0 8h-2M8 12h8',refresh:'M20 10a8 8 0 0 0-14-5L3 8m0-5v5h5M4 14a8 8 0 0 0 14 5l3-3m0 5v-5h-5',timeline:'M5 3v18M3 6h4M3 12h4M3 18h4M11 6h10M11 12h7M11 18h10',window:'M3 4h18v16H3zM3 9h18M6 6.5h.1M9 6.5h.1',search:'M16 16l5 5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z',arrow:'M5 12h14M13 6l6 6-6 6',external:'M14 3h7v7M21 3 11 13M11 4H4v16h16v-7',file:'M5 3h9l5 5v13H5V3ZM14 3v6h5M8 13h8M8 17h6',git:'M6 3v12a4 4 0 0 0 4 4h4M6 7h9a3 3 0 0 0 3-3M3 3h6M15 19h6M16 3h4',shield:'M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3ZM8 12l3 3 5-6',help:'M12 17h.01M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z',close:'M5 5l14 14M19 5 5 19',message:'M4 4h16v12H9l-5 4V4Z',box:'M3 7l9-4 9 4v11l-9 4-9-4V7ZM3 7l9 5 9-5M12 12v10'};
  function Icon({name='panels',size=20}){return h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.65,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':true},h('path',{d:paths[name]??paths.panels}));}
@@ -116,8 +119,7 @@ window.__ModuleLoader__.load({id:'@mogragsigma/dsh-dual-host-plugin',factory:req
     if(action==='download'){
      // No model context sees these bytes; a response from an abandoned task cannot trigger a save.
      if(download){await download(a);return;}
-     const r=await access('download',{task_id:item.task_id,artifact_id:a.id,expected_revision:item.spec_revision,expected_sha256:a.sha256});
-     const bytes=await decodeArtifactDownload(r,a);
+     const {reply:r,bytes}=await fetchArtifactDownload(access,a,()=>alive.current&&gen===generation.current);
      if(!alive.current||gen!==generation.current)return;
      const saved=saveArtifactDownload(bytes,a.name);setObserved(old=>({...old,[a.id]:{...r,content:undefined,download_message:saved.message}}));return;
     }
@@ -132,15 +134,15 @@ window.__ModuleLoader__.load({id:'@mogragsigma/dsh-dual-host-plugin',factory:req
   if(!items.length)return h('div',{className:'empty-artifact'},h('strong',null,item.artifacts?.state==='evidence_unavailable'?'交付成果证据待核对':'暂无已登记成果'),text('成果登记后会在这里显示。执行未结束或失败时，不把检查点冒充成果。'));
   return h('section',{className:'artifact-files','aria-label':'已登记成果'},...items.map(a=>{
    const r=observed[a.id],state=r?.artifact.state??a.state,delivered=a.kind==='gitee_delivery',gitee=a.kind==='gitee'||delivered;
-   const intro=a.description??(a.kind==='gitee'?'此成果关联仓库中已存在的文件。尚未填写内容介绍；请在 Gitee 查看原文件。':'独立 worker 留存的任务报告。尚未填写内容介绍；请查看对应执行会话。');
+   const intro=a.description??(a.kind==='native_file'?'任务内留存的原生文件快照，可直接下载，不需要恢复执行会话。':a.kind==='gitee'?'此成果关联仓库中已存在的文件。尚未填写内容介绍；请在 Gitee 查看原文件。':'独立 worker 留存的任务报告。尚未填写内容介绍；请查看对应执行会话。');
    return h('article',{className:'artifact-card',key:a.id},h('h4',null,icon(gitee?'git':'file'),a.name),text(intro,'artifact-introduction'),
     h('details',{className:'artifact-provenance'},h('summary',null,'来源与版本'),text('所属任务：'+item.title+' · 第 '+a.spec_revision+' 版'),
     a.kind==='report'&&item.delivery?.execution?.total>0?text('报告登记于 '+time(a.created_at)+'；说明反映当时阶段，后续提交与推送请看交付账本。'):null,
-    text((delivered?'本任务交付 · 推送账本记录':a.kind==='gitee'?'Gitee 已有文件 · 非本次生成':'独立 worker 报告 · 非仓库成果')+(a.description?' · 介绍来源：'+(a.description_source==='delivery_ledger'?'交付账本':a.description_source==='direct_user'?'用户原文':'worker'):' · 介绍待补充')),
+    text((delivered?'本任务交付 · 推送账本记录':a.kind==='native_file'?'原生文件快照 · '+(a.stage==='draft'?'进行中草稿':'待验收成果')+(a.historical?' · 历史版本':''):a.kind==='gitee'?'Gitee 已有文件 · 非本次生成':'独立 worker 报告 · 非仓库成果')+(a.description?' · 介绍来源：'+(a.description_source==='delivery_ledger'?'交付账本':a.description_source==='direct_user'?'用户原文':'worker'):' · 介绍待补充')),
     gitee?text((delivered?a.repository.branch:a.repository.path)+' · 提交 '+a.repository.commit.slice(0,12)):null),
     h('p',{className:state==='verified'?'small':'small muted',role:'status'},artifactStates[state]??state,r?.checked_at?' · '+time(r.checked_at):null),
     r?.error?text((artifactErrors[r.error]??r.error)+' · 本次未提供文件或跳转','warning'):null,r?.download_message?text(r.download_message,'small'):null,
-    h('div',{className:'artifact-actions'},!gitee?button(busy===a.id?'处理中…':'下载文件',()=>act(a,'download'),!!busy||!fresh||!['needs_verification','verified'].includes(state),'','file'):null,button(busy===a.id?'核验中…':'重新核验',()=>act(a,'check'),!!busy||!fresh),gitee?button('核验 Gitee 入口',()=>act(a,'gitee'),!!busy||!fresh,'','shield'):button('查看执行会话',()=>act(a,'session'),!!busy||!fresh,'','message'),r?.url&&state==='verified'&&fresh&&!busy?h('a',{className:'button primary',href:r.url,target:'_blank',rel:'noopener noreferrer',referrerPolicy:'no-referrer'},icon('external'),'在 Gitee 查看'):null));
+    h('div',{className:'artifact-actions'},!gitee?button(busy===a.id?'处理中…':'下载文件',()=>act(a,'download'),!!busy||!fresh||!['needs_verification','verified'].includes(state),'','file'):null,button(busy===a.id?'核验中…':'重新核验',()=>act(a,'check'),!!busy||!fresh),gitee?button('核验 Gitee 入口',()=>act(a,'gitee'),!!busy||!fresh,'','shield'):a.kind==='native_file'?null:button('查看执行会话',()=>act(a,'session'),!!busy||!fresh,'','message'),r?.url&&state==='verified'&&fresh&&!busy?h('a',{className:'button primary',href:r.url,target:'_blank',rel:'noopener noreferrer',referrerPolicy:'no-referrer'},icon('external'),'在 Gitee 查看'):null));
   }),item.artifacts?.delivery_unavailable||item.artifacts?.delivery_error?text('部分交付证据不完整，未生成跳转入口；请先核对交付账本。','warning'):null,item.artifacts?.truncated?text('仅显示最近 100 项成果；历史条目仍可按任务查询。'):null,text('报告可明确点击下载，保存前重新核验归属、版本、权限与摘要；不自动下载或上传。Gitee 成果只跳转固定版本页面，使用你的登录独立鉴权。'),error?text(error,'warning'):null);
  }
  function TaskConversationQuery({item}){
@@ -168,7 +170,7 @@ window.__ModuleLoader__.load({id:'@mogragsigma/dsh-dual-host-plugin',factory:req
  function Notifications({item,request,viewerRole,fresh}){
   const n=item.notifications,b=n?.binding,scan=useSnapshot(args=>request('notification-discover',args));
   const states={media_queued:'成果等待发送端',media_leased:'成果已领取',media_dispatching:'上传或发送中／等待回执',queued:'等待发送端',leased:'已领取，等待发送',dispatching:'发送中／等待回执',accepted:'接口已接受',needs_review:'需要核对',cancelled:'已取消'};
-  const reasons={NOTIFICATION_ENDPOINT_STATE_LOST:'发送端持久记录缺失，无法排除已发送；先核对，不重发',NOTIFICATION_UPLOAD_RESULT_UNKNOWN:'上传结果未知；未必已经发消息，先核对，禁止盲重试',NOTIFICATION_MEDIA_CAPABILITY_UNAVAILABLE:'所选渠道未提供图片／文件能力，不会降级成文本发送',NOTIFICATION_MEDIA_PREFLIGHT_WAIT:'成果发送前检查暂不可用，有限等待',NOTIFICATION_ARTIFACT_OR_PROVIDER_UNAVAILABLE:'成果或渠道不可用，需要核对，未自动重试',NOTIFICATION_AWAITING_LOCAL_ENDPOINT:'等待本地发送端领取；不能仅凭队列判定 Mac 离线',NOTIFICATION_AWAITING_CLOUD_ENDPOINT:'等待云端发送端领取',NOTIFICATION_ENDPOINT_PROCESSING:'发送端已领取，尚未越过发送边界',NOTIFICATION_WAITING_FOR_RECEIPT:'发送可能已发生，正在等待持久回执',NOTIFICATION_SEND_RESULT_UNKNOWN:'结果未知，请先核对外部会话，不要重发',NOTIFICATION_CAPABILITY_UNAVAILABLE:'当前渠道或账号不支持所需的受检发送能力',NOTIFICATION_ROUTE_CHANGED:'目标身份或路由已变化，需要重新核验',NOTIFICATION_AUTHORIZATION_ENDED:'通知授权或任务修订已变更',NOTIFICATION_SUPERSEDED_SNAPSHOT:'已由更新的进度或结果快照替代',NOTIFICATION_BACKOFF:'发送前暂时拒绝，正在有限退避'};
+  const reasons={NOTIFICATION_FEISHU_PERMISSION_REQUIRED:'飞书机器人缺少发送前核验权限（99991672）；请检查只读会话权限是否生效。文件未发送，任务执行不受影响。',NOTIFICATION_ENDPOINT_STATE_LOST:'发送端持久记录缺失，无法排除已发送；先核对，不重发',NOTIFICATION_UPLOAD_RESULT_UNKNOWN:'上传结果未知；未必已经发消息，先核对，禁止盲重试',NOTIFICATION_MEDIA_CAPABILITY_UNAVAILABLE:'所选渠道未提供图片／文件能力，不会降级成文本发送',NOTIFICATION_MEDIA_PREFLIGHT_WAIT:'成果发送前检查暂不可用，有限等待',NOTIFICATION_ARTIFACT_OR_PROVIDER_UNAVAILABLE:'成果或渠道不可用，需要核对，未自动重试',NOTIFICATION_AWAITING_LOCAL_ENDPOINT:'等待本地发送端领取；不能仅凭队列判定 Mac 离线',NOTIFICATION_AWAITING_CLOUD_ENDPOINT:'等待云端发送端领取',NOTIFICATION_ENDPOINT_PROCESSING:'发送端已领取，尚未越过发送边界',NOTIFICATION_WAITING_FOR_RECEIPT:'发送可能已发生，正在等待持久回执',NOTIFICATION_SEND_RESULT_UNKNOWN:'结果未知，请先核对外部会话，不要重发',NOTIFICATION_CAPABILITY_UNAVAILABLE:'当前渠道或账号不支持所需的受检发送能力',NOTIFICATION_ROUTE_CHANGED:'目标身份或路由已变化，需要重新核验',NOTIFICATION_AUTHORIZATION_ENDED:'通知授权或任务修订已变更',NOTIFICATION_SUPERSEDED_SNAPSHOT:'已由更新的进度或结果快照替代',NOTIFICATION_BACKOFF:'发送前暂时拒绝，正在有限退避'};
   const events={artifact:'成果交付',result:'结果',attention:'待你处理',progress:'进度'};
   const discovery=scan.snap?.value;
   return h('section',{className:'evidence notifications','aria-label':'任务通知与回执'},h('div',{className:'planning-heading'},h('h3',null,icon('message'),'任务通知与回执'),h('span',{className:'badge neutral'},'手动读取 · 不发送')),
@@ -300,7 +302,7 @@ window.__ModuleLoader__.load({id:'@mogragsigma/dsh-dual-host-plugin',factory:req
    p&&(p.schedules_total>p.schedules.length||p.workflows_total>p.workflows.length)?text(`每类最多显示 ${p.display_limit} 条，未结束项优先；全部记录仍保留。`):null);
  }
  const emptyRows=[];
- function WorkbenchUI({onboarding,request,call,open,openSidebar,appearance,artifactAccess,openA2A,navigationError,compact=false,visible=true,initialView='tasks',decisionAdapter,discussTask,downloadArtifact,attentionPreview}){
+ function LegacyWorkbenchUI({onboarding,request,call,open,openSidebar,appearance,artifactAccess,openA2A,navigationError,compact=false,visible=true,initialView='tasks',decisionAdapter,discussTask,downloadArtifact,attentionPreview}){
   const [executionView,setExecutionView]=React.useState('runs'),[lastDecision,setLastDecision]=React.useState(null);
   const [view,setView]=React.useState(initialView),[selected,setSelected]=React.useState(null),[query,setQuery]=React.useState(''),[filter,setFilter]=React.useState({query:'',after:0}),[keyboard,setKeyboard]=React.useState(false),[mascot,setMascot]=React.useState(null),[opening,setOpening]=React.useState(false),[navError,setNavError]=React.useState('');
   const list=useSnapshot(args=>request('list',{...args,limit:20})),detail=useSnapshot(id=>request('detail',{task_id:id})),workspace=useSnapshot(()=>call('status',{}));
@@ -354,6 +356,8 @@ window.__ModuleLoader__.load({id:'@mogragsigma/dsh-dual-host-plugin',factory:req
      h(ArtifactFiles,{key:'artifacts-'+item.task_id,item,access:artifactAccess,open,fresh:detailFresh,download:downloadArtifact}),
      h(TaskConversationQuery,{key:'query-'+item.task_id,item}),
      lastDecision?.task_id===item.task_id?h('div',{className:'decision-result',role:'status'},h('strong',null,(decisionAdapter?.preview?'模拟结果 · ':'')+(lastDecision.operation_state&&lastDecision.plan?'处理意见已记账':label(lastDecision.state))),text((lastDecision.plan?'当时操作回执：':'')+lastDecision.message),text('本次决定已记录；当前任务状态以刷新后的快照为准。')):null,
+     h(TaskObservation,{observation:item.task_observation}),
+     h(TaskDevelopment,{evidence:item.managed_execution?.development}),
      attentionPreview?.render?.({item,fresh:detailFresh,onChanged:()=>{setLastDecision(null);refresh();}})??h(TaskAttention,{key:'attention-'+item.task_id,item,fresh:detailFresh,adapter:decisionAdapter,discuss:discussTask,onRecorded:r=>{setLastDecision({...r,task_id:item.task_id});refresh();},inspect:()=>detailTarget.current?.querySelector('.detail-more')?.click()}),
      h(TaskDiagnostics,{key:'diagnostics-'+item.task_id,item},
      h('div',{className:'detail-grid'},
@@ -401,6 +405,7 @@ window.__ModuleLoader__.load({id:'@mogragsigma/dsh-dual-host-plugin',factory:req
  }
  // Plain local Web Hosts do not ship Desktop's native browser tab. Only an
  // already verified managed ticket may use same-tab browser navigation.
+ function WorkbenchUI(props){return h(getV2View(),{...props,renderArtifacts:(item,fresh)=>h(ArtifactFiles,{item,fresh,access:props.artifactAccess,open:props.open,download:props.downloadArtifact}),renderDevelopment:item=>h(TaskDevelopment,{evidence:item.managed_execution?.development}),renderNotifications:(item,fresh,role)=>h(Notifications,{item,fresh,request:props.request,viewerRole:role}),renderLegacy:()=>h(LegacyWorkbenchUI,props)});}
  function managedBrowserEntry(result,page){
   if(!['http:','https:'].includes(page.protocol)||!['localhost','127.0.0.1','[::1]'].includes(page.hostname)||!/^[-a-f0-9]{36}$/.test(result.entryId??''))return null;
   let u;try{u=new URL(result.url);}catch{return null;}
@@ -441,10 +446,10 @@ window.__ModuleLoader__.load({id:'@mogragsigma/dsh-dual-host-plugin',factory:req
   async function onboardRequest(method,args){getOnboardingView();return onboardingRpc((...params)=>ctx.connection.rpc.call(...params),method,args);}
   getOnboardingView();const imClient=onboardingCreateImBridge();
   ctx.inject(['dshImClient'],sub=>{const detach=imClient.attach(sub.dshImClient);sub.effect(()=>detach);});
-  let setupImRequested=false;const setupImListeners=new Set();
+  let setupImRequested=false,setupCloudEntry=null;const setupImListeners=new Set();
   function HomeUI(p){
-   const [imOpen,setImOpen]=React.useState(()=>setupImRequested),[cloudEntry,setCloudEntry]=React.useState(null),[cloudWebEntry,setCloudWebEntry]=React.useState(false);
-   React.useEffect(()=>{const fn=()=>{setMode('onboarding');setImOpen(true);};setupImListeners.add(fn);return()=>setupImListeners.delete(fn);},[]);
+   const [imOpen,setImOpen]=React.useState(()=>setupImRequested&&!setupCloudEntry),[cloudEntry,setCloudEntry]=React.useState(()=>setupCloudEntry),[cloudWebEntry,setCloudWebEntry]=React.useState(false);
+   React.useEffect(()=>{const fn=entry=>{setMode('onboarding');setCloudEntry(entry??null);setImOpen(!entry);};setupImListeners.add(fn);return()=>setupImListeners.delete(fn);},[]);
    const [cloudFileQueueReview,setCloudFileQueueReview]=React.useState(false);
    const [managedFileQueueReview,setManagedFileQueueReview]=React.useState(false);
    const [cloudFileMigration,setCloudFileMigration]=React.useState(false);
@@ -464,22 +469,22 @@ window.__ModuleLoader__.load({id:'@mogragsigma/dsh-dual-host-plugin',factory:req
    React.useEffect(()=>{let live=true;onboardRequest('describe',{}).then(x=>{if(live){setExistingSetup(x.capabilities?.existingSetupContract===1);setExistingPairInspection(x.capabilities?.existingPairInspectionContract===1);setTaskRuntime([2,3,4].includes(x.capabilities?.managedTaskRuntimeContract));setCloudFileQueueReview(x.capabilities?.cloudFileQueueReviewContract===1);setManagedFileQueueReview(x.capabilities?.managedFileQueueReviewContract===2);setCloudFileMigration(x.capabilities?.cloudFileScopeMigrationContract===1);setManagedFileMigration(x.capabilities?.managedFileScopeMigrationContract===1);setCloudFileTransfer(x.capabilities?.cloudFileTransferContract===1);setManagedFileTransfer(x.capabilities?.managedFileTransferContract===2);setLocalPeerBinding(x.capabilities?.localPeerBinding===true);setCloudTaskRuntime(x.capabilities?.cloudTaskRuntime===true);setRepositoryRegistry(x.capabilities?.repositoryRegistryContract===2);setCloudRepositoryRegistry(x.capabilities?.cloudRepositoryRegistry===true);setRepositoryCheck(x.capabilities?.repositoryCheckContract===1);setCloudRepositoryCheck(x.capabilities?.cloudRepositoryCheck===true);setCloudGiteeHandoff(x.capabilities?.cloudGiteeHandoff===true);setInstallationEnabled(x.capabilities?.rulesInstall===true);setMaintenanceContract([1,2].includes(x.capabilities?.rulesMaintenancePreviewContract)?x.capabilities.rulesMaintenancePreviewContract:0);setMaintenanceMutation(x.capabilities?.rulesMaintenanceMutation===true);setMaintenanceSessionContract(x.capabilities?.maintenanceRecordContract===2&&x.capabilities?.maintenanceRecordQueryContract===1?2:0);setSelfDisableContract(x.capabilities?.selfDisableContract===1&&x.capabilities?.selfDisableQueryContract===1?1:0);setSelfRemoveContract(x.capabilities?.selfRemoveContract===1&&x.capabilities?.selfRemoveQueryContract===1?1:0);setSelfStopContract(x.capabilities?.selfStopQueryContract===1?1:0);setSelfStopMutation(x.capabilities?.selfStopContract===1);setImMaintenanceContract(x.capabilities?.imMaintenanceQueryContract===1?1:0);setImMaintenanceMutation(x.capabilities?.imMaintenanceContract===1);setPersistenceEnabled(x.capabilities?.draftPersistence===true);setCloudEnabled(x.capabilities?.remoteDetection===true);setSourcePreparation(x.capabilities?.sourcePreparation===true);setNativeHostInstallation(x.capabilities?.nativeHostInstallation===true);setModelBinding(x.capabilities?.modelBinding===true);setTokenPlanBinding(x.capabilities?.tokenPlanBinding===true);setCloudCredentialHandoff(x.capabilities?.cloudCredentialHandoff===true);setCloudModelBinding(x.capabilities?.cloudModelBinding===true);setCloudTokenPlanHandoff(x.capabilities?.cloudTokenPlanHandoff===true);setCloudTokenPlanBinding(x.capabilities?.cloudTokenPlanBinding===true);setCloudImInventory(x.capabilities?.cloudImInventory===true);setNotificationDefaults(x.capabilities?.notificationDefaultsContract===1);setOptionalImInstallation(x.capabilities?.optionalImInstallation===true);setCloudWebEntry(x.capabilities?.cloudWebEntry===true);setConfigured(x.configured);setMode(x.configured&&!setupImRequested?'workbench':'onboarding');}}).catch(()=>{if(live)setFailure(true);});return()=>{live=false;};},[]);
    if(failure)return h('section',{className:'dsh-onboarding'},text('配置能力未能核验；没有检测环境、应用配置或自动重试。'));
    if(mode==='loading')return h('section',{className:'dsh-onboarding'},text('正在读取插件能力…'));
-   if(mode==='workbench')return h(WorkbenchUI,{...p,onboarding:()=>setMode('onboarding')});
-   return h(React.Fragment,null,h('div',{style:{height:'100%',display:imOpen||cloudEntry?'none':undefined}},h(getOnboardingView(),{request:onboardRequest,appearance,imClient,onManageIm:()=>setImOpen(true),onManageCloudIm:setCloudEntry,cloudWebEntry,installationEnabled,maintenanceContract,maintenanceMutation,maintenanceSessionContract,selfDisableContract,selfRemoveContract,selfStopContract,selfStopMutation,imMaintenanceContract,imMaintenanceMutation,persistenceEnabled,cloudEnabled,sourcePreparation,nativeHostInstallation,modelBinding,tokenPlanBinding,cloudCredentialHandoff,cloudModelBinding,cloudTokenPlanHandoff,cloudTokenPlanBinding,cloudImInventory,notificationDefaults,existingPairInspection,existingSetup,optionalImInstallation,repositoryCheck,cloudRepositoryCheck,cloudGiteeHandoff,repositoryRegistry,cloudRepositoryRegistry,taskRuntime,cloudTaskRuntime,localPeerBinding,cloudFileMigration,managedFileMigration,cloudFileTransfer,cloudFileQueueReview,managedFileQueueReview,managedFileTransfer,onExit:configured?()=>setMode('workbench'):undefined})),imOpen?h(onboardingNativeImManager,{imClient,onBack:()=>{if(location.hash==='#dsh-setup-im')history.replaceState(null,'',location.pathname+location.search);setupImRequested=false;setImOpen(false);}}):null,cloudEntry?h(onboardingCloudImManager,{entry:cloudEntry,request:onboardRequest,onBack:()=>setCloudEntry(null)}):null);
+   const setup=exit=>h(React.Fragment,null,h('div',{style:{height:'100%',display:imOpen||cloudEntry?'none':undefined}},h(getOnboardingView(),{request:onboardRequest,appearance,imClient,onManageIm:()=>setImOpen(true),onManageCloudIm:setCloudEntry,cloudWebEntry,installationEnabled,maintenanceContract,maintenanceMutation,maintenanceSessionContract,selfDisableContract,selfRemoveContract,selfStopContract,selfStopMutation,imMaintenanceContract,imMaintenanceMutation,persistenceEnabled,cloudEnabled,sourcePreparation,nativeHostInstallation,modelBinding,tokenPlanBinding,cloudCredentialHandoff,cloudModelBinding,cloudTokenPlanHandoff,cloudTokenPlanBinding,cloudImInventory,notificationDefaults,existingPairInspection,existingSetup,optionalImInstallation,repositoryCheck,cloudRepositoryCheck,cloudGiteeHandoff,repositoryRegistry,cloudRepositoryRegistry,taskRuntime,cloudTaskRuntime,localPeerBinding,cloudFileMigration,managedFileMigration,cloudFileTransfer,cloudFileQueueReview,managedFileQueueReview,managedFileTransfer,onExit:exit??(configured?()=>setMode('workbench'):undefined)})),imOpen?h(onboardingNativeImManager,{imClient,onBack:()=>{if(location.hash==='#dsh-setup-im')history.replaceState(null,'',location.pathname+location.search);setupImRequested=false;setImOpen(false);}}):null,cloudEntry?h(onboardingCloudImManager,{entry:cloudEntry,request:onboardRequest,onBack:()=>{setupCloudEntry=null;setupImRequested=false;setCloudEntry(null);}}):null);
+   return h(WorkbenchUI,{...p,initialPage:mode==='workbench'?'overview':'setup',renderSetup:setup,onboarding:()=>setMode('onboarding')});
   }
   const decisionAdapter=createWorkbenchDecisionAdapter(call);
-  const props=()=>({request,call,open,openA2A,openSidebar,appearance,artifactAccess,decisionAdapter,navigationError:()=>navigationError});
+  const props=()=>({request,call,open,openA2A,openSidebar,appearance,artifactAccess,decisionAdapter,onboardRequest,imClient,onNative:()=>ctx.layout.selectPanel(null),onManageIm:()=>{setupImRequested=true;setupCloudEntry=null;for(const fn of setupImListeners)fn();ctx.layout.selectPanel(boardPanel);},onManageCloudIm:entry=>{setupImRequested=true;setupCloudEntry=entry;for(const fn of setupImListeners)fn(entry);ctx.layout.selectPanel(boardPanel);},navigationError:()=>navigationError});
   ctx.slots.inject('main',()=>ctx.slots.register({name:'main',key:boardPanel,inject:props},HomeUI));
   // Old main key remains a navigation alias; only ONE left entry is registered.
   ctx.slots.inject('main',()=>ctx.slots.register({name:'main',key:panel,inject:()=>({...props(),initialView:'workspace'})},WorkbenchUI));
   ctx.slots.inject('sidebar.panellist',()=>ctx.slots.register({name:'sidebar.panellist',id:boardPanel,order:5,label:'大肥鱼bot'},Icon));
   ctx.inject(['sidebarRightTabs','sidebarRight'],sub=>{
-   sub.effect(()=>sub.sidebarRightTabs.register({id:boardTab,kind:'dsh-dual-tasks',title:()=> '双端任务',guide:[{id:'tasks',order:6,title:()=> '双端任务',description:()=> '任务、审批与成果入口',icon:Icon}]}));
+   sub.effect(()=>sub.sidebarRightTabs.register({id:boardTab,kind:'dsh-dual-tasks',title:()=> '双端任务',guide:[{id:'tasks',order:6,title:()=> '双端任务',description:()=> '任务进展、跟进与成果入口',icon:Icon}]}));
    function SidebarBody({useTabInfo}){const {tab}=useTabInfo();return h(WorkbenchUI,{...props(),compact:true,visible:tab.visible});}
    sub.slots.inject('sidebar.right.pane.tab',()=>sub.slots.register({name:'sidebar.right.pane.tab',key:boardTab},SidebarBody));
   });
   async function navigate(){
-   if(location.hash==='#dsh-setup-im'){setupImRequested=true;for(const fn of setupImListeners)fn();if(!disposed)ctx.layout.selectPanel(boardPanel);return;}
+   if(location.hash==='#dsh-setup-im'){setupImRequested=true;setupCloudEntry=null;for(const fn of setupImListeners)fn();if(!disposed)ctx.layout.selectPanel(boardPanel);return;}
    const match=/^#dsh-worker=((?:task-worker|a2a)-[a-f0-9-]{36})$/.exec(location.hash);if(!match)return;
    history.replaceState(null,'',location.pathname+location.search);
    try{const result=await call('session',{session_id:match[1]});await ctx.sessions.refresh();if(!disposed)ctx.uiWorkspace.openSession(result.session_id);}catch(e){navigationError='执行会话导航失败：'+String(e.message).slice(0,180);if(!disposed)ctx.layout.selectPanel(boardPanel);}

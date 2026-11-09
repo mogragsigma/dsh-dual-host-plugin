@@ -9,7 +9,7 @@ test('new journal is constructed only inside the opt-in runtime',()=>{
  const c=JSON.parse(read('compatibility.json'));assert.equal(c.deliveryExecutionFoundation.publicExecution,false);assert.equal(c.deliveryRuntimeCandidate.defaultExecutionEnabled,false);assert.equal(c.deliveryExecutionFoundation.pushAdapter,false);assert.equal(c.candidateValidation.realCommitPushValidated,false);
 });
 test('own global rule and Skill both distinguish computed object from persisted commit and old preview approval',()=>{
- for(const p of ['global-rules/AGENTS.md','skills/task-repository/SKILL.md']){const s=read(p);for(const term of ['computed_commit_oid','commit-preview-v1','待核对'])assert.ok(s.includes(term),p+': '+term);}
+ assert(read('delivery-object-plan.js').includes('computed_commit_oid'));assert(read('delivery-preview.js').includes('commit-preview-v1'));for(const p of ['global-rules/AGENTS.md','skills/task-repository/SKILL.md']){const s=read(p);assert(s.includes('CLI'),p);assert(s.includes('回读'),p);}
  const src=read('delivery-object-plan.js');assert.ok(!/from ['"]node:(fs|child_process|http|https|net)/.test(src));
 });
 test('commit source has no public constructor or default activation route',()=>{

@@ -1,3 +1,4 @@
+import {testPort} from './helpers/loopback-port.mjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createServer,request} from 'node:http';
@@ -5,11 +6,11 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {WorkbenchProxy} from '../bundle/workbench-proxy.js';
 import {Workbench,installWorkbench,workbenchSnapshot} from '../bundle/workbench-host.js';
-const listen=s=>new Promise(r=>s.listen(0,'127.0.0.1',r));
+const listen=s=>new Promise(r=>s.listen(testPort(50),'127.0.0.1',r));
 async function fixture(t){
  const calls=[],server=createServer((req,res)=>{calls.push({url:req.url,headers:req.headers});if(req.url==='/?token=test-launch'){res.writeHead(303,{'set-cookie':'native=proof; HttpOnly; SameSite=Strict; Path=/','location':'./'});res.end();}else if(req.url==='/redirect'){res.writeHead(302,{location:'https://evil.invalid/?token=leak'});res.end();}else{res.writeHead(req.headers.cookie==='native=proof'?200:401);res.end('native');}});
  const sockets=new Set();server.on('connection',s=>{sockets.add(s);s.on('close',()=>sockets.delete(s));});
- await listen(server);const p=new WorkbenchProxy({port:0,upstreamPort:server.address().port});await p.start();t.after(async()=>{await p.close();for(const s of sockets)s.destroy();await new Promise(r=>server.close(r));});return {p,calls,server};
+ await listen(server);const p=new WorkbenchProxy({port:testPort(50),upstreamPort:server.address().port});await p.start();t.after(async()=>{await p.close();for(const s of sockets)s.destroy();await new Promise(r=>server.close(r));});return {p,calls,server};
 }
 function get(p,path='/',headers={},method='GET'){return new Promise((resolve,reject)=>{const r=request(p.origin+path,{headers,method},res=>{let data='';res.on('data',x=>data+=x);res.on('end',()=>resolve({status:res.statusCode,headers:res.headers,data}));});r.on('error',reject);r.end();});}
 test('one-use ticket only authenticates native root; browser never gets launch token',async t=>{

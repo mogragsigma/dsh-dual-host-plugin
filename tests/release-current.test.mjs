@@ -4,13 +4,13 @@ import fs from 'node:fs/promises';
 import {VERSION} from '../bundle/link-contract.js';
 
 const read = async name => JSON.parse(await fs.readFile(new URL('../' + name, import.meta.url)));
-const hostVersion = '0.2.1-rc.5';
+const hostVersion = '0.2.2-rc.1';
 const identity = '@mogragsigma/dsh-dual-host-plugin';
 
 test('current root and archive manifests have one release identity and dependency contract', async () => {
   const root = await read('package.json'), bundle = await read('bundle/package.json');
   assert.equal(root.name, identity);
-  assert.equal(root.version, '0.33.4');
+  assert.equal(root.version, '2.0.0');
   assert.equal(VERSION, root.version);
   for (const key of ['name', 'version', 'dependencies', 'peerDependencies', 'peerDependenciesMeta',
     'engines', 'dsh', 'author', 'license', 'publishConfig']) assert.deepEqual(bundle[key], root[key], key);
@@ -22,7 +22,8 @@ test('current root and archive manifests have one release identity and dependenc
     const c = await read(manifest);
     assert.equal(c.version, root.version);
     assert.equal(c.plugin, identity);
-    assert.equal(c.hostBaseline, hostVersion);
+    assert.equal(c.hostBaseline, '0.2.1-rc.5');
+    assert.equal(c.hostCompatibilityPolicy.standalonePinnedHost, hostVersion);
     assert.equal(c.publish, true);
   }
   for (const [key, entry] of Object.entries(bundle.exports)) {
@@ -79,4 +80,12 @@ test('current UI and patch identities agree and historical manifests stay histor
   assert(history);
   const current = await read('docs/module-index.json');
   assert.equal(current.version, VERSION);
+});
+
+// Installation must not accidentally treat the supported lower bound as its pinned runtime.
+test('standalone admission and activation use the installation pin, preserving compatibility floor', async () => {
+  for (const name of ['onboarding-cloud.js','onboarding-cloud-package.js','onboarding-runtime-extension.js','onboarding-native-probe.js','onboarding-runtime-activation.js']) {
+    const body = await fs.readFile(new URL('../bundle/' + name, import.meta.url), 'utf8');
+    assert(body.includes('hostCompatibilityPolicy?.standalonePinnedHost'), name);
+  }
 });

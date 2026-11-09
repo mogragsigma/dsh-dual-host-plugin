@@ -1,11 +1,14 @@
 import fs from 'node:fs';
 import {join} from 'node:path';
 import {FileRoot,fileHash,fileName,sourceFile} from './peer-file-fs.js';
-export const FILE_CHUNK=48*1024,FILE_MAX=2*1024*1024;
+export const FILE_CHUNK=48*1024,FILE_MAX=32*1024*1024,FILE_CONFIG_MAX=512*1024*1024;
+// FILE_MAX is the fresh-install default, not a universal transfer-size promise.
+// Preserve an existing implicit limit; expanding a persisted scope remains explicit.
 const other=r=>r==='local'?'cloud':'local',jid=x=>typeof x==='string'&&/^file-[a-f0-9]{64}$/.test(x),task=x=>typeof x==='string'&&/^task-[a-f0-9-]{36}$/.test(x);
 const json=JSON.stringify,fail=c=>{throw Error('PEER_FILE_'+c);};
 const same=(a,b)=>json(a)===json(b);
 export function fileMetadata(a,namespace,origin,max){
+ if(Number.isSafeInteger(a?.size)&&a.size>max)fail('TOO_LARGE');
  const keys=['v','namespace','id','task_id','from','to','name','size','sha256','created_at'];
  if(!a||typeof a!=='object'||Object.keys(a).some(k=>!keys.includes(k))||a.v!==1||a.namespace!==namespace||!jid(a.id)||!task(a.task_id)||a.from!==origin||a.to!==other(origin)||!Number.isSafeInteger(a.size)||a.size<0||a.size>max||!(/^[a-f0-9]{64}$/.test(a.sha256??''))||!Number.isSafeInteger(a.created_at)||a.created_at<0)fail('METADATA_INVALID');
  fileName(a.name);return Object.fromEntries(keys.map(k=>[k,a[k]]));
@@ -15,9 +18,10 @@ function decode(s){if(typeof s!=='string'||s.length>FILE_CHUNK*4/3||!s.length)fa
 export class PeerFiles {
  constructor(g,c){
   if(!c||c.enabled!==true||Object.keys(c).some(k=>!['enabled','sendRoots','receiveRoot','maxBytes'].includes(k))||!Array.isArray(c.sendRoots)||!c.sendRoots.length||c.sendRoots.length>8)fail('CONFIG_INVALID');
-  this.g=g;this.db=g.db;this.role=g.c.role;this.namespace=g.c.namespace;this.max=c.maxBytes??FILE_MAX;
+  this.g=g;this.db=g.db;this.role=g.c.role;this.namespace=g.c.namespace;const retained=this.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='peer_file_owner'").get()?this.db.prepare('SELECT config FROM peer_file_owner WHERE id=1').get():null;
+  this.max=c.maxBytes??(retained?JSON.parse(retained.config).max:FILE_MAX);
   if(!['local','cloud'].includes(this.role)||typeof this.namespace!=='string'||!this.namespace||this.namespace.length>128)fail('CONFIG_INVALID');
-  if(!Number.isSafeInteger(this.max)||this.max<1||this.max>FILE_MAX)fail('CONFIG_INVALID');
+  if(!Number.isSafeInteger(this.max)||this.max<1||this.max>FILE_CONFIG_MAX)fail('CONFIG_INVALID');
   this.roots=c.sendRoots.map(p=>new FileRoot(p));this.receive=new FileRoot(c.receiveRoot);
   const dir=join(g.c.stateDir,'peer-files');fs.mkdirSync(dir,{recursive:true,mode:0o700});this.spool=new FileRoot(dir);
   this.db.exec(`CREATE TABLE IF NOT EXISTS peer_file_owner(id INTEGER PRIMARY KEY,config TEXT NOT NULL);
@@ -149,7 +153,7 @@ export class PeerFiles {
   const out=this.db.prepare('SELECT * FROM peer_file_out').all().filter(r=>JSON.parse(r.meta).task_id===task_id).map(r=>this.receipt(r));
   const incoming=this.db.prepare('SELECT * FROM peer_file_in').all().filter(r=>JSON.parse(r.meta).task_id===task_id).map(r=>{
    const m=JSON.parse(r.meta);let availability='not_received';
-   if(r.state==='received'){try{const b=this.receive.read([m.task_id,m.id,m.name],FILE_MAX);availability=b.length===m.size&&fileHash(b)===m.sha256?'available':'changed';}catch{availability='missing_or_unsafe';}}
+   if(r.state==='received'){try{const b=this.receive.read([m.task_id,m.id,m.name],m.size);availability=b.length===m.size&&fileHash(b)===m.sha256?'available':'changed';}catch(e){availability=e.message==='PEER_FILE_TOO_LARGE'?'changed':'missing_or_unsafe';}}
    return {...this.receipt(r),path:r.path,availability,checked_at:this.g.now()};
   });return {host:this.role,sent:out,received:incoming,grants_execution:false};
  }

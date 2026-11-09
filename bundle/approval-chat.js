@@ -36,7 +36,7 @@ export class ChatApproval {
   this.receipts=new ApprovalReceipts(ledger,this.bindingHash,this.source,this.binding);this.guidance=new ApprovalGuidance(this);
  }
  queue(request_id){
-  const v=this.l.view(request_id);if(v.state!=='pending')return this.delivery(request_id);
+  const v=this.l.view(request_id);if(this.l.isNativeTask(v.task_id))throw Error('APPROVAL_AUTHORITY_PATH_MISMATCH');if(v.state!=='pending')return this.delivery(request_id);
   const text=renderChatProposal(v,this.semantic);if(Buffer.byteLength(text)>18000)throw Error('CHAT_PROPOSAL_TOO_LARGE');
   this.db.prepare("INSERT OR IGNORE INTO approval_chat_deliveries(request_id,binding_hash,uuid,text,state,created,semantics_version) VALUES (?,?,?,?,'queued',?,?)").run(request_id,this.bindingHash,randomUUID(),text,this.now(),this.semantic?SEMANTICS_VERSION:0);return this.delivery(request_id);
  }
@@ -46,7 +46,7 @@ export class ChatApproval {
  async cycle(){
   if(this.nextPoll>this.now())return;this.nextPoll=this.now()+this.interval;
   try{
-   const rows=this.db.prepare("SELECT * FROM approval_chat_deliveries WHERE binding_hash=? AND state IN ('queued','sent') ORDER BY created LIMIT 100").all(this.bindingHash).filter(r=>{if(['pending','approved','held','clarification_required','confirmation_review'].includes(this.l.view(r.request_id).state))return true;this.db.prepare("UPDATE approval_chat_deliveries SET state='inactive' WHERE request_id=?").run(r.request_id);return false;});
+   const rows=this.db.prepare("SELECT * FROM approval_chat_deliveries WHERE binding_hash=? AND state IN ('queued','sent') ORDER BY created LIMIT 100").all(this.bindingHash).filter(r=>{if(this.l.isNativeTask(this.l.row(r.request_id).task_id)){this.db.prepare("UPDATE approval_chat_deliveries SET state='inactive' WHERE request_id=?").run(r.request_id);return false;}if(['pending','approved','held','clarification_required','confirmation_review'].includes(this.l.view(r.request_id).state))return true;this.db.prepare("UPDATE approval_chat_deliveries SET state='inactive' WHERE request_id=?").run(r.request_id);return false;});
    if(!rows.length){this.lastError=null;return;}
    await this.source.verifyBot();if(this.closed)return;
    for(const r of rows.filter(r=>r.state==='queued').slice(0,5)){

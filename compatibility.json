@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "plugin": "@mogragsigma/dsh-dual-host-plugin",
-  "version": "0.33.4",
+  "version": "2.0.0",
   "publicEntry": "native-entry.js",
   "hostBaseline": "0.2.1-rc.5",
   "imOptional": {
@@ -979,8 +979,48 @@
   },
   "hostCompatibilityPolicy": {
     "declaredRange": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0",
-    "standalonePinnedHost": "0.2.1-rc.5",
+    "standalonePinnedHost": "0.2.2-rc.1",
     "targetHost": "0.2.2-rc.1",
-    "scope": "R1-P0 Host compatibility only; range admission is not per-version runtime acceptance. No R1 reception core or production rollout."
+    "scope": "2.0.0 preparation, not published. Broad range admission is not per-version acceptance; see releaseContract and current acceptance report."
+  },
+  "releaseContract": {
+    "version": "2.0.0",
+    "stage": "unreleased-preparation",
+    "historicalFields": "Legacy approval/development/onboarding contracts remain for historical compatibility; they are not new-task policy or proof of 2.0 activation.",
+    "policy": "cloud-autonomous-v1",
+    "owner": "single-user",
+    "channels": [
+      "local-dsh-to-cloud",
+      "owner-local-im-to-cloud",
+      "owner-cloud-im-to-cloud"
+    ],
+    "execution": "cloud-only native DSH",
+    "taskImPermissions": "independent",
+    "modelCallLimit": null,
+    "uniformTaskDeadline": null,
+    "permissionReapprovalTTL": null,
+    "concurrency": {
+      "ordinary": 3,
+      "humanFollowup": 1
+    },
+    "sessions": {
+      "archiveIdleDays": 7,
+      "automaticDelete": false
+    },
+    "setup": "bundle/SETUP.md and bundle/configuration-v2.json; explicit native profile configuration",
+    "source": {
+      "transport": "gitee-selected-issues",
+      "maxIssuesPerSource": 8,
+      "defaultMode": "off",
+      "newTaskTotal": "explicitly confirmed finite per-period total, never model-call cap"
+    },
+    "legacyWizard": "Owned read-only runtime is historical; not the native cloud execution activation path",
+    "supportEvidence": "DSH 0.2.2-rc.1; 0.2.1-rc.5 lower-bound validation tracked separately; selected Feishu dsh-im 5.9.1 real business evidence; not all platforms",
+    "notSupported": [
+      "reverse-local-managed-worker",
+      "gitee-product-pr",
+      "automatic-session-delete",
+      "stateless-elastic-byom"
+    ]
   }
 }

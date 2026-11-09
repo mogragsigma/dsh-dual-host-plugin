@@ -18,7 +18,7 @@ async function fixture(t) {
  const agents=new Map(),tools=new Map();
  const ctx={agents:{list:()=>[...agents.values()],get:id=>agents.get(id)},agentPresets:{composedPreset:c=>c.preset},on(){},effect(){}};
  const config={role:'cloud',namespace:'relative-file-test',stateDir:path.join(parent,'state'),port:0,
-  fileTransfers:{enabled:true,sendRoots:[outbox],receiveRoot:inbox}};
+  fileTransfers:{enabled:true,maxBytes:2097152,sendRoots:[outbox],receiveRoot:inbox}};
  const secrets={localToken:'l'.repeat(32),cloudToken:'c'.repeat(32)};
  let g=new Gateway(ctx,config,{secrets}),text='',message='request-1';
  const agent={id:'test-agent',ctx:{preset:'standard'},session:{header:{cwd:workspace},deriveMessages:()=>[

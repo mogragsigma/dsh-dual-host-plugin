@@ -4,22 +4,23 @@ const invalid=()=>{throw Error('SCHEDULER_RULE_INVALID');};
 const exact=(v,keys)=>{if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!keys.includes(k)))invalid();};
 const timestamp=v=>{if(typeof v==='string'){try{if(v.length>50)invalid();return Temporal.Instant.from(v).epochMilliseconds;}catch{invalid();}}return v;};
 const integer=(v,min,max)=>{if(!Number.isSafeInteger(v)||v<min||v>max)invalid();return v;};
-export function validateTiming(value,now){
- exact(value,['rule','end_at','max_occurrences','max_runs']);
- const end_at=integer(timestamp(value.end_at),now+1,now+YEAR),max_occurrences=integer(value.max_occurrences,1,366),max_runs=integer(value.max_runs,1,10);
+export function validateTiming(value,now,{native=false}={}){
+ exact(value,native?['rule','end_at','max_occurrences']:['rule','end_at','max_occurrences','max_runs']);
+ const end_at=native&&value.end_at===undefined?null:integer(timestamp(value.end_at),now+1,native?8640000000000000:now+YEAR),max_occurrences=native&&value.max_occurrences===undefined?(value.rule?.kind==='once'?1:null):integer(value.max_occurrences,1,native?Number.MAX_SAFE_INTEGER:366),max_runs=native?undefined:integer(value.max_runs,1,10);
+ const limit=end_at??8640000000000000;
  const r=value.rule;exact(r,['kind','at','every_seconds','start_at','weekday','hour','minute','timezone','name']);
  let rule;
- if(r.kind==='once'){exact(r,['kind','at']);rule={kind:'once',at:integer(timestamp(r.at),now,end_at-1)};if(max_occurrences!==1)invalid();}
- else if(r.kind==='interval'){exact(r,['kind','start_at','every_seconds']);rule={kind:'interval',start_at:integer(timestamp(r.start_at),now,end_at-1),every_seconds:integer(r.every_seconds,60,366*86400)};}
+ if(r.kind==='once'){exact(r,['kind','at']);rule={kind:'once',at:integer(timestamp(r.at),now,limit-1)};if(max_occurrences!==1)invalid();}
+ else if(r.kind==='interval'){exact(r,['kind','start_at','every_seconds']);rule={kind:'interval',start_at:integer(timestamp(r.start_at),now,limit-1),every_seconds:integer(r.every_seconds,60,366*86400)};}
  else if(r.kind==='weekly'){
   exact(r,['kind','start_at','weekday','hour','minute','timezone']);
-  rule={kind:'weekly',start_at:integer(timestamp(r.start_at),now,end_at-1),weekday:integer(r.weekday,1,7),hour:integer(r.hour,0,23),minute:integer(r.minute,0,59),timezone:r.timezone};
+  rule={kind:'weekly',start_at:integer(timestamp(r.start_at),now,limit-1),weekday:integer(r.weekday,1,7),hour:integer(r.hour,0,23),minute:integer(r.minute,0,59),timezone:r.timezone};
   if(typeof r.timezone!=='string'||r.timezone.length>80||!(r.timezone==='UTC'||r.timezone.includes('/')))invalid();
   try{Temporal.Instant.fromEpochMilliseconds(now).toZonedDateTimeISO(r.timezone);}catch{invalid();}
  }else if(r.kind==='event'){
   exact(r,['kind','name']);if(typeof r.name!=='string'||!r.name.trim()||r.name.length>100)invalid();rule={kind:'event',name:r.name};
  }else invalid();
- return {rule,end_at,max_occurrences,max_runs};
+ return {rule,end_at,max_occurrences,...(native?{}:{max_runs})};
 }
 function weeklyAt(date,r){
  // Explicit, portable DST policy: nonexistent time moves forward; repeated time uses its first occurrence.
@@ -36,11 +37,15 @@ export function firstDue(rule){
 }
 function nextWeekly(due,rule){const date=Temporal.Instant.fromEpochMilliseconds(due).toZonedDateTimeISO(rule.timezone).toPlainDate();return weeklyAt(date.add({weeks:1}),rule);}
 export function coalesceDue(rule,due,now,end_at){
- if(due===null||due>now||due>=end_at)return null;
+ if(due===null||due>now||end_at!==null&&due>=end_at)return null;
  if(rule.kind==='once')return {due,next_due:null,skipped:0};
- const latest=Math.min(now,end_at-1);
+ const latest=Math.min(now,(end_at??8640000000000000)-1);
  if(rule.kind==='interval'){const skipped=Math.floor((latest-due)/(rule.every_seconds*1000));due+=skipped*rule.every_seconds*1000;return {due,next_due:due+rule.every_seconds*1000,skipped};}
- let next_due=nextWeekly(due,rule),skipped=0;
- while(next_due<=latest){due=next_due;next_due=nextWeekly(due,rule);if(++skipped>54)throw Error('SCHEDULER_TIME_RANGE_INVALID');}
- return {due,next_due,skipped};
+ // Jump by local calendar weeks rather than iterating one year at a time.
+ const date=Temporal.Instant.fromEpochMilliseconds(due).toZonedDateTimeISO(rule.timezone).toPlainDate();
+ const latestDate=Temporal.Instant.fromEpochMilliseconds(latest).toZonedDateTimeISO(rule.timezone).toPlainDate();
+ let skipped=Math.max(0,Math.floor(date.until(latestDate,{largestUnit:'days'}).days/7));
+ let candidate=weeklyAt(date.add({weeks:skipped}),rule);
+ if(candidate>latest&&skipped){skipped--;candidate=weeklyAt(date.add({weeks:skipped}),rule);}
+ due=candidate;return {due,next_due:nextWeekly(due,rule),skipped};
 }

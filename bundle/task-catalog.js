@@ -1,3 +1,4 @@
+import {autonomous} from './managed-cloud-policy.js';
 import {validateSearch,taskExecutor} from './search-contract.js';
 import {createHash} from 'node:crypto';
 import {parseEnvelope} from './task-envelope.js';
@@ -60,12 +61,12 @@ export class TaskCatalog {
    validSources(merged);
    const refs=validReferences([...new Map([...(e.task_context?.references??[]),...(a.references??[])].map(r=>[(r.host??'')+':'+r.uri,r])).values()],merged);
    const suggestions=a.split_suggestions===undefined?(e.task_context?.split_suggestions??[]):validSuggestions(a.split_suggestions);
-   const search=validateSearch(a.search??null,sources);
+   const search=validateSearch(a.search??null,sources,{autonomous:autonomous(e)});
    if(a.notification_contract!==undefined&&a.notification_contract!==1)throw Error('INVALID_TASK_ENVELOPE');
    const notify=a.notification_contract??e.notification_contract;
-   const revision=h.spec_revision+1,next={...e,...(notify?{notification_contract:notify}:{}),search,executor:taskExecutor({search,notification_contract:notify}),title:title??h.title,entry_interpretation:a.summary,intent:a.intent,model_policy:policy?newCloudPolicy(policy):null,
+   const revision=h.spec_revision+1,next={...e,...(notify?{notification_contract:notify}:{}),search,executor:taskExecutor({search,notification_contract:notify}),title:title??h.title,entry_interpretation:a.summary,intent:autonomous(e)?'register':a.intent,model_policy:policy?(autonomous(e)?validPolicy(policy):newCloudPolicy(policy)):null,
     task_context:{schema:'dsh-task-context-v1',spec_revision:revision,sources:merged,references:refs,split_suggestions:suggestions}};
-   const goal=json(next);if(goal.length>12000)throw Error('CONTEXT_LIMIT');
+   const goal=json(next);if(goal.length>1048576)throw Error('CONTEXT_LIMIT');
    const source=json({kind:'direct-user-amendment',role:node,messages:sources.map(s=>({session_id:s.session_id,message_id:s.message_id,sha256:s.sha256})),summary:a.summary});
    this.db.prepare('INSERT INTO task_revisions VALUES (?,?,?,?,?,?)').run(a.task_id,revision,next.title,goal,source,Date.now());
    this.db.prepare('UPDATE task_catalog SET title=?,spec_revision=? WHERE task_id=?').run(next.title,revision,a.task_id);

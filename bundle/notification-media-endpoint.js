@@ -5,7 +5,7 @@ const terminal=new Set(['accepted','needs_review','cancelled']);
 const args=e=>({id:e.id,lease:e.lease});
 function payload(input){
  const {artifact,...base}=input??{};delivery(base);
- if(!artifact||!['page','file','image'].includes(artifact.mode)||!(/^artifact-[a-f0-9]{40}$/.test(artifact.artifact_id??'')||artifact.mode==='page'&&/^artifact-delivery-[a-f0-9-]{36}$/.test(artifact.artifact_id??''))||!/^[a-f0-9]{64}$/.test(artifact.sha256??'')||!Number.isInteger(artifact.size)||artifact.size<0||artifact.size>1048576)throw Error('NOTIFICATION_MEDIA_PAYLOAD_INVALID');return input;
+ if(!artifact||!['page','file','image'].includes(artifact.mode)||!(/^artifact-[a-f0-9]{40}$/.test(artifact.artifact_id??'')||artifact.mode==='page'&&/^artifact-delivery-[a-f0-9-]{36}$/.test(artifact.artifact_id??''))||!/^[a-f0-9]{64}$/.test(artifact.sha256??'')||!Number.isInteger(artifact.size)||artifact.size<0||artifact.size>(artifact.native_file===true?67108864:1048576))throw Error('NOTIFICATION_MEDIA_PAYLOAD_INVALID');return input;
 }
 export class NotificationMediaEndpoint {
  constructor(endpoint){
@@ -30,10 +30,11 @@ export class NotificationMediaEndpoint {
   this.db.prepare('UPDATE notification_media_inbox SET attempts=attempts+1 WHERE id=?').run(e.id);
   let external=false,stage='preflight';
   try{
-   const m=await this.g.call('notification_media_materialize',{...args(e),new_delivery:newDelivery}),{base64,...meta}=m;
+   const m=await this.g.call('notification_media_materialize',{...args(e),new_delivery:newDelivery}),{base64,chunked,...meta}=m;
    if(digest(meta)!==digest(e.artifact))throw Error('NOTIFICATION_ARTIFACT_CHANGED');
    if(m.mode!=='page'){
-    if(typeof base64!=='string'||base64.length>1398104||!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(base64))throw Error('NOTIFICATION_MEDIA_PAYLOAD_INVALID');m.bytes=Buffer.from(base64,'base64');
+    if(chunked===true&&m.native_file===true){const parts=[];let offset=0;do{const p=await this.g.call('notification_media_chunk',{...args(e),offset});if(p.offset!==offset||typeof p.base64!=='string'||p.base64.length>65536)throw Error('NOTIFICATION_MEDIA_PAYLOAD_INVALID');const bytes=Buffer.from(p.base64,'base64');if(bytes.toString('base64')!==p.base64||p.next_offset!==offset+bytes.length||p.next_offset>m.size||p.complete!==(p.next_offset===m.size)||!bytes.length&&m.size!==0)throw Error('NOTIFICATION_MEDIA_PAYLOAD_INVALID');parts.push(bytes);offset=p.next_offset;}while(offset<m.size);m.bytes=Buffer.concat(parts);}
+    else {if(typeof base64!=='string'||base64.length>1398104||!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(base64))throw Error('NOTIFICATION_MEDIA_PAYLOAD_INVALID');m.bytes=Buffer.from(base64,'base64');}
     if(m.bytes.length!==m.size||mediaHash(m.bytes)!==m.sha256)throw Error('NOTIFICATION_ARTIFACT_CHANGED');if(m.mode==='image'&&imageType(m.bytes)!==m.mime)throw Error('NOTIFICATION_MEDIA_PAYLOAD_INVALID');
    }
    const source=await run(()=>sender.prepare(target.route.botId,target.route.targetId,options));

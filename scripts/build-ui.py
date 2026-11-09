@@ -44,8 +44,9 @@ onboarding_css=transform(tinycss2.parse_stylesheet((r/'ui-source/onboarding/toke
 onboarding_css=onboarding_css.replace('url("assets/whale-ui-states.png")','var(--mascot,none)').replace("url('assets/whale-ui-states.png')",'var(--mascot,none)')
 for name in ['view-in','page-in','dialog-in','popover-in','modal-in','toast-in','spin']:onboarding_css=re.sub(r'(?<![\w-])'+re.escape(name)+r'(?![\w-])','onboarding-'+name,onboarding_css)
 onboarding_css+='\n.dsh-onboarding{container-type:inline-size;min-width:0;width:100%;height:100%;overflow:auto;--ease-out:cubic-bezier(.23,1,.32,1)}\n.dsh-onboarding .plan-item{overflow-wrap:anywhere}\n.dsh-onboarding .window-header{height:auto;min-height:70px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}\n.dsh-onboarding .wizard-footer>.check-controls{grid-column:1/-1;flex-basis:100%}\n'
-css+='\n'+onboarding_css
+css+='\n'+onboarding_css+'\n'+(r/'ui-source/v2/style.css').read_text()
 js=(r/'ui-source/workbench-client.js').read_text().replace('/*STYLE*/""',json.dumps(css,ensure_ascii=False)).replace('/*LABELS*/',(r/'ui-source/labels.js').read_text()).replace('/*ONBOARDING*/',(r/'ui-source/onboarding.generated.js').read_text())
+js=js.replace('/*WORKBENCH_V2*/',(r/'ui-source/workbench-v2.generated.js').read_text())
 js=js.replace('/*ARTIFACT_DOWNLOAD_CLIENT*/',(r/'ui-source/artifact-download-client.mjs').read_text().replace('export async function ','async function ').replace('export function ','function '))
 js=js.replace('/*APPROVAL_WORKBENCH_CLIENT*/',(r/'ui-source/approval-workbench-client.mjs').read_text().replace('export function ','function '))
 js=js.replace('/*TASK_FOCUS*/',(r/'ui-source/task-focus.mjs').read_text().replace('export function ','function ')).replace('/*TASK_FOCUS_VIEW*/',(r/'ui-source/intervention-action-view.js').read_text()+'\n'+(r/'ui-source/task-focus-view.js').read_text())

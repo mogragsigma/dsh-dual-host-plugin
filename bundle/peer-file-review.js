@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {FileRoot,fileHash} from './peer-file-fs.js';
-import {FILE_MAX,FILE_CHUNK,fileMetadata} from './peer-files.js';
+import {FILE_CONFIG_MAX as FILE_MAX,FILE_CHUNK,fileMetadata} from './peer-files.js';
 import {fileScopeConfig} from './peer-file-migration.js';
 import {digest} from './onboarding-ssh.js';
 const json=JSON.stringify,fail=c=>{throw Error('ONBOARDING_FILES_'+c);};

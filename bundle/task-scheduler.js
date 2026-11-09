@@ -21,9 +21,9 @@ export class TaskScheduler {
   }
   this.worker=new NativeTaskWorker(ctx,this.jobs,config);
   this.executors.set('plan',{replaySafe:true,run:(job,signal)=>this.worker.run(job,signal)});
-  this.triggers=new TaskTriggers(this.jobs,{...io.triggers,validate:s=>this.c.validateSchedule?.(s),control:a=>this.control(a)});
+  this.triggers=new TaskTriggers(this.jobs,{...io.triggers,canRun:id=>this.c.taskCanRun?.(id)??true,validate:s=>this.c.validateSchedule?.(s),control:a=>this.control(a)});
   this.worker.config.triggerContext=id=>this.triggers.context(id);
-  this.workflows=new TaskWorkflows(this.jobs,{...io.workflows,validate:w=>this.c.validateSchedule?.(w),control:a=>this.control(a)});
+  this.workflows=new TaskWorkflows(this.jobs,{...io.workflows,canRun:id=>this.c.taskCanRun?.(id)??true,validate:w=>this.c.validateSchedule?.(w),control:a=>this.control(a)});
   this.worker.config.workflowContext=id=>this.workflows.context(id);
   const admit=config.admit;this.c.admit=j=>{this.workflows.assertRunning(j);admit?.(j);};
   this.timeout=config.timeoutMs??120000;this.interval=config.intervalMs??1000;
@@ -56,7 +56,7 @@ export class TaskScheduler {
 
  tick(){
   if(this.closed||!this.started||this.c.canTick?.()===false)return;
-  this.triggers.tick();this.workflows.tick();
+  this.c.beforeTick?.();this.triggers.tick();this.workflows.tick();
   while(this.active.size<this.maxConcurrent){
   const job=this.jobs.claim(new Set(this.executors.keys()),new Set([...this.executors].filter(([,x])=>x.replaySafe).map(([k])=>k)),j=>![...this.active.values()].some(a=>a.task_id===j.task_id)&&this.triggers.canClaim(j)&&this.workflows.canClaim(j)&&(this.c.canClaim?.(j)??true));if(!job)return;
   const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),this.timeout);const executor=this.executors.get(job.kind);

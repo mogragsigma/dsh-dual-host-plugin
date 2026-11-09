@@ -34,5 +34,5 @@ export async function cloudPackage(source=path.dirname(fileURLToPath(import.meta
  const pkg=JSON.parse(Buffer.from(files.find(x=>x.path==='plugin/package.json').data,'base64'));
  const compat=JSON.parse(Buffer.from(files.find(x=>x.path==='plugin/compatibility.json').data,'base64'));
  if(pkg.name!=='@mogragsigma/dsh-dual-host-plugin'||pkg.version!==compat.version)fail();
- return {files,manifest,manifestHash,bytes:total,pluginVersion:pkg.version,hostVersion:compat.hostBaseline};
+ return {files,manifest,manifestHash,bytes:total,pluginVersion:pkg.version,hostVersion:(compat.hostCompatibilityPolicy?.standalonePinnedHost??compat.hostBaseline)};
 }

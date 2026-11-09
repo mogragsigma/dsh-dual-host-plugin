@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {observeStream} from '../scripts/s37-stream-observer.mjs';
+import {observeStream} from './fixtures/stream-observer.mjs';
 async function run(parts){const r={},input=async function*(){yield* parts;};for await(const _ of observeStream(input(),r)){}return r;}
 test('normally ended iterator with provider HTTP 400 is not a successful model call',async()=>{
  const r=await run([{type:'finish',reason:{kind:'error',failure:{code:'INVALID_REQUEST',status:400,message:'secret data excluded'}}}]);

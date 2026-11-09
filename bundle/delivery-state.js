@@ -1,3 +1,4 @@
+import {managedResourceBusy} from './managed-development-contract.js';
 // Read-only persisted projection. No Git, filesystem observation, migration,
 // approval renewal, lease acquisition or execution callback is allowed here.
 import {canonical,digest} from './approval-ledger.js';
@@ -11,6 +12,7 @@ const codes=new Set(['EFFECT_UNKNOWN','DRAIN_REQUIRED','READBACK_UNKNOWN','READB
 export function deliveryWaiting(db,r,t){
  if(r.state==='needs_review'||t.blocked)return 'delivery_review';if(r.state!=='queued')return null;
  if(t.busy)return 'task_busy';
+ if(managedResourceBusy(db,r.resource))return 'managed_resource_busy';
  const owner=db.prepare("SELECT state FROM delivery_actions WHERE resource=? AND state IN ('active','needs_review')").get(r.resource);
  if(owner)return owner.state==='needs_review'?'delivery_resource_review':'delivery_resource_busy';
  if(has(db,'development_requests')){

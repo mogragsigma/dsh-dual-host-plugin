@@ -1,3 +1,4 @@
+import {executionSpec} from './managed-execution.js';
 import {developmentSpec} from './development-contract.js';
 import {deliveryReference,deliveryExecution} from './delivery-contract.js';
 import {createHash,randomUUID} from 'node:crypto';
@@ -8,11 +9,12 @@ export const digest=v=>createHash('sha256').update(typeof v==='string'?v:canonic
 export const scopes=['develop','commit','push','publish','deploy'];
 const text=(x,n)=>{if(typeof x!=='string'||!x.trim()||x.length>n)throw Error('INVALID_APPROVAL_PROPOSAL');return x;};
 function proposal(p){
- if(!p||Object.keys(p).some(k=>!['summary','changes','validation','risks','rollback','model_policy','scopes','repository','development','delivery'].includes(k)))throw Error('INVALID_APPROVAL_PROPOSAL');
+ if(!p||Object.keys(p).some(k=>!['summary','changes','validation','risks','rollback','model_policy','scopes','repository','development','delivery','execution'].includes(k)))throw Error('INVALID_APPROVAL_PROPOSAL');
  if(!Array.isArray(p.scopes)||!p.scopes.length||p.scopes.length>5||new Set(p.scopes).size!==p.scopes.length||p.scopes.some(x=>!scopes.includes(x)))throw Error('INVALID_APPROVAL_SCOPE');
  // Only an opaque reference is accepted. The coordinator supplies the immutable provider-verified snapshot.
  if(p.repository!==null&&(!p.repository||typeof p.repository!=='object'||Array.isArray(p.repository)||Object.keys(p.repository).some(k=>!['binding_revision','fingerprint'].includes(k))||!Number.isInteger(p.repository.binding_revision)||p.repository.binding_revision<1||!(/^[a-f0-9]{64}$/).test(p.repository.fingerprint??'')))throw Error('REPOSITORY_BINDING_NOT_IMPLEMENTED');
  const result={summary:text(p.summary,1000),changes:text(p.changes,4000),validation:text(p.validation,2000),risks:text(p.risks,2000),rollback:text(p.rollback,2000),model_policy:validPolicy(p.model_policy),scopes:[...p.scopes].sort(),repository:p.repository};
+ if(p.execution!==undefined){if(p.development!==undefined||p.delivery!==undefined||p.scopes.join()!=='develop'||p.repository!==null)throw Error('TASK_EXECUTION_SCOPE_INVALID');result.execution=executionSpec(p.execution);}
  if(p.development!==undefined){if(p.scopes.length!==1||p.scopes[0]!=='develop'||p.repository===null)throw Error('DEVELOPMENT_SCOPE_DENIED');result.development=developmentSpec(p.development);}
  if(p.delivery!==undefined){if(p.development!==undefined||p.scopes.length!==1||p.scopes[0]!==(p.delivery?.kind==='push-execution-reference-v1'?'push':'commit')||p.repository===null)throw Error('DELIVERY_SCOPE_DENIED');result.delivery=deliveryReference(p.delivery);}
  if(canonical(result).length>12000)throw Error('APPROVAL_PROPOSAL_TOO_LARGE');return result;
@@ -37,17 +39,19 @@ export class ApprovalLedger {
  request(node,a){
   if(!['local','cloud'].includes(node)||!a||!Number.isInteger(a.expected_revision)||a.expected_revision<1)throw Error('INVALID_APPROVAL_REQUEST');
   const event=text(a.event_id,256),task_id=text(a.task_id,128),p=proposal(a.proposal),ttl=a.ttl_seconds??3600;
-  if(!Number.isInteger(ttl)||ttl<60||ttl>86400)throw Error('INVALID_APPROVAL_EXPIRY');
+  if(!Number.isInteger(ttl)||ttl<60||ttl>(p.execution?366*86400:86400))throw Error('INVALID_APPROVAL_EXPIRY');
   const fp=digest({node,task_id,revision:a.expected_revision,proposal:p,ttl});
   return this.store.tx(()=>{
    const old=this.db.prepare('SELECT id,fingerprint FROM approval_requests WHERE event_id=?').get(event);
    if(old){if(old.fingerprint!==fp)throw Error('APPROVAL_EVENT_CONFLICT');return this.view(old.id);}
+   if(p.execution&&!this.isNativeTask(task_id))throw Error('TASK_EXECUTION_NATIVE_TASK_REQUIRED');
    const h=this.catalog.head(task_id);if(h.legacy)throw Error('LEGACY_TASK_READONLY');if(h.spec_revision!==a.expected_revision)throw Error('TASK_REVISION_CONFLICT');
    if(this.store.task(task_id).blocked)throw Error('TASK_BLOCKED');
    if(!this.repositories&&p.repository!==null)throw Error('REPOSITORY_BINDING_NOT_IMPLEMENTED');
-   const binding=this.repositories?.approvalSnapshot(task_id,p.repository)??{revision:0,snapshot:null},resolved={...p,model_policy:newCloudPolicy(p.model_policy),repository:binding.snapshot};
+   const binding=this.repositories?.approvalSnapshot(task_id,p.repository)??{revision:0,snapshot:null},resolved={...p,model_policy:p.execution?p.model_policy:newCloudPolicy(p.model_policy),repository:binding.snapshot};
    if(p.delivery){if(!this.delivery)throw Error('DELIVERY_CAPABILITY_REQUIRED');resolved.delivery=this.delivery.approvalSnapshot(task_id,h.spec_revision,p.delivery,binding.snapshot,resolved.model_policy);}
    if(canonical(resolved).length>16000)throw Error('APPROVAL_PROPOSAL_TOO_LARGE');
+   if(this.isNativeTask(task_id)&&this.db.prepare("SELECT proposal FROM approval_requests WHERE task_id=? AND spec_revision=? AND state IN ('rejected','revoked')").all(task_id,h.spec_revision).some(x=>canonical(JSON.parse(x.proposal))===canonical(resolved)))throw Error('APPROVAL_AMENDMENT_REQUIRED');
    const previous=this.db.prepare("SELECT proposal FROM approval_requests WHERE task_id=? AND state='changes_requested' ORDER BY created DESC,rowid DESC LIMIT 1").get(task_id);
    if(previous&&canonical(JSON.parse(previous.proposal))===canonical(resolved))throw Error('APPROVAL_AMENDMENT_REQUIRED');
    const id='approval-'+randomUUID(),created=this.now(),expires=created+ttl*1000,task_hash=digest(h.goal),proposal_hash=digest({task_id,spec_revision:h.spec_revision,task_hash,proposal:resolved,repository_revision:binding.revision,expires});
@@ -56,6 +60,7 @@ export class ApprovalLedger {
    return this.view(id);
   });
  }
+ isNativeTask(id){return parseEnvelope(this.catalog.head(id).goal)?.continuity===1;}
  row(id){const r=this.db.prepare('SELECT * FROM approval_requests WHERE id=?').get(id);if(!r)throw Error('APPROVAL_NOT_FOUND');return r;}
  validity(r,{ignoreInterpretation=false,ignoreTaskBlock=false}={}){
   const h=this.catalog.head(r.task_id);if(r.state==='superseded'||r.state==='revoked'||r.state==='rejected'||r.state==='repository_changed'||r.state==='changes_requested')return r.state;
@@ -65,10 +70,15 @@ export class ApprovalLedger {
   if(this.repositories&&!this.repositories.matches(r.task_id,r.repository_revision,JSON.parse(r.proposal).repository))return 'repository_changed';
   const proposal=JSON.parse(r.proposal),delivery=proposal.delivery;
   if(delivery&&(canonical(proposal.scopes)!==canonical([delivery.kind==='push-execution-v1'?'push':'commit'])||digest({task_id:r.task_id,spec_revision:r.spec_revision,task_hash:r.task_hash,proposal,repository_revision:r.repository_revision,expires:r.expires})!==r.proposal_hash||!this.delivery?.matches(r.task_id,r.spec_revision,delivery)))return 'delivery_changed';
-  if(!ignoreInterpretation&&this.db.prepare("SELECT 1 FROM approval_chat_evaluations WHERE request_id=? AND state IN ('processing','needs_review')").get(r.id))return 'confirmation_review';
+  if(this.isNativeTask(r.task_id)&&this.db.prepare("SELECT 1 FROM sqlite_master WHERE name='task_continuity'").get()&&this.db.prepare('SELECT state FROM task_continuity WHERE task_id=?').get(r.task_id)?.state==='stopped')return 'task_stopped';
+  if(!this.isNativeTask(r.task_id)&&!ignoreInterpretation&&this.db.prepare("SELECT 1 FROM approval_chat_evaluations WHERE request_id=? AND state IN ('processing','needs_review')").get(r.id))return 'confirmation_review';
   if(r.state==='approved'){
    const d=this.db.prepare('SELECT credential_id,challenge_id,proof_hash FROM approval_decisions WHERE id=?').get(r.decision_id);
-   if(d?.credential_id?.startsWith('workbench-im:')){
+   if(this.isNativeTask(r.task_id)){
+    const exists=this.db.prepare("SELECT 1 FROM sqlite_master WHERE name='task_native_decisions'").get();
+    const p=exists&&this.db.prepare('SELECT * FROM task_native_decisions WHERE event_id=?').get(d?.challenge_id??'');
+    if(d?.credential_id!=='task-native'||!p||p.request_id!==r.id||p.action!=='approve'||p.fingerprint!==d.proof_hash||digest(JSON.parse(p.record))!==p.fingerprint)return 'task_decision_invalid';
+   }else if(d?.credential_id?.startsWith('workbench-im:')){
     const exists=this.db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='workbench_im_proofs'").get();
     const p=exists&&this.db.prepare('SELECT binding_hash,proof_hash FROM workbench_im_proofs WHERE challenge_id=?').get(d.challenge_id),b=p&&this.db.prepare('SELECT disabled FROM approval_chat_bindings WHERE id=?').get(p.binding_hash);
     if(!b||b.disabled||d.credential_id!=='workbench-im:'+p.binding_hash||d.proof_hash!==p.proof_hash)return 'identity_revoked';
@@ -79,9 +89,10 @@ export class ApprovalLedger {
   }
   return r.state;
  }
- view(id){const r=this.row(id),revision=this.db.prepare('SELECT title,goal FROM task_revisions WHERE task_id=? AND revision=?').get(r.task_id,r.spec_revision),e=parseEnvelope(revision.goal);return {id:r.id,task_id:r.task_id,title:revision.title,spec_revision:r.spec_revision,task_sources:e?.task_context?.sources?.map(s=>s.text)??[e?.request_text??revision.goal],proposal:JSON.parse(r.proposal),proposal_hash:r.proposal_hash,recorded_state:r.state,state:this.validity(r),created:r.created,expires:r.expires,decision:r.decision_id?this.db.prepare('SELECT action,principal,created FROM approval_decisions WHERE id=?').get(r.decision_id):null,execution:deliveryExecution(JSON.parse(r.proposal))?'requires_delivery_runtime_gate':JSON.parse(r.proposal).development?'requires_runtime_gate':'disabled',repository_revision:r.repository_revision,repository_binding:JSON.parse(r.proposal).repository?'metadata_only':'unbound',feedback:this.feedback(r.id)};}
+ view(id){const r=this.row(id),revision=this.db.prepare('SELECT title,goal FROM task_revisions WHERE task_id=? AND revision=?').get(r.task_id,r.spec_revision),e=parseEnvelope(revision.goal);return {id:r.id,task_id:r.task_id,...(this.isNativeTask(r.task_id)?{authorization_mode:'task-native',decision_id:r.decision_id}:{}),title:revision.title,spec_revision:r.spec_revision,task_sources:e?.task_context?.sources?.map(s=>s.text)??[e?.request_text??revision.goal],proposal:JSON.parse(r.proposal),proposal_hash:r.proposal_hash,recorded_state:r.state,state:this.validity(r),created:r.created,expires:r.expires,decision:r.decision_id?this.db.prepare('SELECT action,principal,created FROM approval_decisions WHERE id=?').get(r.decision_id):null,execution:JSON.parse(r.proposal).execution?'requires_managed_execution_gate':deliveryExecution(JSON.parse(r.proposal))?'requires_delivery_runtime_gate':JSON.parse(r.proposal).development?'requires_runtime_gate':'disabled',repository_revision:r.repository_revision,repository_binding:JSON.parse(r.proposal).repository?'metadata_only':'unbound',feedback:this.feedback(r.id)};}
  list(task_id){if(task_id)this.store.task(task_id);return this.db.prepare('SELECT id FROM approval_requests '+(task_id?'WHERE task_id=? ':'')+'ORDER BY created DESC,id LIMIT 100').all(...(task_id?[task_id]:[])).map(x=>this.view(x.id));}
  feedback(id){
+  const r=this.row(id);if(this.isNativeTask(r.task_id)){const exists=this.db.prepare("SELECT 1 FROM sqlite_master WHERE name='task_native_decisions'").get(),p=exists&&this.db.prepare('SELECT record FROM task_native_decisions WHERE decision_id=?').get(r.decision_id);if(!p)return null;const v=JSON.parse(p.record);return {...v.interpretation,user_text:v.source.text,requires_new_proposal:v.action==='amend',source:'task-native'};}
   const current=this.db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='workbench_im_proofs'").get()?this.db.prepare('SELECT p.* FROM workbench_im_proofs p JOIN approval_decisions d ON d.challenge_id=p.challenge_id JOIN approval_requests r ON r.decision_id=d.id WHERE r.id=?').get(id):null;
   if(current){const i=JSON.parse(current.interpretation);return {...i,user_text:current.user_text,requires_new_proposal:i.intent==='amend',source:'workbench-existing-im'};}
   const row=this.db.prepare("SELECT p.proof FROM approval_chat_proofs p JOIN approval_decisions d ON d.challenge_id=p.challenge_id WHERE d.request_id=? ORDER BY d.created DESC,d.rowid DESC LIMIT 1").get(id);
@@ -89,17 +100,23 @@ export class ApprovalLedger {
   if(web){const i=JSON.parse(web.interpretation);return {...i,user_text:web.user_text,requires_new_proposal:i.intent==='amend',source:'workbench'};}
   if(!row)return null;const p=JSON.parse(row.proof);return p.interpretation?{...p.interpretation,user_text:p.text,requires_new_proposal:p.interpretation.intent==='amend'}:null;
  }
- assertDecision(id,action,{chatEvaluation=false,workbenchEvaluation=false}={}){
-  const r=this.row(id);if(!['approve','reject','revoke',...((chatEvaluation||workbenchEvaluation)?['hold','amend','clarify']:[])].includes(action))throw Error('INVALID_APPROVAL_ACTION');
+ assertDecision(id,action,{chatEvaluation=false,workbenchEvaluation=false,nativeTask=false}={}){
+  const r=this.row(id);if(this.isNativeTask(r.task_id)!==nativeTask)throw Error('APPROVAL_AUTHORITY_PATH_MISMATCH');if(!['approve','reject','revoke',...((chatEvaluation||workbenchEvaluation||nativeTask)?['hold','amend','clarify']:[])].includes(action))throw Error('INVALID_APPROVAL_ACTION');
   const state=this.validity(r,{ignoreInterpretation:chatEvaluation});
-  if(chatEvaluation||workbenchEvaluation){if(!['pending','approved','held','clarification_required'].includes(state))throw Error('APPROVAL_NOT_PENDING');}
+  if(nativeTask&&action==='revoke'&&state!=='approved')throw Error('APPROVAL_NOT_APPROVED');
+  if(chatEvaluation||workbenchEvaluation||nativeTask){if(!['pending','approved','held','clarification_required'].includes(state))throw Error('APPROVAL_NOT_PENDING');}
   else if(action==='revoke'){if(r.state!=='approved')throw Error('APPROVAL_NOT_APPROVED');}
   else if(!['pending','held','clarification_required'].includes(state))throw Error('APPROVAL_NOT_PENDING');
   return r;
  }
- // Internal ledger operation. Runtime authority currently comes from a verified IM reply.
+ // Internal ledger operation. Legacy IM proofs and native task decisions are disjoint contracts.
  // Historical credential/proof rows remain readable; retired ceremonies have no live entry.
- recordDecision({request_id,action,principal,credential_id,proof_hash,challenge_id,chatEvaluation=false,workbenchEvaluation=false,workbenchIM=false}){
+ recordDecision({request_id,action,principal,credential_id,proof_hash,challenge_id,chatEvaluation=false,workbenchEvaluation=false,workbenchIM=false,nativeTask=false}){
+  if(this.isNativeTask(this.row(request_id).task_id)!==nativeTask)throw Error('APPROVAL_AUTHORITY_PATH_MISMATCH');
+  if(nativeTask){
+   const exists=this.db.prepare("SELECT 1 FROM sqlite_master WHERE name='task_native_decisions'").get(),p=exists&&this.db.prepare('SELECT * FROM task_native_decisions WHERE event_id=?').get(challenge_id??'');
+   const v=p&&JSON.parse(p.record);if(!p||p.request_id!==request_id||p.action!==action||p.fingerprint!==proof_hash||digest(v)!==proof_hash||credential_id!=='task-native'||principal!=='single-user-'+v.source.role)throw Error('TASK_DECISION_RECORD_REQUIRED');
+  }
   if(workbenchIM){
    const p=this.db.prepare('SELECT * FROM workbench_im_proofs WHERE challenge_id=?').get(challenge_id),b=p&&this.db.prepare('SELECT disabled FROM approval_chat_bindings WHERE id=?').get(p.binding_hash);
    if(!p||!b||b.disabled||credential_id!=='workbench-im:'+p.binding_hash||p.request_id!==request_id||p.credential_id!==credential_id||p.principal!==principal||p.action!==action||p.proof_hash!==proof_hash||digest(JSON.parse(p.proof))!==proof_hash)throw Error('APPROVAL_WORKBENCH_PROOF_REQUIRED');
@@ -112,7 +129,7 @@ export class ApprovalLedger {
    const p=this.db.prepare('SELECT * FROM approval_workbench_proofs WHERE challenge_id=?').get(challenge_id);
    if(!p||p.request_id!==request_id||p.credential_id!==credential_id||p.principal!==principal||p.action!==action||p.proof_hash!==proof_hash)throw Error('APPROVAL_WORKBENCH_PROOF_REQUIRED');
   }
-  const r=this.assertDecision(request_id,action,{chatEvaluation,workbenchEvaluation:workbenchEvaluation||workbenchIM}),id='decision-'+randomUUID();
+  const r=this.assertDecision(request_id,action,{chatEvaluation,workbenchEvaluation:workbenchEvaluation||workbenchIM,nativeTask}),id='decision-'+randomUUID();
   this.db.prepare('INSERT INTO approval_decisions VALUES (?,?,?,?,?,?,?,?)').run(id,r.id,action,principal,credential_id,proof_hash,challenge_id,this.now());
   this.db.prepare('UPDATE approval_requests SET state=?,decision_id=? WHERE id=?').run({approve:'approved',reject:'rejected',revoke:'revoked',hold:'held',amend:'changes_requested',clarify:'clarification_required'}[action],id,r.id);
   this.enqueueReceipt(id);
@@ -121,7 +138,7 @@ export class ApprovalLedger {
  // Part of the decision transaction. A notification is never an authorization input.
  enqueueReceipt(decision_id,localWorkbenchBinding=null){
   const d=this.db.prepare('SELECT * FROM approval_decisions WHERE id=?').get(decision_id);
-  if(!d)return;
+  if(!d||this.isNativeTask(this.row(d.request_id).task_id))return;
   let route=this.db.prepare("SELECT * FROM approval_chat_deliveries WHERE request_id=? AND state IN ('sent','inactive') AND message_id IS NOT NULL AND prompt_version IS NOT NULL").get(d.request_id);
   // Only the live local-workbench decision transaction may create this fallback.
   // Historical startup backfill never supplies a binding and cannot reroute old decisions.

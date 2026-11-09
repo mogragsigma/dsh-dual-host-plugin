@@ -3,7 +3,7 @@ import {randomUUID} from 'node:crypto';
 export const permanentErrors=new Set(['INGRESS_ID_CONFLICT','TASK_CONTENT_CONFLICT','INVALID_TASK_ENVELOPE','INVALID_TASK_TITLE','INVALID_CONTEXT_SOURCE','CONTEXT_ORIGIN_MISMATCH','REFERENCE_NOT_IN_USER_CONTEXT','UNSUPPORTED_REFERENCE','CONTEXT_LIMIT','INVALID_INGRESS','INVALID_GOAL','INVALID_SUBMISSION','AUTH_DENIED','METHOD_DENIED']);
 export function safeError(e){const s=e?.message;return permanentErrors.has(s)?s:['DELIVERY_TIMEOUT','SEND_TIMEOUT'].includes(s)?s:'TRANSIENT_FAILURE';}
 export function bounded(p,ms,code){let t;return Promise.race([p,new Promise((_,reject)=>{t=setTimeout(()=>reject(Error(code)),ms);})]).finally(()=>clearTimeout(t));}
-export function tx(db,fn){db.exec('BEGIN IMMEDIATE');try{const r=fn();db.exec('COMMIT');return r;}catch(e){db.exec('ROLLBACK');throw e;}}
+export function tx(db,fn){db.exec('BEGIN IMMEDIATE');try{const r=fn();db.exec('COMMIT');return r;}catch(e){try{db.exec('ROLLBACK');}catch{}throw e;}}
 export function migrateRecovery(db){
  tx(db,()=>{
   for(const table of ['submissions','receipts','notices']){

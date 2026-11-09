@@ -54,6 +54,18 @@ export class GiteeReadOnly {
   if(!Number.isSafeInteger(meta.id)||meta.id<=0||typeof meta.full_name!=='string'||typeof meta.private!=='boolean'||repositoryURL('https://gitee.com/'+meta.full_name).url!==r.url)throw Error('REPOSITORY_IDENTITY_MISMATCH');
   return {provider:'gitee',repository_id:meta.id,url:r.url,private:meta.private};
  }
+ async issue(snapshot,number){
+  const r=repositoryURL(snapshot.url);
+  if(!Number.isSafeInteger(snapshot.repository_id)||snapshot.repository_id<=0||typeof number!=='string'||!/^I[A-Z0-9]{1,20}$/.test(number))throw Error('REPOSITORY_ISSUE_INVALID');
+  if((await this.identity(r.url)).repository_id!==snapshot.repository_id)throw Error('REPOSITORY_IDENTITY_MISMATCH');
+  const item=await this.get(`/repos/${encodeURIComponent(r.owner)}/${encodeURIComponent(r.repo)}/issues/${number}`,131072);
+  const at=Date.parse(item.updated_at),url=r.url+'/issues/'+number;item.body??='';
+  if(!Number.isSafeInteger(item.id)||item.id<=0||item.number!==number||item.html_url!==url||!Number.isSafeInteger(at)||at<0||
+   !['open','progressing','closed','rejected'].includes(item.state)||typeof item.title!=='string'||typeof item.body!=='string'||
+   Buffer.byteLength(item.title+'\n'+item.body)>65536||!Number.isSafeInteger(item.user?.id)||item.user.id<=0)throw Error('REPOSITORY_ISSUE_RESPONSE_INVALID');
+  return {id:item.id,number,state:item.state,updated_at:at,title:item.title,body:item.body,url,
+   actor:{id:String(item.user.id),kind:item.user.type==='User'?'human':item.user.type==='Bot'?'bot':'unknown'}};
+ }
  async commit(snapshot,expected){
   const r=repositoryURL(snapshot.url),path=`/repos/${encodeURIComponent(r.owner)}/${encodeURIComponent(r.repo)}`;
   if(!/^[a-f0-9]{40}$/.test(snapshot.base_sha??'')||![expected?.tree_oid,expected?.parent_oid].every(x=>/^[a-f0-9]{40}$/.test(x??'')))throw Error('ARTIFACT_PROVIDER_COMMIT_INVALID');

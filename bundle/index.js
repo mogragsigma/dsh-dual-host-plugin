@@ -1,3 +1,14 @@
+import {validateAutonomousSearch} from './search-contract.js';
+import {autonomous,CLOUD_TASK_POLICY} from './managed-cloud-policy.js';
+import {TaskObserver,validateObserver} from './task-observer.js';
+import {ManagedExecution,executionSpec} from './managed-execution.js';
+import {ManagedEndpoint,validateManagedConfig} from './managed-endpoint.js';
+import {resolveManagedModel} from './managed-runtime.js';
+import {realpathSync} from 'node:fs';
+import {TaskContinuity,ContinuityOutbox} from './task-continuity.js';
+import {SourceRouting} from './source-routing.js';
+import {GiteeIssueSources} from './source-gitee.js';
+import {SourceIntake,assertSourceDatabasePath} from './source-intake.js';
 import {taskResults} from './task-results.js';
 import {ApprovalRelayBroker,LocalApprovalEndpoint,configureLocalApproval} from './approval-local-relay.js';
 import {feishuNotificationTarget} from './notification-feishu.js';
@@ -15,7 +26,7 @@ import {DevelopmentRuntime} from './development-runtime.js';
 import {TaskSources} from './task-sources.js';
 import {TaskArtifacts} from './task-artifacts.js';
 import {createServer} from 'node:http';
-import {mkdirSync,readFileSync,appendFileSync,lstatSync} from 'node:fs';
+import {mkdirSync,existsSync,readFileSync,appendFileSync,lstatSync} from 'node:fs';
 import {join} from 'node:path';
 import {timingSafeEqual,randomUUID} from 'node:crypto';
 import {DatabaseSync} from 'node:sqlite';
@@ -56,7 +67,8 @@ export class Gateway {
   this.retry={maxAttempts:16,baseMs:2000,maxMs:300000,sendTimeoutMs:15000,...(c.recovery??{})};
   for(const [k,v] of Object.entries(this.retry))if(!Number.isSafeInteger(v)||v<1||v>3600000)throw Error('INVALID_RECOVERY_CONFIG');
   if(!['local','cloud'].includes(c.role)||!c.stateDir||!c.tokenFile&&!io.secrets)throw Error('INVALID_DEPLOYMENT');
-  validateA2AConfig(c.a2a);
+  validateA2AConfig(c.a2a);validateManagedConfig(c.managedExecution);validateObserver(c.observation);
+  if(c.observation?.enabled&&c.managedExecution?.enabled!==true)throw Error('TASK_OBSERVER_EXECUTION_REQUIRED');
   if(c.a2a?.enabled&&c.peerEnabled===false)throw Error('A2A_PEER_REQUIRED');
   if(c.legacyFeishu&&c.imDelivery)throw Error('MULTIPLE_NOTIFICATION_CONSUMERS');
   if(io.secrets)this.secrets=structuredClone(io.secrets);
@@ -65,6 +77,20 @@ export class Gateway {
   if(c.role==='cloud'&&equal(this.secrets.localToken,this.secrets.cloudToken))throw Error('DISTINCT_ROLE_TOKENS_REQUIRED');
   if(c.entryMode==='native'&&Object.keys(c.repositoryBindings??{}).length)throw Error('LEGACY_REPOSITORY_WRITER_DISABLED');
   const repositoryProvider=c.role==='cloud'?(c.repositoryAccess?.managedOnboarding===true?new ManagedGiteeReadOnly(c.repositoryAccess,io.repository):new GiteeReadOnly(c.repositoryAccess,io.repository)):null;
+  if(c.sourceIntake?.enabled===true)assertSourceDatabasePath(c.stateDir);
+  if(c.role==='cloud'&&c.continuity?.enabled!==true&&existsSync(join(c.stateDir,'coordinator/tasks.sqlite'))){
+   const existing=new DatabaseSync(join(c.stateDir,'coordinator/tasks.sqlite'),{readOnly:true});let managed=false;
+   try{managed=!!existing.prepare("SELECT 1 FROM sqlite_master WHERE name='task_continuity'").get()&&!!existing.prepare('SELECT 1 FROM task_continuity LIMIT 1').get();}finally{existing.close();}
+   if(managed)throw Error('TASK_CONTINUITY_REQUIRED'); // Do not disable a durable pause/stop fence by toggling configuration.
+  }
+  for(const [file,table,enabled] of [
+   ['coordinator/tasks.sqlite','managed_executions',c.managedExecution?.enabled===true],
+   ['gateway.sqlite','managed_endpoint_owner',c.managedExecution?.enabled===true&&!!c.managedExecution.endpoint],
+  ])if(!enabled&&existsSync(join(c.stateDir,file))){
+   const existing=new DatabaseSync(join(c.stateDir,file),{readOnly:true});let managed=false;
+   try{managed=!!existing.prepare('SELECT 1 FROM sqlite_master WHERE name=?').get(table)&&!!existing.prepare('SELECT 1 FROM '+table+' LIMIT 1').get();}finally{existing.close();}
+   if(managed)throw Error('TASK_EXECUTION_REQUIRED');
+  }
   mkdirSync(c.stateDir,{recursive:true,mode:0o700});
   this.trace=(type,data={})=>appendFileSync(join(c.stateDir,'events.jsonl'),JSON.stringify({type,...data,at:this.now()})+'\n',{mode:0o600});
   this.db=new DatabaseSync(join(c.stateDir,'gateway.sqlite'));
@@ -80,11 +106,11 @@ export class Gateway {
   this.peerLastError=null;
   try{if(c.fileTransfers?.enabled)this.files=new PeerFiles(this,c.fileTransfers);}catch(e){this.db.close();throw e;}
   this.writer=new RepositoryWriter(c.repositoryBindings??{});
-  if(c.role==='cloud'){this.store=new Coordinator(join(c.stateDir,'coordinator'),this.writer);this.catalog=new TaskCatalog(this.store);this.repositories=new RepositoryCatalog(this.store,this.catalog,repositoryProvider,this.now,id=>this.assertTaskQuiescent(id));this.approvals=new ApprovalLedger(this.store,this.catalog,this.now,this.repositories);if(c.localApproval){this.approvalRelay=new ApprovalRelayBroker(this.store.db,c.localApproval,{now:this.now});this.chatApproval=new ChatApproval(this.approvals,{...c.localApproval,appSecretEnv:'LOCAL_RELAY_NO_SECRET',hostRole:'local',semantic:{enabled:true,...c.localApproval.semantic}},{classify:semanticClassifier(ctx,c.localApproval.semantic),source:this.approvalRelay.source()});}else if(c.chatApproval)this.chatApproval=new ChatApproval(this.approvals,c.chatApproval,{classify:semanticClassifier(ctx,c.chatApproval.semantic),...io.chatApproval});else this.store.db.prepare('UPDATE approval_chat_bindings SET disabled=1').run();this.approvalWindow=new ApprovalWindow();this.workbenchApprovals=new WorkbenchApprovals(this.approvals,()=>this.chatApproval);this.workbenchDecisions=new WorkbenchDecisions(this.approvals,()=>this.chatApproval,{hold:()=>this.maintenance.enter('workbench_interaction')});}
-  if(c.role==='cloud'&&c.scheduler)this.scheduler=new TaskScheduler(ctx,{...c.scheduler,canTick:()=>!this.maintenance.blocked,stateDir:join(c.stateDir,'scheduler'),validateSchedule:s=>this.assertScheduleCurrent(s),admit:job=>{if(this.store.task(job.task_id).blocked)throw Error('TASK_BLOCKED');const e=parseEnvelope(job.goal),h=this.catalog.head(job.task_id);if(e&&(e.task_context?.spec_revision??1)!==h.spec_revision)throw Error('TASK_REVISION_CONFLICT');this.sources?.searcher.admit(job);}},io.scheduler);
+  if(c.role==='cloud'){this.store=new Coordinator(join(c.stateDir,'coordinator'),this.writer);this.catalog=new TaskCatalog(this.store);this.repositories=new RepositoryCatalog(this.store,this.catalog,repositoryProvider,this.now,id=>this.assertTaskQuiescent(id));this.approvals=new ApprovalLedger(this.store,this.catalog,this.now,this.repositories);if(c.localApproval){this.approvalRelay=new ApprovalRelayBroker(this.store.db,c.localApproval,{now:this.now});this.chatApproval=new ChatApproval(this.approvals,{...c.localApproval,appSecretEnv:'LOCAL_RELAY_NO_SECRET',hostRole:'local',semantic:{enabled:true,...c.localApproval.semantic}},{classify:semanticClassifier(ctx,c.localApproval.semantic),source:this.approvalRelay.source()});}else if(c.chatApproval)this.chatApproval=new ChatApproval(this.approvals,c.chatApproval,{classify:semanticClassifier(ctx,c.chatApproval.semantic),...io.chatApproval});else this.store.db.prepare('UPDATE approval_chat_bindings SET disabled=1').run();this.approvalWindow=new ApprovalWindow();this.workbenchApprovals=new WorkbenchApprovals(this.approvals,()=>this.chatApproval);this.workbenchDecisions=new WorkbenchDecisions(this.approvals,()=>this.chatApproval,{hold:()=>this.maintenance.enter('workbench_interaction'),nativeDecision:c.continuity?.enabled===true?(node,a)=>this.continuity.decide(node,a):undefined});}
+  if(c.role==='cloud'&&c.scheduler)this.scheduler=new TaskScheduler(ctx,{...c.scheduler,canTick:()=>!this.maintenance.blocked,stateDir:join(c.stateDir,'scheduler'),validateSchedule:s=>this.assertScheduleCurrent(s),admit:job=>{this.continuity?.assertActive(job.task_id);if(this.store.task(job.task_id).blocked)throw Error('TASK_BLOCKED');const e=parseEnvelope(job.goal),h=this.catalog.head(job.task_id);if(e&&(e.task_context?.spec_revision??1)!==h.spec_revision)throw Error('TASK_REVISION_CONFLICT');this.sources?.searcher.admit(job);}},io.scheduler);
   if(this.store){this.sources=new TaskSources(this,c.readonlySources??{});this.artifacts=new TaskArtifacts(this);if(this.scheduler?.worker){this.scheduler.worker.artifacts=this.artifacts;this.scheduler.worker.sources=this.sources;}}
   if(c.development?.enabled){this.development=new DevelopmentRuntime(this,c.development);this.scheduler.executors.set('development',{replaySafe:false,run:(j,s)=>this.development.run(j,s)});this.scheduler.c.canClaim=j=>j.kind==='development'?this.development.canClaim(j):!this.store.task(j.task_id).busy;this.scheduler.c.afterRecover=()=>this.development.recover();this.scheduler.c.afterFinish=j=>{if(j.kind==='development')this.development.finished(j);};this.scheduler.c.afterFailure=j=>{if(j.kind==='development')this.development.failed(j);};}
-  if(this.scheduler){const admit=this.scheduler.c.canClaim;this.scheduler.c.canClaim=j=>!this.closed&&(admit?.(j)??true);}
+  if(this.scheduler){const admit=this.scheduler.c.canClaim;this.scheduler.c.canClaim=j=>!this.closed&&!this.execution?.owns(j.task_id)&&(this.continuity?.canRun(j.task_id)??true)&&(admit?.(j)??true);}
   if(this.store){this.delivery=new DeliveryPreview(this);this.approvals.delivery=this.delivery;}
   if(c.role==='cloud'&&c.delivery?.enabled===true)this.deliveryRuntime=new DeliveryRuntime(this,c.delivery,io.delivery);
   this.notifications=new TaskNotifications(this,c.notificationTargets??[]);
@@ -100,10 +126,27 @@ export class Gateway {
    this.trace('model-request',{agent:agent.id,provider:result.provider,model:result.model});
    return {...result,maxTokens:2048};
   },{prepend:true}); // Validate the final UI selection, even after a gateway hot reload.
+  if(c.continuity?.enabled===true){
+   this.continuityOutbox=new ContinuityOutbox(this);
+   if(this.store)this.continuity=new TaskContinuity(this);
+   if(this.scheduler){this.scheduler.worker.continuity=this.continuity;this.scheduler.c.beforeTick=()=>this.continuity.reconcileAll();this.scheduler.c.taskCanRun=id=>this.continuity.canRun(id)&&!this.execution?.owns(id);}
+  }
+  if(c.managedExecution?.enabled===true){
+   if(c.continuity?.enabled!==true)throw Error('TASK_CONTINUITY_REQUIRED');
+   if(this.store)this.execution=new ManagedExecution(this);
+   if(c.role==='cloud'&&c.managedExecution.endpoint)this.executionEndpoint=new ManagedEndpoint(this,c.managedExecution.endpoint,io.managedExecution);
+  }
+  if(c.observation?.enabled&&this.store)this.observer=new TaskObserver(this,c.observation);
+  this.sourceIntake=new SourceIntake(this.db,{enabled:()=>c.sourceIntake?.enabled===true,
+   resolveSource:id=>{const sources=c.sourceIntake?.sources;if(!Array.isArray(sources)||sources.length>128)return null;const found=sources.filter(s=>s?.id===id);return found.length===1?(this.sourceRouting?.config(found[0])??found[0]):null;},
+   now:this.now,run:(label,fn)=>this.maintenance.run(label,fn)});
+  if(this.store&&this.execution){this.sourceRouting=new SourceRouting(this,io.sourceRouting);this.sourceTransports=new GiteeIssueSources(this);}
   ctx.effect(()=>()=>this.close());
  }
  isManaged(agent){return this.c.entryMode!=='native'&&!!agent&&this.ctx.agentPresets.composedPreset(agent.ctx)==='dsh-task-intake';}
- assertNativeAgent(agent){if(this.ctx.agents.get(agent?.id)!==agent||!['standard','ptc','cordis',...(this.c.nativePresets??[])].includes(this.ctx.agentPresets.composedPreset(agent.ctx)))throw Error('UNBOUND_NATIVE_SESSION');}
+ // Session ownership is persisted before agents.create announces agent/created;
+ // its live binding is assigned only after that announcement returns.
+ assertNativeAgent(agent){if(this.executionEndpoint?.owned?.(agent?.id)||this.executionEndpoint?.binding(agent)||this.ctx.agents.get(agent?.id)!==agent||!['standard','ptc','cordis',...(this.c.nativePresets??[])].includes(this.ctx.agentPresets.composedPreset(agent.ctx)))throw Error('UNBOUND_NATIVE_SESSION');}
  assertAgent(agent){if(this.ctx.agents.get(agent?.id)!==agent||!this.isManaged(agent))throw Error('UNBOUND_ENTRY_SESSION');}
  assertScheduleCurrent(s){
   const h=this.catalog.head(s.task_id);if(this.store.task(s.task_id).blocked)throw Error('TASK_BLOCKED');
@@ -116,11 +159,18 @@ export class Gateway {
   const single=db.prepare('SELECT 1 FROM jobs WHERE trigger_id=?').get('task-plan:'+task_id+':'+revision);
   if(family!=='workflow'&&workflow||family!=='trigger'&&trigger||family!=='single'&&single)throw Error('SCHEDULER_DISPATCH_FAMILY_CONFLICT');
  }
- assertTaskQuiescent(id){if(this.deliveryRuntime?.busy(id)||this.development?.busy(id)||this.a2a?.busy(id)||this.scheduler?.workflows.list(id).some(w=>!['completed','cancelled'].includes(w.status))||this.scheduler?.triggers.list(id).some(s=>!['closed','cancelled'].includes(s.status))||this.store.task(id).busy||this.scheduler?.jobs.list(id).some(j=>!['completed','cancelled'].includes(j.status))||[...(this.scheduler?.active.values()??[])].some(r=>r.task_id===id))throw Error('TASK_NOT_QUIESCENT');}
+ assertTaskQuiescent(id){if(this.execution?.busy(id)||this.deliveryRuntime?.busy(id)||this.development?.busy(id)||this.a2a?.busy(id)||this.scheduler?.workflows.list(id).some(w=>!['completed','cancelled'].includes(w.status))||this.scheduler?.triggers.list(id).some(s=>!['closed','cancelled'].includes(s.status))||this.store.task(id).busy||this.scheduler?.jobs.list(id).some(j=>!['completed','cancelled'].includes(j.status))||[...(this.scheduler?.active.values()??[])].some(r=>r.task_id===id))throw Error('TASK_NOT_QUIESCENT');}
  async call(method,args,node=this.c.role){return this.maintenance.run('rpc',()=>this.callCore(method,args,node));}
  async callCore(method,args,node=this.c.role){
   await this.io.authorize?.();
   if(typeof method!=='string'||!Object.hasOwn(METHODS,method))throw Error('METHOD_DENIED');
+  if(this.continuity){
+   const dispatch=['trigger_create','workflow_create','development_schedule','workspace_development_schedule','delivery_schedule','delivery_push_schedule','a2a_create'];
+   if(dispatch.includes(method)&&args.task_id)this.continuity.assertActive(args.task_id);
+   if(method==='a2a_create'&&this.continuity.managed(args.task_id))throw Error('TASK_EXECUTION_ADAPTER_UNAVAILABLE'); // Managed native A2A is R3; old tasks retain their own contract.
+   if(['trigger_control','workflow_control'].includes(method)&&args.action==='resume')this.continuity.assertActive((method==='trigger_control'?(this.execution?.schedules.has(args.id)?this.execution.schedules:this.scheduler.triggers):this.scheduler.workflows).get(args.id).task_id);
+   if(method==='job_input')this.continuity.assertActive(this.scheduler.jobs.get(args.job_id).task_id);
+  }
   if(method==='onboarding_existing_repository'){
    if(!args||typeof args!=='object'||Array.isArray(args)||Object.keys(args).join()!=='url')throw Error('INVALID_ARGUMENTS');
    if(this.c.role!=='cloud'||!this.repositories?.provider?.inspect)throw Error('CAPABILITY_UNAVAILABLE');
@@ -143,14 +193,47 @@ export class Gateway {
   if(method.startsWith('workbench_')){if(!this.workbench)throw Error('CAPABILITY_UNAVAILABLE');return this.workbench.call(method,args);}
   if(method==='diagnostics')return this.diagnostics(args?.refresh!==false); // No remote arbitrary writer/admin/probe.
   if(method.startsWith('a2a_')){if(!this.c.a2a?.enabled)throw Error('CAPABILITY_UNAVAILABLE');if(this.a2a)return this.a2a.call(method,args,node);}
+  if(this.store&&['source_routing_status','source_routing_control'].includes(method)){
+   if(!this.sourceRouting)throw Error('CAPABILITY_UNAVAILABLE');
+   return method==='source_routing_status'?this.sourceRouting.status(args):this.sourceRouting.control(node,args);
+  }
+  if(this.store&&method.startsWith('execution_')){
+   if(!this.execution)throw Error('CAPABILITY_UNAVAILABLE');
+   if(method==='execution_start'||method==='execution_prepare'&&autonomous(parseEnvelope(this.catalog.head(args.task_id).goal))){
+    if(args.role!==undefined&&args.role!=='cloud')throw Error('TASK_EXECUTION_CLOUD_ONLY');
+    if(['max_requests','active_timeout_ms','ttl_seconds','commands'].some(k=>args[k]!==undefined))throw Error('TASK_EXECUTION_RETIRED_LIMIT');
+    const policy=await resolveManagedModel(this.ctx,args.model_policy??parseEnvelope(this.catalog.head(args.task_id).goal)?.model_policy,this.c.managedExecution.defaultModel);
+    const search=validateAutonomousSearch(args.search??parseEnvelope(this.catalog.head(args.task_id).goal)?.search);
+    if(search&&!search.model_policy){const p=this.c.managedExecution.endpoint?.search?.model_policy;if(!p)throw Error('TASK_SEARCH_DEFAULT_UNAVAILABLE');search.model_policy=p;}
+    const spec=executionSpec({execution_policy:CLOUD_TASK_POLICY,role:'cloud',cwd:realpathSync(args.cwd),...(search?{search}:{}),...Object.fromEntries(['end_at','period_seconds','schedule','development'].filter(k=>args[k]!==undefined).map(k=>[k,args[k]]))});
+    return this.execution.start({task_id:args.task_id,expected_revision:args.expected_revision,spec,policy});
+   }
+   if(method==='execution_prepare'){
+    if(!this.continuity?.managed(args.task_id))throw Error('TASK_EXECUTION_NATIVE_TASK_REQUIRED');
+    this.continuity.assertActive(args.task_id);this.assertTaskQuiescent(args.task_id);
+    if(args.role==='local'&&!args.model_policy)throw Error('MODEL_TARGET_ENTRY_REQUIRED');
+    const policy=args.role==='cloud'?await resolveManagedModel(this.ctx,args.model_policy,this.c.managedExecution.defaultModel):args.model_policy;
+    this.continuity.assertActive(args.task_id);this.assertTaskQuiescent(args.task_id);
+    const spec=executionSpec({role:args.role,cwd:args.role==='cloud'?realpathSync(args.cwd):args.cwd,max_requests:args.max_requests??200,active_timeout_ms:args.active_timeout_ms??3600000,...(args.period_seconds?{period_seconds:args.period_seconds}:{}),...(args.search!==undefined?{search:args.search}:{}),...(args.commands!==undefined?{commands:args.commands}:{}),...(args.development!==undefined?{development:args.development}:{})});
+    const old=this.execution.get(args.task_id);if(old&&(old.role!==spec.role||JSON.parse(old.spec).cwd!==spec.cwd))throw Error('TASK_EXECUTION_SESSION_BINDING_CHANGED');
+    if(old&&spec.max_requests<this.execution.budgets.view(args.task_id).used)throw Error('TASK_RUNTIME_BUDGET_BELOW_USED');
+    if(typeof args.scope!=='string'||!args.scope.trim()||args.scope.length>3000)throw Error('TASK_EXECUTION_SCOPE_INVALID');
+    return this.approvals.request(node,{task_id:args.task_id,expected_revision:args.expected_revision,event_id:args.event_id,ttl_seconds:args.ttl_seconds??7*86400,proposal:{summary:'原生持续执行 · '+(args.role==='cloud'?'云端':'本地'),changes:args.scope+'\n执行合同：'+JSON.stringify(spec)+'\n'+(args.role==='cloud'?'云端账号文件权限；cwd是工作起点，不是文件沙箱。':'仅获准本地任务副本；权限不因云端放宽而扩大。'),validation:'核对实际成果和相关验证，报告整体进展；后台工作结束才释放名额。',risks:'仅按执行合同交付；未约定的提交/推送/PR不授权；不含合并、发布部署、历史改写、大范围不可逆删除、系统/服务/凭据变更或敏感外发。CLI仍依赖执行账号与平台权限，策略不是完整文件沙箱。',rollback:'暂停/停止会围栏新操作并排空，已经发生的文件变更不自动回滚。',model_policy:policy,scopes:['develop'],repository:null,execution:spec}});
+   }
+   return this.execution.call(method,args,node);
+  }
   if(this.store){
+   if(args.task_id&&['schedule','workflow_create','trigger_create','a2a_create','a2a_start','development_schedule','workspace_development_schedule','approval_request'].includes(method)&&autonomous(parseEnvelope(this.catalog.head(args.task_id).goal)))throw Error('TASK_EXECUTION_DIRECT_PATH_REQUIRED');
    if(method.startsWith('approval_local_')){if(!this.approvalRelay)throw Error('CAPABILITY_UNAVAILABLE');return this.approvalRelay.call(node,method.slice('approval_local_'.length),args);}
    if(method.startsWith('intervention_action_'))return this.interventionActions.call(node,method.slice('intervention_action_'.length),args);
    if(method.startsWith('approval_interaction_'))return this.workbenchDecisions.call(node,method.slice('approval_interaction_'.length),args);
    if(method.startsWith('approval_workbench_')){const service=this.workbenchApprovals;if(!service){if(method==='approval_workbench_describe')return {enabled:false,reason:'APPROVAL_WORKBENCH_DISABLED'};throw Error('APPROVAL_WORKBENCH_DISABLED');}return service.call(node,method.slice('approval_workbench_'.length),args);}
+   if(['development_schedule','workspace_development_schedule','delivery_prepare','delivery_schedule','delivery_push_prepare','delivery_push_schedule'].includes(method)&&this.continuity?.managed(args.task_id))throw Error('TASK_EXECUTION_ADAPTER_UNAVAILABLE');
    if(method.startsWith('development_bridge_')||method.startsWith('workspace_bridge_')){if(!this.development?.bridge)throw Error('CAPABILITY_UNAVAILABLE');return this.development.bridge.call(method,args,node);}
+   if(['schedule','workflow_create','trigger_create','a2a_create','development_schedule','workspace_development_schedule'].includes(method)&&args.task_id&&this.execution?.owns(args.task_id))throw Error('TASK_EXECUTION_CONTRACT_ALREADY_EXISTS');
    if(['schedule','workflow_create','trigger_create','development_schedule','workspace_development_schedule'].includes(method)&&this.a2a?.busy(args.task_id))throw Error('A2A_TASK_BUSY');
    if(method.startsWith('notification_'))return this.notifications.call(method,args,node);
+   if(method==='source_capabilities'&&this.c.managedExecution?.enabled){await this.executionEndpoint?.search?.ready;return {schema:1,host:'cloud',execution_policy:CLOUD_TASK_POLICY,scope:'host-account and user task restrictions; cwd is not a sandbox',default_model:this.c.managedExecution.defaultModel??null,capabilities:{files:{mode:'native-host-account'},search:{enabled:!!this.executionEndpoint?.search?.reader,configured:!!this.c.managedExecution.endpoint?.search,model_policy:this.c.managedExecution.endpoint?.search?.model_policy??null,max_requests:null}},grant:false};}
    if(method==='source_capabilities')return {schema:1,host:'cloud',capabilities:this.sources.capabilities(args),worker_enabled:this.scheduler?.started===true&&!this.scheduler.closed,scope:'explicit current task references intersect operator read roots',grant:false,model_policy:'per-task; inventory never selects or validates a model'};
    if(method==='delivery_push_prepare'||method==='delivery_push_schedule'){if(!this.deliveryRuntime)throw Error('CAPABILITY_UNAVAILABLE');return method==='delivery_push_prepare'?this.deliveryRuntime.stagePush(node,args):this.deliveryRuntime.schedulePush(node,args);}
    if(method==='delivery_prepare'||method==='delivery_schedule'){if(!this.deliveryRuntime)throw Error('CAPABILITY_UNAVAILABLE');return method==='delivery_prepare'?this.deliveryRuntime.stage(node,args):this.deliveryRuntime.schedule(node,args);}
@@ -190,9 +273,11 @@ export class Gateway {
     return workflows.create({task_id:task.id,revision:h.spec_revision,goal:h.goal,policy:args.policy,nodes:args.nodes,max_total_runs:args.max_total_runs,end_at:args.end_at,event_id:args.event_id,source});
    }
    if(method.startsWith('trigger_')){
-    if(!this.scheduler)throw Error('SCHEDULER_UNAVAILABLE');
-    const triggers=this.scheduler.triggers;
-    if(method==='trigger_list'){this.store.task(args.task_id);return {items:triggers.list(args.task_id),authority:'cloud',development:false};}
+    if(!this.scheduler&&!this.execution?.schedules)throw Error('SCHEDULER_UNAVAILABLE');
+    const managed=this.execution?.schedules;const triggers=args.id&&managed?.has(args.id)?managed:this.scheduler?.triggers;
+    if(method==='trigger_list'){this.store.task(args.task_id);return {items:[...(this.scheduler?.triggers.list(args.task_id)??[]),...(managed?.list(args.task_id)??[])],authority:'cloud',development:false};}
+    if(!triggers)throw Error('SCHEDULER_NOT_FOUND');
+    if(method==='trigger_control'&&triggers===managed)throw Error('SCHEDULER_USE_TASK_LIFECYCLE');
     if(method==='trigger_control')return triggers.control({...args,actor:'authenticated-'+node+'-entry'});
     const source=validSources(args.sources);if(!source.length||source.some(s=>s.role!==node))throw Error('CONTEXT_ORIGIN_MISMATCH');
     if(method==='trigger_signal'){
@@ -215,17 +300,28 @@ export class Gateway {
    if(method==='repository_bind'||method==='repository_unbind')return this.repositories.mutate(node,args,method==='repository_unbind');
    if(method==='repository_status')return args.refresh?this.repositories.refresh(args.task_id):this.repositories.status(args.task_id);
    if(method==='repository_gate')return this.repositories.gate(args.task_id,args,this.approvals);
-   if(method==='approval_request'){const r=this.approvals.request(node,args);return {...r,chat_confirmation:this.chatApproval?.queue(r.id)??null,confirmation_url:null};}
+   if(method==='approval_request'){const r=this.approvals.request(node,args);return {...r,chat_confirmation:this.approvals.isNativeTask(r.task_id)?null:this.chatApproval?.queue(r.id)??null,confirmation_url:null};}
    if(method==='approval_reference')return approvalReference(this,args);
-   if(method==='approval_status')return {items:this.approvals.list(args.task_id).map(r=>({...r,chat_confirmation:this.chatApproval?.delivery(r.id)??null})),confirmation_url:null,execution:this.development?'requires_runtime_gate':'disabled'};
+   if(method==='approval_status')return {items:this.approvals.list(args.task_id).map(r=>({...r,chat_confirmation:this.approvals.isNativeTask(r.task_id)?null:this.chatApproval?.delivery(r.id)??null})),confirmation_url:null,execution:this.development?'requires_runtime_gate':'disabled'};
+   if(METHODS[method]==='continuity'){
+    if(!this.continuity)throw Error('CAPABILITY_UNAVAILABLE');
+    if(method==='task_decide')return this.continuity.decide(node,args);
+    if(method==='task_resolve')return this.continuity.resolve(args);
+    if(method==='task_followups')return this.continuity.read(args.task_id,args);
+    if(method==='task_followup')return this.continuity.receive(node,args);
+    if(method==='task_lifecycle')return this.continuity.control(node,args);
+    if(method==='task_followup_reroute')return this.continuity.reroute(node,args);
+    return this.continuity.unlink(node,args);
+   }
    if(method==='catalog'){const r=this.catalog.find(args);return {...r,items:r.items.map(t=>({...t,jobs:this.scheduler?.jobs.list(t.task_id).slice(-5)??[]})),authority:'cloud'};}
-   if(method==='task_amend')return this.catalog.amend(node,args,id=>this.assertTaskQuiescent(id));
-   if(method==='status')return {...this.store.status(args.task_id),catalog:this.catalog.view(args.task_id),repository:this.repositories.status(args.task_id),approvals:this.approvals.list(args.task_id),...(this.scheduler?{jobs:this.scheduler.jobs.list(args.task_id),schedules:this.scheduler.triggers.list(args.task_id),workflows:this.scheduler.workflows.list(args.task_id)}:{})};
+   if(method==='task_amend'){if(this.continuity&&['stopped','resuming'].includes(this.continuity.state(args.task_id).state))throw Error('TASK_CONTROL_NOT_ALLOWED');return this.catalog.amend(node,args,id=>this.assertTaskQuiescent(id));}
+   if(method==='status')return {...this.store.status(args.task_id),...(this.execution?{managed_execution:this.execution.view(args.task_id),...(this.observer?{task_observation:this.observer.view(args.task_id)}:{})}:{}),...(this.continuity?{continuity:this.continuity.controlStatus(args.task_id)}:{}),catalog:this.catalog.view(args.task_id),repository:this.repositories.status(args.task_id),approvals:this.approvals.list(args.task_id),...(this.scheduler?{jobs:this.scheduler.jobs.list(args.task_id),schedules:[...this.scheduler.triggers.list(args.task_id),...(this.execution?.schedules.list(args.task_id)??[])],workflows:this.scheduler.workflows.list(args.task_id)}:{})};
    if(method==='inspect'){const task=this.store.db.prepare('SELECT id FROM tasks WHERE task_key=?').get(args.task_key);if(!task)throw Error('TASK_NOT_FOUND');return this.call('status',{task_id:task.id},node);}
    if(method==='schedule'){
     if(!this.scheduler)throw Error('SCHEDULER_UNAVAILABLE');
     const task=args.task_id?this.store.task(args.task_id):this.store.db.prepare('SELECT * FROM tasks WHERE task_key=?').get(args.task_key);
-    if(!task)throw Error('TASK_NOT_FOUND');if(task.blocked)throw Error('NEEDS_REVIEW');
+    if(!task)throw Error('TASK_NOT_FOUND');this.continuity?.assertActive(task.id);if(task.blocked)throw Error('NEEDS_REVIEW');
+    if(this.execution?.owns(task.id))throw Error('TASK_EXECUTION_CONTRACT_ALREADY_EXISTS');
     if(this.a2a?.busy(task.id))throw Error('A2A_TASK_BUSY');
     if(this.scheduler.triggers.list(task.id).some(s=>!['closed','cancelled'].includes(s.status)))throw Error('SCHEDULER_ALREADY_EXISTS');
     if(this.scheduler.workflows.list(task.id).some(w=>!['completed','cancelled'].includes(w.status)))throw Error('WORKFLOW_ALREADY_EXISTS');
@@ -241,10 +337,12 @@ export class Gateway {
    }
    if(method==='job_control'){
     if(!this.scheduler||!['pause','resume','cancel'].includes(args.action))throw Error('METHOD_DENIED');
+    if(args.action==='resume')this.continuity?.assertActive(this.scheduler.jobs.get(args.job_id).task_id);
     return this.scheduler.control({id:args.job_id,action:args.action,event_id:args.event_id,actor:'authenticated-'+node+'-entry'});
    }
-   const incoming=parseEnvelope(args.goal);if(incoming&&incoming.origin.role!==node)throw Error('CONTEXT_ORIGIN_MISMATCH');
-   const t=this.store.accept(node,args);
+   const incoming=parseEnvelope(args.goal);if(incoming?.origin.kind==='policy')throw Error('SOURCE_POLICY_INTERNAL_ONLY');if(incoming&&incoming.origin.role!==node)throw Error('CONTEXT_ORIGIN_MISMATCH');
+   if(incoming?.continuity===1&&!this.continuity)throw Error('CAPABILITY_UNAVAILABLE');
+   const t=this.store.accept(node,args,t=>{this.catalog.ensure(t.id);this.continuity?.register(t,incoming);});
    if(incoming?.notification_contract===1)this.notifications.track(t.id);
    // Status is queued intake, not a claim that a worker has run.
    const h=this.catalog.head(t.id);return {...t,title:h.title,spec_revision:h.spec_revision,execution:'pending_dispatch'};
@@ -253,6 +351,9 @@ export class Gateway {
  }
  hello(){
   const capabilities={...CAPABILITIES};
+  if(this.c.managedExecution?.enabled!==true)delete capabilities.source_routing;
+  if(this.c.continuity?.enabled!==true)delete capabilities.continuity;
+  if(this.c.managedExecution?.enabled!==true)delete capabilities.cloud_autonomy;
   if(this.c.role==='cloud'&&!this.repositories?.provider?.inspect)delete capabilities.onboarding_existing_repository;
   if(this.c.role==='cloud'&&!this.onboardingInspection)delete capabilities.onboarding_existing;
   if(!this.files)delete capabilities.peer_files;
@@ -267,7 +368,8 @@ export class Gateway {
   if(this.c.role==='cloud'&&!this.development?.bridge)delete capabilities.development_workspace_bridge;
   if(!this.workbench)delete capabilities.workbench;
   if(!this.board){delete capabilities.taskboard;delete capabilities.task_results;}
-  if(this.c.role==='cloud'){if(!this.peer)delete capabilities.peer;if(!this.scheduler){delete capabilities.scheduler;delete capabilities.triggers;delete capabilities.workflows;}}
+  if(this.c.managedExecution?.enabled!==true){delete capabilities.managed_execution;delete capabilities.managed_development;delete capabilities.managed_triggers;}
+  if(this.c.role==='cloud'){if(!this.peer)delete capabilities.peer;if(!this.scheduler){delete capabilities.scheduler;if(!this.execution)delete capabilities.triggers;delete capabilities.workflows;}}
   return {schema:1,protocol:{min:1,max:1},plugin_version:VERSION,role:this.c.role,namespace:this.c.namespace,instance_id:this.instanceId,capabilities};
  }
  observation(){return {authority:this.c.role,instance_id:this.instanceId,generated_at:this.now(),freshness:'live_response',age_ms:0,usable_for_authorization:false};}
@@ -307,7 +409,7 @@ export class Gateway {
  async submitCore(args){
   await this.io.authorize?.();
   if(this.closed)throw Error('GATEWAY_CLOSED');
-  if(typeof args.goal!=='string'||!args.goal.trim()||args.goal.length>12000||!(/^[a-z0-9-]{1,64}$/).test(args.task_key)||typeof args.ingress_id!=='string'||!args.ingress_id||args.ingress_id.length>256||!['desktop','native-local','native-cloud',...(this.legacy?['feishu-local','feishu-cloud']:[])].includes(args.source))throw Error('INVALID_SUBMISSION');
+  if(typeof args.goal!=='string'||!args.goal.trim()||args.goal.length>1048576||!(/^[a-z0-9-]{1,64}$/).test(args.task_key)||typeof args.ingress_id!=='string'||!args.ingress_id||args.ingress_id.length>256||!['desktop','native-local','native-cloud',...(this.legacy?['feishu-local','feishu-cloud']:[])].includes(args.source))throw Error('INVALID_SUBMISSION');
   const fp=hash(JSON.stringify(args));
   this.db.prepare("INSERT OR IGNORE INTO submissions(id,fingerprint,payload,status,created_at) VALUES (?,?,?,'queued',?)").run(args.ingress_id,fp,JSON.stringify(args),this.now());
   const row=this.db.prepare('SELECT * FROM submissions WHERE id=?').get(args.ingress_id);
@@ -360,6 +462,11 @@ export class Gateway {
   this.tickPending=this.tickOnce().finally(()=>{this.tickPending=null;});return this.tickPending;
  }
  async tickOnce(){
+  await this.continuityOutbox?.tick();
+  this.continuity?.reconcileAll();this.execution?.reconcile();
+  // Do not block peer controls/heartbeats behind semantic assessment.
+  this.sourceTransports?.tick().catch(e=>this.trace('source-transport-error',{code:errorInfo(e).code}));
+  this.sourceRouting?.tick().catch(e=>this.trace('source-routing-error',{code:errorInfo(e).code}));
   this.deliveryRuntime?.tick();
   this.a2a?.reap(); // Expire authority even when the recipient is offline; never dispatch here.
   if(this.scheduler)for(const n of this.scheduler.jobs.db.prepare('SELECT id,text FROM job_notifications WHERE delivered=0 LIMIT 10').all()){
@@ -376,7 +483,7 @@ export class Gateway {
   await this.notifications?.tick();
   await this.chatApproval?.tick();
  }
- snapshot(){return {protocol:this.hello(),connection:this.link?.snapshot()??this.inboundSnapshot(),diagnostics:this.localDiagnostics(),scheduler:this.scheduler?.snapshot()??null,version:VERSION,approval:{chat:this.chatApproval?.snapshot()??null,window:false,identity_policy:'existing-im-only',execution:'disabled'},role:this.c.role,channelStatus:this.legacy?.status()??null,legacyFeishu:!!this.legacy,imDelivery:this.imDelivery?.snapshot()??null,files:this.files?.snapshot()??null,peer:this.peer?{...this.peer.snapshot(),lastError:this.peerLastError}:null,entryMode:this.c.entryMode??'legacy-test',managedPreset:this.c.entryMode==='native'?null:'dsh-task-intake',agents:this.ctx.agents.list().map(a=>({id:a.id,status:a.status,managed:this.isManaged(a)})),submissions:this.db.prepare('SELECT id,status,task_id,attempts,next_attempt_at,last_error FROM submissions').all(),notices:this.db.prepare('SELECT id,status,message_id,last_error FROM notices').all(),receipts:this.db.prepare('SELECT id,status,message_id,last_error FROM receipts').all(),a2a:this.db.prepare('SELECT id FROM a2a').all(),repositoryBindings:this.writer.bindings.size,repositoryAssociations:this.repositories?this.store.db.prepare("SELECT COUNT(*) AS count FROM repository_associations WHERE state<>'unbound'").get().count:null,sendNotices:!!this.c.sendNotices};}
+ snapshot(){return {...(this.executionEndpoint?{managed_execution_endpoint:this.executionEndpoint.snapshot()}:{}),...(this.execution?{managed_execution_slots:this.execution.slots.snapshot()}:{}),protocol:this.hello(),connection:this.link?.snapshot()??this.inboundSnapshot(),diagnostics:this.localDiagnostics(),scheduler:this.scheduler?.snapshot()??null,version:VERSION,approval:{chat:this.chatApproval?.snapshot()??null,window:false,identity_policy:this.c.continuity?.enabled===true?'task-native-with-legacy-im':'existing-im-only',execution:'disabled'},role:this.c.role,channelStatus:this.legacy?.status()??null,legacyFeishu:!!this.legacy,imDelivery:this.imDelivery?.snapshot()??null,files:this.files?.snapshot()??null,peer:this.peer?{...this.peer.snapshot(),lastError:this.peerLastError}:null,entryMode:this.c.entryMode??'legacy-test',managedPreset:this.c.entryMode==='native'?null:'dsh-task-intake',agents:this.ctx.agents.list().map(a=>({id:a.id,status:a.status,managed:this.isManaged(a)})),submissions:this.db.prepare('SELECT id,status,task_id,attempts,next_attempt_at,last_error FROM submissions').all(),notices:this.db.prepare('SELECT id,status,message_id,last_error FROM notices').all(),receipts:this.db.prepare('SELECT id,status,message_id,last_error FROM receipts').all(),a2a:this.db.prepare('SELECT id FROM a2a').all(),repositoryBindings:this.writer.bindings.size,repositoryAssociations:this.repositories?this.store.db.prepare("SELECT COUNT(*) AS count FROM repository_associations WHERE state<>'unbound'").get().count:null,sendNotices:!!this.c.sendNotices};}
  async start(){
   await this.sources?.ready;
   if(this.scheduler)await this.scheduler.start();
@@ -393,11 +500,11 @@ export class Gateway {
     if(req.url==='/health'){if(!own)throw Error('AUTH_DENIED');value=this.snapshot();}
     else{
      leave=this.maintenance.enter('http');
-     let raw='';for await(const chunk of req){raw+=chunk;if(Buffer.byteLength(raw)>131072)throw Error('BODY_TOO_LARGE');}
+     let raw='';for await(const chunk of req){raw+=chunk;if(Buffer.byteLength(raw)>2097152)throw Error('BODY_TOO_LARGE');}
      const body=JSON.parse(raw);if(!body.args||typeof body.args!=='object'||Array.isArray(body.args))throw Error('INVALID_ARGUMENTS');
      if(body.method==='accept'){
       // Validate peer RPC as strictly as native submissions; identity is bound to token.
-      if(typeof body.args.goal!=='string'||!body.args.goal.trim()||body.args.goal.length>12000)throw Error('INVALID_GOAL');
+      if(typeof body.args.goal!=='string'||!body.args.goal.trim()||body.args.goal.length>1048576)throw Error('INVALID_GOAL');
      }
      if(body.method==='negotiate'){
       if(this.c.role!=='cloud')throw Error('PROTOCOL_ROLE_MISMATCH');
@@ -423,20 +530,23 @@ export class Gateway {
   const loop=async()=>{try{await this.tick();}catch{this.trace('tick-error');}if(!this.closed)this.timer=setTimeout(()=>{this.pending=loop();},10000);};this.pending=loop();
   if(this.c.role==='local'&&this.c.ssh){this.connector=new SshConnector(this.c.ssh,this.trace,this.io.ssh);this.connector.start();}
   if(this.a2aEndpoint)await this.a2aEndpoint.start();
-  this.localApprovalEndpoint?.start();
+  if(this.executionEndpoint)await this.executionEndpoint.start();
+  this.localApprovalEndpoint?.start();this.observer?.start();
   this.trace('gateway-active',{role:this.c.role,port:this.c.port});
  }
  close(){
   if(this.closing)return this.closing;
-  this.closed=true;clearTimeout(this.timer);
+  this.closed=true;const transportClosed=this.sourceTransports?.close(),routingClosed=this.sourceRouting?.close();this.sourceIntake.close();clearTimeout(this.timer);
   const serverClosed=this.server?.listening?new Promise(resolve=>{this.server.close(resolve);this.server.closeIdleConnections();}):Promise.resolve();
   this.closing=(async()=>{
+   await transportClosed;await routingClosed;await this.observer?.close();
    this.approvalRelay?.close();
    await this.localApprovalEndpoint?.close();
    await this.deliveryRuntime?.close();
    await this.developmentPeer?.close();
    await this.a2aEndpoint?.close();
-   const settled=await Promise.allSettled([this.pending,this.tickPending,...this.deliveries.values(),this.connector?.close(),this.scheduler?.close(),this.workbenchDecisions?.close(),this.chatApproval?.close(),serverClosed]);
+   await this.executionEndpoint?.close();
+   const settled=await Promise.allSettled([this.pending,this.tickPending,...this.deliveries.values(),...(this.continuityOutbox?.pending.values()??[]),this.connector?.close(),this.scheduler?.close(),this.workbenchDecisions?.close(),this.chatApproval?.close(),serverClosed]);
    await this.notifications?.close();await this.artifacts?.close();
    this.maintenance.completeClosure(()=>{this.store?.close();this.db.close();},settled.every(x=>x.status==='fulfilled'));
   })();return this.closing;

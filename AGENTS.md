@@ -1,7 +1,7 @@
-# 当前维护入口（0.33.4 R1-P0 兼容修复）
+# 当前维护入口（2.0.0 发行准备，尚未发布）
 
 - 当前身份、版本和兼容范围以根 package.json、bundle/package.json 与 compatibility.json 为准。
-- 当前验收：scripts/run-release-regression.py；历史冻结验收不可改写为当前通过证据。
+- 当前验收：scripts/run-v2-release-regression.py；历史冻结验收不可改写为当前通过证据。
 - GitHub 是正源的字节一致镜像，禁止仅在镜像修改发行代码；UI 必须从 ui-source 构建。
 - 仅隔离测试；发布、部署、Git 写入仍需当前用户授权。下文0.33.0为历史边界记录。
 

@@ -1,6 +1,6 @@
 // Software authenticator for cryptographic regression ONLY. It is not human acceptance evidence.
 import {createHash,generateKeyPairSync,randomBytes,sign} from 'node:crypto';
-import {encodeCBOR} from '../../bundle/node_modules/@levischuck/tiny-cbor/esm/index.js';
+import {encodeCBOR} from '@levischuck/tiny-cbor';
 const h=x=>createHash('sha256').update(x).digest(),b=x=>Buffer.from(x).toString('base64url');
 export function softwareAuthenticator(){
  const {privateKey,publicKey}=generateKeyPairSync('ec',{namedCurve:'prime256v1'}),jwk=publicKey.export({format:'jwk'}),id=randomBytes(32);

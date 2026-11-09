@@ -39,7 +39,7 @@ test('shipped native IM navigation survives reload without invoking any business
  const source=await fs.readFile(new URL('../ui-source/workbench-client.js',import.meta.url),'utf8');
  const start=source.indexOf('  async function navigate(){'),end=source.indexOf('  const timer=setTimeout(navigate,0);',start);assert(start>0&&end>start);
  const location={hash:'#dsh-setup-im',pathname:'/',search:''};let panels=0,notifications=0;
- const context=vm.createContext({location,history:{replaceState(){assert.fail('IM landing must not consume its navigation marker');}},ctx:{layout:{selectPanel:()=>panels++}},boardPanel:'own-board',disposed:false,setupImRequested:false,setupImListeners:new Set([()=>notifications++]),call(){assert.fail('navigation must not run configuration');}});
+ const context=vm.createContext({location,history:{replaceState(){assert.fail('IM landing must not consume its navigation marker');}},ctx:{layout:{selectPanel:()=>panels++}},boardPanel:'own-board',disposed:false,setupImRequested:false,setupCloudEntry:null,setupImListeners:new Set([()=>notifications++]),call(){assert.fail('navigation must not run configuration');}});
  vm.runInContext(source.slice(start,end),context);await context.navigate();assert.equal(location.hash,'#dsh-setup-im');assert(context.setupImRequested);assert.equal(panels,1);
  context.setupImRequested=false;await context.navigate();assert(context.setupImRequested);assert.equal(panels,2);assert.equal(notifications,2);
  const back=source.match(/onBack:\(\)=>\{(if\(location\.hash==='#dsh-setup-im'\)[^}]+setImOpen\(false\);)\}/);assert(back);
@@ -49,4 +49,17 @@ test('shipped native IM navigation survives reload without invoking any business
 
 test('admission wording does not claim current default config bytes are unchanged',async()=>{
  const source=await fs.readFile(new URL('../ui-source/onboarding/cloud-installation.jsx',import.meta.url),'utf8');assert(!source.includes('官方默认配置保持不变'));assert(source.includes('启动时配置基线已核验；后续修改需另行核对'));
+});
+
+
+test('new settings route original cloud entry into existing native manager without reopening carrier',async()=>{
+ const source=await fs.readFile(new URL('../ui-source/workbench-client.js',import.meta.url),'utf8');
+ const a=source.indexOf('  const props=()=>'),b=source.indexOf("  ctx.slots.inject('main'",a);assert(a>0&&b>a);
+ const panels=[],entries=[],noop=()=>{};
+ const context=vm.createContext({request:noop,call:noop,open:()=>assert.fail('must not open another carrier'),openA2A:noop,openSidebar:noop,appearance:noop,artifactAccess:noop,decisionAdapter:{},onboardRequest:noop,imClient:{},navigationError:null,setupImRequested:false,setupCloudEntry:null,setupImListeners:new Set([entry=>entries.push(entry)]),ctx:{layout:{selectPanel:p=>panels.push(p)}},boardPanel:'own-board'});
+ vm.runInContext(source.slice(a,b)+';globalThis.testProps=props();',context);
+ const entry={entryId:randomUUID(),target:{role:'cloud'}};context.testProps.onManageCloudIm(entry);
+ assert.equal(context.setupCloudEntry,entry);assert.equal(context.setupImRequested,true);assert.equal(entries[0],entry);assert.deepEqual(panels,['own-board']);
+ context.testProps.onManageIm();assert.equal(context.setupCloudEntry,null);assert.equal(entries[1],undefined);assert.deepEqual(panels,['own-board','own-board']);
+ assert(source.includes('React.useState(()=>setupCloudEntry)'));assert(source.includes('setCloudEntry(entry??null);setImOpen(!entry)'));
 });

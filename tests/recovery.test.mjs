@@ -21,7 +21,7 @@ const args={task_key:'arbitrary-task',goal:'Do not execute',ingress_id:'feishu:m
 const connected=(push)=>({getChannel:()=>({status:{connected:true}}),push});
 test('concurrent same ingress is single-flight and successful acceptance atomically queues notice and receipt',async t=>{
  const {g}=fixture(t);let resolve,calls=0;g.call=()=>{calls++;return new Promise(r=>resolve=r);};
- const a=g.submit(args),b=g.submit(args);assert.equal(calls,1);resolve({id:'task-test',epoch:1,revision:0});
+ const a=g.submit(args),b=g.submit(args);await new Promise(setImmediate);assert.equal(calls,1);resolve({id:'task-test',epoch:1,revision:0});
  assert.equal((await a).task_id,(await b).task_id);
  assert.equal(g.db.prepare('SELECT count(*) n FROM notices').get().n,1);
  assert.equal(g.db.prepare('SELECT count(*) n FROM receipts').get().n,1);

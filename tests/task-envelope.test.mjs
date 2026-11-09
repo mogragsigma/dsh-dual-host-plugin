@@ -1,3 +1,4 @@
+import {testPort} from './helpers/loopback-port.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';
@@ -22,7 +23,8 @@ test('only direct human source is selected, never peer/context/tool/system text'
 test('missing IDs, nontext and oversized requests fail instead of truncating user intent',()=>{
  assert.throws(()=>currentHumanRequest(agent([{...message(),id:''}])),/HUMAN_REQUEST_UNAVAILABLE/);
  assert.throws(()=>currentHumanRequest(agent([{...message(),content:[{type:'image',url:'attachment'}]}])),/TEXT_TASK_REQUIRED/);
- assert.throws(()=>currentHumanRequest(agent([message('a'.repeat(8001))])),/REQUEST_SIZE_UNSUPPORTED/);
+ for(const n of [8001,262144])assert.equal(currentHumanRequest(agent([message('a'.repeat(n))])).text.length,n);
+ assert.throws(()=>currentHumanRequest(agent([message('a'.repeat(262145))])),/REQUEST_SIZE_UNSUPPORTED/);
 });
 test('local execution is not silently rerouted and planning cannot omit model policy',()=>{
  assert.throws(()=>makeEnvelope(agent(),'local',{...args,target:'local'}),/UNSUPPORTED_TASK_TARGET/);
@@ -44,11 +46,11 @@ test('envelope detects corrupted source and identity comes from deployment, not 
 async function fixture(t){
  const root=mkdtempSync(tmpdir()+'/task-envelope-'),tokenFile=root+'/tokens.json';writeFileSync(tokenFile,JSON.stringify({localToken:'l'.repeat(32),cloudToken:'c'.repeat(32)}),{mode:0o600});
  const agents=new Map(),ctx={on(){},effect(){},agents:{get:id=>agents.get(id),list:()=>[...agents.values()]},agentPresets:{composedPreset:c=>c.preset}};
- const cloud=new Gateway(ctx,{role:'cloud',namespace:'envelope',stateDir:root+'/cloud',tokenFile,port:0,scheduler:{lockPort:0,intervalMs:60000}},{scheduler:{allowEphemeralLock:true}});await cloud.start();
+ const cloud=new Gateway(ctx,{role:'cloud',namespace:'envelope',stateDir:root+'/cloud',tokenFile,port:testPort(20),scheduler:{lockPort:0,intervalMs:60000}},{scheduler:{allowEphemeralLock:true}});await cloud.start();
  const local=new Gateway(ctx,{role:'local',namespace:'envelope',stateDir:root+'/local',tokenFile,port:0,coordinatorUrl:'http://127.0.0.1:'+cloud.server.address().port});
  const tools=new Map();registerNativeTools({taskGateway:local,tools:{register:d=>tools.set(d.name,d)}});
  let messages=[message()];const a=agent();a.session.deriveMessages=()=>messages;agents.set(a.id,a);
- const invoke=(name,input,callId='call')=>tools.get(name).execute(input,{agent:a,callId});
+ const invoke=(name,input,callId='call')=>tools.get(name).execute(name==='task_schedule'?{max_runs:1,...input}:input,{agent:a,callId});
  t.after(async()=>{await local.close();await cloud.close();rmSync(root,{recursive:true,force:true});});
  return {cloud,local,invoke,setMessage:m=>messages=[m]};
 }

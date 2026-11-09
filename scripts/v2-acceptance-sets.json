@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "purpose": "Explicit reviewable sets; frozen release assertions are not rewritten as current product contracts.",
+  "sets": {
+    "current-policy": {
+      "files": [
+        "gray-closeout.test.mjs",
+        "gray-repair.test.mjs",
+        "search-contract.test.mjs",
+        "managed-search.test.mjs",
+        "notification-feishu.test.mjs",
+        "notification-discovery.test.mjs",
+        "cloud-autonomy.test.mjs",
+        "cloud-autonomy-rpc.test.mjs",
+        "cloud-autonomy-delivery.test.mjs",
+        "managed-runtime.test.mjs",
+        "managed-endpoint.test.mjs",
+        "managed-artifacts.test.mjs",
+        "managed-delivery.test.mjs",
+        "managed-development-ui.test.mjs",
+        "task-continuity.test.mjs",
+        "source-intake.test.mjs",
+        "host-compatibility-current.test.mjs",
+        "native-entry-lifetime.test.mjs",
+        "managed-triggers.test.mjs",
+        "task-observer.test.mjs",
+        "task-observer-notifications.test.mjs"
+      ],
+      "meaning": "Current autonomous task and targeted dependent regressions; not 2.0 full acceptance."
+    },
+    "historical-compatibility": {
+      "files": [
+        "model-selection.test.mjs",
+        "notification-media.test.mjs",
+        "task-catalog.test.mjs",
+        "task-envelope.test.mjs",
+        "task-triggers.test.mjs"
+      ],
+      "meaning": "Legacy calls/records still compatible; no reinstatement of retired permission, request or time caps."
+    },
+    "frozen-release": {
+      "files": [
+        "release-promotion.test.mjs",
+        "market-v0331.test.mjs"
+      ],
+      "runnable": false,
+      "meaning": "Historical snapshot only; never change assertions to green the new candidate. Current release verification uses run-release-regression.py after separate review."
+    },
+    "ui-current": {
+      "files": [
+        "v2-ui-policy.test.mjs",
+        "ui-contract.test.mjs",
+        "managed-development-ui.test.mjs",
+        "artifact-download-ui.test.mjs",
+        "approval-workbench-client.test.mjs",
+        "workbench-carrier-headers.test.mjs",
+        "workbench.test.mjs",
+        "managed-workbench.test.mjs",
+        "workbench-maintenance.test.mjs",
+        "cloud-web-ui-state.test.mjs"
+      ],
+      "meaning": "P1-2 current UI policy, read-only projections, existing download/transport/maintenance guards; browser validation separate."
+    }
+  }
+}

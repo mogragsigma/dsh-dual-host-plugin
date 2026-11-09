@@ -1,0 +1,27 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtempSync,mkdirSync,rmSync,realpathSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {Gateway} from '../bundle/index.js';
+import {makeEnvelope} from '../bundle/task-envelope.js';
+import {CLOUD_TASK_POLICY} from '../bundle/managed-cloud-policy.js';
+import {hash} from '../bundle/store.js';
+test('O01/O07/O15 authenticated local -> cloud DirectLink, long selected originals, offline cloud continuity',async t=>{
+ const root=realpathSync(mkdtempSync(join(tmpdir(),'autonomy-rpc-'))),policy={provider:'fixture',model:'fixture'},ctx={on(){},effect(){},agents:{list:()=>[]},llm:{resolveCallConfig:async()=>policy}};
+ const config={namespace:'autonomy-wire',entryMode:'native',continuity:{enabled:true},managedExecution:{enabled:true},peerEnabled:false},secrets={localToken:'l'.repeat(32),cloudToken:'c'.repeat(32)},port=31569;
+ const cloud=new Gateway(ctx,{...config,role:'cloud',port,stateDir:join(root,'cloud')},{secrets});let local;
+ t.after(async()=>{await local?.close();await cloud.close();rmSync(root,{recursive:true,force:true});});await cloud.start();
+ local=new Gateway(ctx,{...config,role:'local',stateDir:join(root,'local'),coordinatorUrl:'http://127.0.0.1:'+port},{secrets});
+ const messages=Array.from({length:9},(_,i)=>({id:'msg'+i,role:'user',source:{kind:'user'},content:[{type:'text',text:'任务必要澄清'+i+'x'.repeat(3000)}]})),a={id:'local-entry',session:{deriveMessages:()=>messages}};
+ const e=makeEnvelope(a,'local',{goal:'long goal',target:'cloud',intent:'register',continuity:1,execution_policy:CLOUD_TASK_POLICY,channel:'local-dsh',context_message_ids:messages.map(m=>m.id)});
+ const receipt=await local.submit({goal:e.goal,task_key:e.task_key,source:'native-local',ingress_id:e.ingress_id});assert.equal(receipt.status,'accepted');const id=receipt.task_id,cwd=join(root,'cloud-work');mkdirSync(cwd);
+ const q=await local.call('execution_start',{task_id:id,expected_revision:1,cwd});assert.equal(q.state,'queued');assert.equal(q.budget.max_requests,null);
+ await assert.rejects(local.call('execution_start',{task_id:id,expected_revision:1,cwd,role:'local'}),/CLOUD_ONLY/);
+ const r=(await cloud.call('execution_claim',{instance_id:'cloud-worker',autonomy_contract:1})).item,own={task_id:id,claim:r.claim,instance_id:r.instance};await cloud.call('execution_begin',own);
+ await local.close();local=null;assert.equal((await cloud.call('execution_validate',own)).valid,true);
+ const offline=new Gateway(ctx,{...config,role:'local',stateDir:join(root,'offline'),coordinatorUrl:'http://127.0.0.1:31570'},{secrets});
+ const text='停止这个任务',source={role:'local',session_id:'new-session',message_id:'stop',text,sha256:hash(text)};
+ const control=await offline.continuityOutbox.submit('task_lifecycle',{task_id:id,action:'stop',expected_version:0,source});assert.equal(control.status,'queued_locally');assert.equal(cloud.continuity.state(id).state,'active');await offline.close();
+ assert.equal(JSON.parse(cloud.catalog.head(id).goal).task_context.sources.length,9);
+});

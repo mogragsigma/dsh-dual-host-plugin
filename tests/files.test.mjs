@@ -4,15 +4,16 @@ import fs from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {Gateway} from '../bundle/index.js';
-import {FILE_MAX,FILE_CHUNK} from '../bundle/peer-files.js';
+import {FILE_CHUNK} from '../bundle/peer-files.js';
 import {fileHash,FileRoot,sourceFile} from '../bundle/peer-file-fs.js';
 import {registerNativeTools} from '../bundle/native-tools.js';
+const FILE_MAX=2*1024*1024; // Explicit legacy configured cap, no universal limit.
 const id=s=>'file-'+fileHash(s);
 async function fixture(t){
  const root=fs.mkdtempSync(join(tmpdir(),'s53-files-')),tokenFile=join(root,'tokens');fs.writeFileSync(tokenFile,JSON.stringify({localToken:'l'.repeat(32),cloudToken:'c'.repeat(32)}),{mode:0o600});
  for(const role of ['local','cloud'])for(const k of ['send','inbox'])fs.mkdirSync(join(root,role+'-'+k));
  const agents=new Map(),ctx={agents:{list:()=>[...agents.values()],get:x=>agents.get(x)},agentPresets:{composedPreset:c=>c.preset},on(){},effect(){}};let local,cloud,now=Date.now();
- const config=role=>({role,namespace:'s53-test',port:0,tokenFile,stateDir:join(root,role),fileTransfers:{enabled:true,sendRoots:[join(root,role+'-send')],receiveRoot:join(root,role+'-inbox')}});
+ const config=role=>({role,namespace:'s53-test',port:0,tokenFile,stateDir:join(root,role),fileTransfers:{enabled:true,maxBytes:FILE_MAX,sendRoots:[join(root,role+'-send')],receiveRoot:join(root,role+'-inbox')}});
  async function open(){cloud=new Gateway(ctx,config('cloud'),{now:()=>now});await cloud.start();local=new Gateway(ctx,{...config('local'),coordinatorUrl:'http://127.0.0.1:'+cloud.server.address().port},{now:()=>now});}
  await open();t.after(async()=>{await local.close();await cloud.close();fs.rmSync(root,{recursive:true,force:true});});
  const task=(await local.submit({goal:'file tests only',task_key:'files',source:'native-local',ingress_id:'one'})).task_id;

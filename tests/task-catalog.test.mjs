@@ -1,3 +1,4 @@
+import {testPort} from './helpers/loopback-port.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';
@@ -12,11 +13,11 @@ const msg=(id,text)=>({id,role:'user',source:{kind:'user'},content:[{type:'text'
 async function fixture(t){
  const root=mkdtempSync(tmpdir()+'/task-catalog-'),tokenFile=root+'/tokens.json';writeFileSync(tokenFile,JSON.stringify({localToken:'l'.repeat(32),cloudToken:'c'.repeat(32)}),{mode:0o600});
  const agents=new Map(),ctx={on(){},effect(){},agents:{get:id=>agents.get(id),list:()=>[...agents.values()]},agentPresets:{composedPreset:c=>c.preset}};
- const cloud=new Gateway(ctx,{role:'cloud',entryMode:'native',namespace:'catalog',stateDir:root+'/cloud',tokenFile,port:0,scheduler:{lockPort:0,intervalMs:60000}},{scheduler:{allowEphemeralLock:true}});await cloud.start();
+ const cloud=new Gateway(ctx,{role:'cloud',entryMode:'native',namespace:'catalog',stateDir:root+'/cloud',tokenFile,port:testPort(0),scheduler:{lockPort:0,intervalMs:60000}},{scheduler:{allowEphemeralLock:true}});await cloud.start();
  const local=new Gateway(ctx,{role:'local',entryMode:'native',namespace:'catalog',stateDir:root+'/local',tokenFile,port:0,coordinatorUrl:'http://127.0.0.1:'+cloud.server.address().port});
  const tools=new Map();registerNativeTools({taskGateway:local,tools:{register:d=>tools.set(d.name,d)}});
  let messages=[msg('one','只登记周报任务，不执行。')];let a={id:'session-one',ctx:{preset:'standard'},session:{deriveMessages:()=>messages}};agents.set(a.id,a);
- const invoke=(name,input,callId='call')=>tools.get(name).execute(input,{agent:a,callId});
+ const invoke=(name,input,callId='call')=>tools.get(name).execute(name==='task_schedule'?{max_runs:1,...input}:input,{agent:a,callId});
  const create=(title='周报任务')=>invoke('task_submit',{goal:'保留全部要求',title,target:'cloud',intent:'register'});
  const update=(task_id,expected_revision,extra={})=>invoke('task_update',{task_id,expected_revision,summary:'补充后的完整理解',...extra});
  t.after(async()=>{await local.close();await cloud.close();rmSync(root,{recursive:true,force:true});});
@@ -79,9 +80,10 @@ test('reference pointers require user source and remain unverified; suggestions 
  f.message('two','补充内容');await assert.rejects(f.update(a.task_id,1,{references:[{kind:'url',title:'伪造',uri:'https://example.com/secret'}]}),/REFERENCE_NOT_IN_USER_CONTEXT/);
 });
 test('non-text, unsafe URLs and excessive context fail visibly without truncating or mutating revisions',async t=>{
- const f=await fixture(t);f.message('long','原文 '.repeat(1500));const a=await f.create();f.message('two','补充 '.repeat(1500));await assert.rejects(f.update(a.task_id,1),/CONTEXT_LIMIT/);assert.equal(f.cloud.catalog.view(a.task_id).spec_revision,1);
- f.session('unsafe',[msg('ref','https://user:pass@example.com/a')]);await assert.rejects(f.update(a.task_id,1,{references:[{kind:'url',title:'unsafe',uri:'https://user:pass@example.com/a'}]}),/UNSUPPORTED_REFERENCE/);
- f.session('image',[{...msg('image',''),content:[{type:'image',url:'x'}]}]);assert.throws(()=>f.update(a.task_id,1),/TEXT_TASK_REQUIRED/);
+ const f=await fixture(t);f.message('long','原文 '.repeat(1500));const a=await f.create();f.message('two','补充 '.repeat(1500));await f.update(a.task_id,1);const head=f.cloud.catalog.view(a.task_id);assert.equal(head.spec_revision,2);assert.equal(head.request.request_text,'原文 '.repeat(1500));assert.equal(head.request.task_context.sources.at(-1).text,'补充 '.repeat(1500));
+ const large=Array.from({length:220},(_,i)=>msg('large'+i,'x'.repeat(5000)));f.session('large',large);await assert.rejects(f.update(a.task_id,2,{context_message_ids:large.map(m=>m.id)}),/CONTEXT_LIMIT/);assert.equal(f.cloud.catalog.view(a.task_id).spec_revision,2);
+ f.session('unsafe',[msg('ref','https://user:pass@example.com/a')]);await assert.rejects(f.update(a.task_id,2,{references:[{kind:'url',title:'unsafe',uri:'https://user:pass@example.com/a'}]}),/UNSUPPORTED_REFERENCE/);
+ f.session('image',[{...msg('image',''),content:[{type:'image',url:'x'}]}]);await assert.rejects(f.update(a.task_id,2),/TEXT_TASK_REQUIRED/);assert.equal(f.cloud.catalog.view(a.task_id).spec_revision,2);
 });
 test('RPC cannot forge amendment origin or expose approvals/writers',async t=>{
  const f=await fixture(t),a=await f.create();const source=selectedHumanContext({id:'fake',session:{deriveMessages:()=>[msg('m','fake')]}},'cloud');

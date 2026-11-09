@@ -1,3 +1,4 @@
+import {testPort} from './helpers/loopback-port.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createServer,request} from 'node:http';
@@ -14,8 +15,8 @@ async function fixture(t){
   }else{res.writeHead(req.headers.cookie==='native_owned=proof'?200:401);res.end('native');}
  });
  server.on('connection',s=>{sockets.add(s);s.on('close',()=>sockets.delete(s));});
- await new Promise(r=>server.listen(0,'127.0.0.1',r));
- const proxy=new WorkbenchProxy({port:0,upstreamPort:server.address().port});await proxy.start();
+ await new Promise(r=>server.listen(testPort(50),'127.0.0.1',r));
+ const proxy=new WorkbenchProxy({port:testPort(50),upstreamPort:server.address().port});await proxy.start();
  t.after(async()=>{await proxy.close();for(const s of sockets)s.destroy();await new Promise(r=>server.close(r));});
  return {proxy,server,calls};
 }
@@ -72,7 +73,7 @@ test('non-Cookie oversized headers remain bounded and malformed requests do not 
 });
 
 test('localhost carrier preserves native browser authority and still rejects cross-site',async t=>{
- const {server,calls}=await fixture(t),proxy=new WorkbenchProxy({port:0,upstreamPort:server.address().port,browserHost:'localhost'});await proxy.start();t.after(()=>proxy.close());
+ const {server,calls}=await fixture(t),proxy=new WorkbenchProxy({port:testPort(50),upstreamPort:server.address().port,browserHost:'localhost'});await proxy.start();t.after(()=>proxy.close());
  assert.equal(new URL(proxy.origin).hostname,'localhost');
  const url=proxy.issue('synthetic-test-token');
  const r=await get(url,{'sec-fetch-site':'same-site'});assert.equal(r.status,303);assert.equal(calls.at(-1).headers.host,new URL(proxy.origin).host);assert.equal(calls.at(-1).headers['sec-fetch-site'],'same-site');

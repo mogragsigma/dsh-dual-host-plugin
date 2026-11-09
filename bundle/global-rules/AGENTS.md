@@ -2,30 +2,34 @@
 仅限本项目；保留用户规则、人格、记忆及原生功能。
 本机身份：__HOST_NAME__（Host role：__HOST_ROLE__）；路由以 `task_identity` 为准，非昵称。
 Host 身份不证明渠道；云端 Web 也可接收 IM。无可靠渠道元数据须说“当前渠道未确认”，不按 localhost、环境提示或第三方 ID 猜测。
-### 职责与入口
-- 本地大肥鱼负责本机；云端大肥鱼在 ECS 受理、查询、解释结果。指定本地不改投云端；Mac 离线另联系云端，不接管旧机器人。
-- 双端通信走自有插件直连；IM 是入口和通知渠道，不要求机器人同群。Gitee 保存开发版本和成果，不是消息总线、权威任务状态或并发锁。
-- 长任务交独立 worker，入口即返回，不用 shell 查实现/配置或 sleep/轮询。task_schedule 必填 max_runs 限总批次，每批≤6次模型请求；worker 处理检查点等待。短问答保留原功能。
-- 入口不能代 worker 计算并冒报完成。独立会话不等于独立 OS 进程；不得声称已经实现对 root、原生 Shell 或其他插件的系统级身份隔离。
+### 当前云端自主任务优先规则
+- cloud-autonomous-v1：仅本地 DSH、本地 IM、云端 IM 三通道交办，统一云端执行；本地普通 DSH 保留，不反向派本地。
+- task_submit 保留必要原文，task_execute 原生持续执行；task_followup 接续指示。无审批前置、调用次数上限、统一300秒截止或两小时到期重批；保留技术超时及业务期限。
+- 云端原生 CLI/文件能力充分使用；IM 权限不决定任务执行。Git/远程托管可选；按约定交付并回读，不从研发推导发布。成果宿主登记，ready非已发送/已读。
+- 以下旧审批、预算、短批、本地执行及Gitee门禁仅限历史合同；不套用于新任务，不迁移、删除或自动续跑历史。
+
+### 历史合同职责与入口
+- 双端插件直连，IM只作入口/通知，不同群接力；Gitee非消息总线/权威状态/并发锁。
+- 旧task_schedule保留max_runs及每批≤6次；入口不代worker冒报完成，不shell轮询。独立会话非OS进程或系统级身份隔离。
 ### 按需加载 Skill
 回执为准。
 | 用户需求 | Skill |
 | --- | --- |
-| 委派、按名称查询或修改任务；选择模型 | `task-direct-link` |
-| 周期、未来时间、事件、等待输入、有界子任务 | `task-schedule` |
-| 双端自主协作与共享预算 | `task-a2a` |
+| 任务与模型 | `task-direct-link` |
+| 计划与信号 | `task-schedule` |
+| 历史A2A | `task-a2a` |
 | IM／本地／云端三端文件收发 | `task-file-transfer` |
-| 方案、自然语言批准／拒绝／暂缓／修改意见、回执引用 | `task-approval` |
-| 仓库关联、交付差异、提交和推送 | `task-repository` |
-| 已获授权的受管开发、修复与测试 | `task-development` |
-| 来源、联网研究、搜索阶段及证据 | `task-research` |
-| 通知目标、未知发送核对、图片／附件与手机入口 | `task-notify` |
-| 成果介绍、Gitee 页面或执行会话入口 | `task-artifacts` |
-| 云端 Web 工作台 | `task-workbench` |
-| 任务、双端、计划和交付状态展示 | `task-sidebar` |
-| 协议兼容、状态新鲜度、队列与回执诊断 | `task-diagnostics` |
-| 忙闲交接与中断核对 | `task-handoff`、`task-recovery` |
-| 导览、路径、凭据、安装与维护恢复、原事务回执 | `task-onboarding` |
+| 历史审批 | `task-approval` |
+| 仓库与交付 | `task-repository` |
+| 研发与验证 | `task-development` |
+| 来源与搜索 | `task-research` |
+| 通知与回执 | `task-notify` |
+| 成果取用 | `task-artifacts` |
+| 云端工作台 | `task-workbench` |
+| 任务展示 | `task-sidebar` |
+| 诊断 | `task-diagnostics` |
+| 交接与恢复 | `task-handoff`、`task-recovery` |
+| 配置与维护 | `task-onboarding` |
 
 `task-worker`、`task-a2a-worker` 只在相应独立执行会话加载，入口不冒充 worker。
 `dsh-dual-end`、`task-intake` 仅作兼容指引；旧 `/task`、`/run`、`/approve`、群内 A2A、旧消费者和补丁流程不恢复、不自动重放。保留旧会话，不擅自改模式或清空历史。
@@ -34,7 +38,7 @@ Host 身份不证明渠道；云端 Web 也可接收 IM。无可靠渠道元数�
 - 按名称交办／查询，无需 ID、命令、哈希或精确 provider；歧义才文字询问。任务名非关联键，内部参数仅取真实工具回执，不编造。
 - `task_submit` 的 goal 为理解摘要，Host 保全直接用户原文和约束。仅明确引用时补必要前文，不上传整段聊天或禁转内容。补充沿用原任务并修订；超限、非文本、缺能力须说明，不截断需求。
 - 新任务或显式换模型先用 `task_model_resolve` 核对目标端目录；“ds flash”等简称唯一匹配才用返回策略。歧义用接入名称澄清（导览 clarification），默认不传 provider_hint；不凭记忆、入口清单、近似版本或降级补齐。
-- 本项目 ECS 新任务未指定思考程度默认 high；显式值优先，不固定模型。历史任务、已批准方案及恢复批次保持原策略；不能支持所选程度则停止说明。辅助模型与搜索须单独声明策略和预算，既有例外不推广到其他任务。
+- 新任务默认模型复用云端 DSH，显式值优先；恢复不换策略、不降级。辅助搜索单独声明路由；历史预算保留，新任务只统计。
 - 澄清使用普通聊天文字，不以飞书卡片、精确拼写或 ask_user_question 作为必经入口；此规则不拦截原生权限确认、第三方工具或斜杠命令。普通选择回复不是可信审批。
 
 ### 授权与可信审批

@@ -29,9 +29,13 @@ export async function apply(ctx,config={}){
  if(config.legacyFeishu)throw Error('LEGACY_ENTRY_RETIRED');
  if(config.entryMode&&config.entryMode!=='native')throw Error('LEGACY_ENTRY_RETIRED');
  claimOwner(ctx);
+ // Only enabled endpoints need the native archive registry. Keep setup-only and
+ // unmanaged sessions independent of that optional execution capability.
+ const endpoint=onboardingIdentity(config).role==='cloud'&&config.managedExecution?.enabled===true&&config.managedExecution.endpoint;
+ const runtimeInject=[...gatewayInject,...(endpoint?['workspaceRegistry']:[])];
  // A fresh install has no gateway state/credentials yet. It exposes only onboarding.
  if(!config.role&&!config.stateDir&&!config.tokenFile){
-  if(onboardingIdentity(config).role==='cloud')ctx.inject(['credentials',...gatewayInject],scope=>{
+  if(onboardingIdentity(config).role==='cloud')ctx.inject(['credentials',...runtimeInject],scope=>{
    const runtime={credentials:scope.credentials},state=createOnboardingState(scope,config,runtime);
    const manager=createOnboardingTaskRuntime({state,credentials:()=>scope.credentials,config,adapter:nativeTaskRuntimeAdapter(scope,config,runtime,state)});
    scope.provide('onboardingTaskRuntime',manager);scope.effect(()=>()=>manager.close());
@@ -39,7 +43,7 @@ export async function apply(ctx,config={}){
   installOnboarding(ctx,config);return;
  }
  installOnboarding(ctx,config);
- ctx.inject([...gatewayInject,'onboardingActivity'],ctx=>{
+ ctx.inject([...runtimeInject,'onboardingActivity'],ctx=>{
  const cancel=ctx.onboardingActivity.deferStartup('configured_gateway',async()=>{
  let repository;
  if(config.role==='cloud'&&config.repositoryAccess?.managedOnboarding===true){

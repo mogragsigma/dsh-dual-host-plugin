@@ -1,6 +1,8 @@
+import {validPolicy} from './task-context.js';
 // A separately declared read-only stage, never a hidden global/default auxiliary model.
 const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
-export function validateSearch(value,sources){
+export function validateSearch(value,sources,{autonomous=false}={}){
+ if(autonomous)return validateAutonomousSearch(value);
  if(value==null)return null;
  if(!object(value)||Object.keys(value).some(k=>!['scope','authorization_quote','model_policy','max_requests'].includes(k))||
   typeof value.scope!=='string'||!value.scope.trim()||value.scope.length>500||typeof value.authorization_quote!=='string'||!value.authorization_quote.trim()||value.authorization_quote.length>2000||
@@ -17,3 +19,11 @@ export const taskExecutor=e=>e.notification_contract===1?(e.search?'independent-
 export const searchActive=goal=>{try{const e=JSON.parse(goal);return e.notification_contract===1?'active-notify':e.search?'active-search':'active';}catch{return 'active';}};
 export const preparedState=goal=>searchActive(goal)==='active-notify'?'prepared-notify':searchActive(goal)==='active-search'?'prepared-search':'prepared';
 export const activeSchedule=s=>['active','active-search','active-notify'].includes(s);
+
+export function validateAutonomousSearch(value){
+ if(value==null)return null;
+ if(!object(value)||Object.keys(value).some(k=>!['scope','model_policy'].includes(k))||typeof value.scope!=='string'||!value.scope.trim()||value.scope.length>1000)throw Error('SOURCE_SEARCH_POLICY_INVALID');
+ const p=value.model_policy===undefined?undefined:validPolicy(value.model_policy);
+ if(p&&(p.provider!=='deepseek-official'||p.reasoningEffort!=='disabled'))throw Error('SOURCE_SEARCH_MODEL_REQUIRED');
+ return {scope:value.scope,...(p?{model_policy:p}:{})};
+}
