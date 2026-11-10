@@ -10,7 +10,7 @@ const identity = '@mogragsigma/dsh-dual-host-plugin';
 test('current root and archive manifests have one release identity and dependency contract', async () => {
   const root = await read('package.json'), bundle = await read('bundle/package.json');
   assert.equal(root.name, identity);
-  assert.equal(root.version, '2.0.0');
+  assert.equal(root.version, '2.0.1');
   assert.equal(VERSION, root.version);
   for (const key of ['name', 'version', 'dependencies', 'peerDependencies', 'peerDependenciesMeta',
     'engines', 'dsh', 'author', 'license', 'publishConfig']) assert.deepEqual(bundle[key], root[key], key);

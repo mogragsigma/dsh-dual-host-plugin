@@ -11,18 +11,18 @@ const read=(name)=>fs.readFile(path.join(source,name),'utf8');
 const name='@mogragsigma/dsh-dual-host-plugin';
 test('release identity is consistent and publish-ready after the deliberate release change',async()=>{
  const p=JSON.parse(await read('package.json')),c=JSON.parse(await read('compatibility.json'));
- assert.equal(p.name,name);assert.equal(c.plugin,name);assert.equal(p.version,'2.0.0');assert.equal(c.version,p.version);
+ assert.equal(p.name,name);assert.equal(c.plugin,name);assert.equal(p.version,'2.0.1');assert.equal(c.version,p.version);
  assert.equal(p.private,undefined);assert.equal(p.publishConfig.access,'public');assert.equal(p.author,'mogragsigma');assert.equal(p.license,'SEE LICENSE IN LICENSE');
  assert.equal(p.engines.dsh,'>=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0');assert.equal(p.scripts,undefined);
  for(const f of ['LICENSE','LICENSE.en.md','THIRD_PARTY_NOTICES.md','ASSET_NOTICE.md','README.md','distribution-lock.json'])assert(p.files.includes(f));
 });
 test('shipped lock preserves the canonical lock and root identity',async()=>{
  const lock=await read('package-lock.json');assert.equal(await read('distribution-lock.json'),lock);
- const p=JSON.parse(lock);assert.equal(p.name,name);assert.equal(p.version,'2.0.0');assert.equal(p.packages[''].name,name);
+ const p=JSON.parse(lock);assert.equal(p.name,name);assert.equal(p.version,'2.0.1');assert.equal(p.packages[''].name,name);
 });
 test('source cloud package stays bounded and excludes development dependency links',async()=>{
  const p=await cloudPackage(source);assert(p.bytes<=8388608);assert(p.files.length<=512);
- assert.equal(p.pluginVersion,'2.0.0');assert(p.files.every(x=>!x.path.includes('node_modules')));
+ assert.equal(p.pluginVersion,'2.0.1');assert(p.files.every(x=>!x.path.includes('node_modules')));
  const a=p.files.find(x=>x.path==='plugin/package-lock.json'),b=p.files.find(x=>x.path==='plugin/distribution-lock.json');
  assert.equal(a.sha256,b.sha256);assert.equal(a.data,b.data);
 });

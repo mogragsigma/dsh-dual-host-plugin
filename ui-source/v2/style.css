@@ -21,3 +21,6 @@
 
 /* DSH exposes its native chrome clearance; only our global panel consumes it. */
 html[data-platform=darwin] :is([data-sidebar-collapsed],[data-sidebar-drawer]) [data-global-panel] .v2-workbench{--v2-shell-top:var(--dsh-frame-top-clearance,48px)}
+
+/* Cloud native entry stays beside the task projection, wrapping on narrow panels. */
+.v2-host-hero>div{min-width:0}.v2-host-actions{display:flex;flex-wrap:wrap;gap:10px}.v2-host-actions .button{max-width:100%}

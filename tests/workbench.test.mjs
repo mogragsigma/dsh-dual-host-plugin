@@ -73,3 +73,19 @@ test('browser failure survives main-panel remount, remains sanitized and never r
  right.openTab=async()=>{throw Error('credential SECRET unexpected');};await assert.rejects(body.open(),/SECRET/);assert(!mountedProps.navigationError().includes('SECRET'));
  right.openTab=async()=>{};await body.open();assert.equal(mountedProps.navigationError(),null);assert.equal(calls.length,4);assert(calls.every(p=>p.method==='open'));
 });
+
+test('legacy cloud entry accepts a real SSH-latency response without replaying bootstrap',async t=>{
+ let requests=0,bootstraps=0,issued=0;const server=createServer((req,res)=>{
+  requests++;assert.equal(req.url,'/');assert.equal(req.headers.authorization,undefined);
+  setTimeout(()=>{res.writeHead(401);res.end('authentication required');},800);
+ });await listen(server);t.after(()=>new Promise(resolve=>{server.close(resolve);server.closeAllConnections();}));
+ const port=server.address().port,wb=new Workbench({}, {c:{role:'local'},link:{call:async(method,args)=>{bootstraps++;assert.equal(method,'workbench_bootstrap');assert.deepEqual(args,{});return {result:{url:`http://127.0.0.1:${port}/?token=test-launch`,instance_id:'same'},observation:{instance_id:'same'}};}}},{remotePort:port,tunnelPort:port});
+ wb.proxy={issue:(token,session)=>{issued++;assert.equal(token,'test-launch');assert.equal(session,undefined);return 'http://127.0.0.1:19470/?workbench_ticket=synthetic';}};
+ const result=await wb.open({});assert.equal(result.authenticated,false);assert.equal(result.receipt,'browser_open_requested_not_logged_in');assert.equal(bootstraps,1);assert.equal(requests,1);assert.equal(issued,1);
+});
+
+test('readiness still requires native unauthorized response and closing never issues a ticket',async t=>{
+ let wb,issued=0;const server=createServer((req,res)=>{wb.closed=true;res.writeHead(200);res.end('not native authentication');});await listen(server);t.after(()=>new Promise(resolve=>{server.close(resolve);server.closeAllConnections();}));
+ const port=server.address().port;wb=new Workbench({}, {c:{role:'local'},link:{call:async()=>({result:{url:`http://127.0.0.1:${port}/?token=test-launch`,instance_id:'same'},observation:{instance_id:'same'}})}},{remotePort:port,tunnelPort:port});wb.proxy={issue:()=>{issued++;}};
+ await assert.rejects(wb.open({}),/WORKBENCH_TUNNEL_UNAVAILABLE/);assert.equal(issued,0);
+});

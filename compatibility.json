@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "plugin": "@mogragsigma/dsh-dual-host-plugin",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "publicEntry": "native-entry.js",
   "hostBaseline": "0.2.1-rc.5",
   "imOptional": {
@@ -981,11 +981,11 @@
     "declaredRange": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-rc.1 <0.2.3-0",
     "standalonePinnedHost": "0.2.2-rc.1",
     "targetHost": "0.2.2-rc.1",
-    "scope": "2.0.0 preparation, not published. Broad range admission is not per-version acceptance; see releaseContract and current acceptance report."
+    "scope": "Stable release-line declaration; installation and live activation are separate facts. Broad range admission is not per-version acceptance; see releaseContract and current acceptance report."
   },
   "releaseContract": {
-    "version": "2.0.0",
-    "stage": "unreleased-preparation",
+    "version": "2.0.1",
+    "stage": "stable",
     "historicalFields": "Legacy approval/development/onboarding contracts remain for historical compatibility; they are not new-task policy or proof of 2.0 activation.",
     "policy": "cloud-autonomous-v1",
     "owner": "single-user",

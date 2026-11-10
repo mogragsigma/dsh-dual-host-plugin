@@ -1,4 +1,4 @@
-# 当前维护入口（2.0.0 发行准备，尚未发布）
+# 当前维护入口（2.0 系列，发布与部署以当次回执为准）
 
 - 当前身份、版本和兼容范围以根 package.json、bundle/package.json 与 compatibility.json 为准。
 - 当前验收：scripts/run-v2-release-regression.py；历史冻结验收不可改写为当前通过证据。

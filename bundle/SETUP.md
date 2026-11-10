@@ -3,14 +3,14 @@ title: "大肥鱼2.0安装与启用"
 description: "根发布包的原生DSH配置路径和首发边界"
 author: "大肥鱼 bot 项目组"
 created: "2026-11-08"
-updated: "2026-11-09"
-version: "2.0.0"
+updated: "2026-11-10"
+version: "2.0.1"
 status: "draft"
 ---
 
 # 大肥鱼2.0安装与启用
 
-> 2.0.0发行准备，尚未发布。以下是公开的原生DSH配置路径，不是灰度脚本。
+> 2.0.1安装说明；发布状态以包来源回读为准。以下是公开的原生DSH配置路径，不是灰度脚本。
 > 包安装、配置保存、运行时已加载、双端已连接和任务已执行是不同状态。
 
 ## 一、安装与版本
@@ -19,7 +19,7 @@ status: "draft"
 在每端自己的DSH、HOME、DSH_HOME、DSH_AGENTS_HOME和实际profile中执行：
 
 ```sh
-dsh plugin --profile YOUR_PROFILE add /absolute/path/dsh-dual-host-plugin-2.0.0.tgz --allow-build=koffi
+dsh plugin --profile YOUR_PROFILE add /absolute/path/dsh-dual-host-plugin-2.0.1.tgz --allow-build=koffi
 ```
 
 不要使用正式profile做测试；不要向插件内另装DSH依赖。独立新建Host模板锁定0.2.2-rc.1，

@@ -73,9 +73,11 @@ export class Workbench {
   if(u.origin!==`http://127.0.0.1:${this.c.remotePort}`||u.pathname!=='/'||u.hash||[...u.searchParams.keys()].join()!=='token'||result.instance_id!==observation.instance_id)throw Error('INVALID_WORKBENCH_BOOTSTRAP');
   // Bound retry only checks public static entry reachability; no authenticated
   // operation is replayed. Tunnel process existence never counts as a login.
-  let ready=false;
-  for(let n=0;n<20&&!this.closed;n++){
-   try{const r=await fetch(`http://127.0.0.1:${this.c.tunnelPort}/`,{redirect:'error',signal:AbortSignal.timeout(500)});await r.body?.cancel();if(r.status===401){ready=true;break;}}catch{}
+  // The loopback port crosses SSH to the cloud: 500 ms is not a LAN bound.
+  // Keep a technical deadline, while allowing a realistic remote round trip.
+  let ready=false;const deadline=performance.now()+15000;
+  while(!this.closed&&performance.now()<deadline){
+   try{const timeout=Math.max(1,Math.min(3000,Math.ceil(deadline-performance.now())));const r=await fetch(`http://127.0.0.1:${this.c.tunnelPort}/`,{redirect:'error',signal:AbortSignal.timeout(timeout)});await r.body?.cancel();if(r.status===401&&!this.closed){ready=true;break;}}catch{}
    await new Promise(r=>setTimeout(r,150));
   }
   if(!ready)throw Error('WORKBENCH_TUNNEL_UNAVAILABLE');

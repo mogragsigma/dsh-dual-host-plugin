@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.0.1",
   "scope": "Static imports/exports and literal test references; dynamic injection and transitive coverage require manual review.",
   "modules": {
     "bundle/a2a-dispatches.js": {
@@ -4473,7 +4473,7 @@
       ]
     },
     "bundle/workbench-host.js": {
-      "lines": 122,
+      "lines": 124,
       "imports": [
         "./native-owner-origin.js",
         "./ssh-connector.js",
@@ -5376,7 +5376,7 @@
       "referencedByTests": []
     },
     "ui-source/v2/workbench.jsx": {
-      "lines": 64,
+      "lines": 73,
       "imports": [
         "../onboarding/components",
         "./deck",
@@ -5420,7 +5420,9 @@
       "lines": 90,
       "imports": [],
       "exports": [],
-      "referencedByTests": []
+      "referencedByTests": [
+        "tests/v2-cloud-workbench-entry.test.mjs"
+      ]
     }
   }
 }

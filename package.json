@@ -1,6 +1,6 @@
 {
   "name": "@mogragsigma/dsh-dual-host-plugin",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Single-owner native cloud tasks for DeepSeek Harness, with local and IM entry, continuous follow-up and verifiable artifacts",
   "type": "module",
   "private": false,

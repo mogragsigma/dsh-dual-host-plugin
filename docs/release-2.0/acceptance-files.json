@@ -196,6 +196,7 @@
     "task-worker.test.mjs",
     "three-party-rules.test.mjs",
     "ui-contract.test.mjs",
+    "v2-cloud-workbench-entry.test.mjs",
     "v2-host-clearance.test.mjs",
     "v2-ui-policy.test.mjs",
     "workbench-carrier-headers.test.mjs",
